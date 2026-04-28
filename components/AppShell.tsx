@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import LoginScreen from './LoginScreen'
 import CustomerForm from './CustomerForm'
 import StaffDashboard from './StaffDashboard'
-import BackgroundAnimation from './BackgroundAnimation'
 
 type View = 'customer' | 'staff'
 
@@ -21,16 +20,10 @@ export default function AppShell() {
 
   if (!ready) return null
 
-  if (!authed) return (
-    <>
-      <BackgroundAnimation />
-      <LoginScreen onLogin={() => setAuthed(true)} />
-    </>
-  )
+  if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />
 
   return (
-    <div className="relative" style={{ zIndex: 1 }}>
-      <BackgroundAnimation />
+    <div className="relative">
       {view === 'customer' ? (
         <>
           <CustomerForm />
