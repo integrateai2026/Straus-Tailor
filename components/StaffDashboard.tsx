@@ -115,7 +115,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col" style={{ background: 'radial-gradient(ellipse 80% 30% at 50% 0%, rgba(159,18,57,0.07) 0%, transparent 60%), #0a0a0a' }}>
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
       <div ref={headerRef} className="px-6 pt-8 pb-4 border-b border-[#1a1a1a]" style={{ opacity: 0 }}>
         <div className="flex items-center justify-between max-w-3xl mx-auto">

@@ -222,7 +222,7 @@ export default function CustomerForm() {
     <>
       <div
         ref={containerRef}
-        className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center px-6 py-10"
+        className="min-h-screen flex flex-col items-center justify-center px-6 py-10"
       >
         {/* Header */}
         <div ref={headerRef} className="flex flex-col items-center mb-10" style={{ opacity: 0 }}>
