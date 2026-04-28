@@ -43,21 +43,41 @@ input[type="date"] {
   background: #3a3a3a;
 }
 
+@keyframes orbA {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  30%       { transform: translate(80px, 60px) scale(1.08); }
+  65%       { transform: translate(-50px, 100px) scale(0.94); }
+}
+@keyframes orbB {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  40%       { transform: translate(-90px, -70px) scale(1.1); }
+  75%       { transform: translate(40px, -30px) scale(0.96); }
+}
+@keyframes orbC {
+  0%, 100% { transform: translateX(-50%) translateY(0px) scale(1); }
+  50%       { transform: translateX(-50%) translateY(-80px) scale(1.12); }
+}
+
 @media print {
   body {
     background: white !important;
+    margin: 0 !important;
   }
-  body > * {
+  body > *:not(#print-ticket) {
     display: none !important;
   }
   #print-ticket {
     display: block !important;
-    position: fixed !important;
-    inset: 0 !important;
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
     max-width: 100% !important;
+    padding: 48px 32px !important;
+    background: white !important;
+    color: black !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     overflow: visible !important;
-    padding: 32px !important;
   }
 }

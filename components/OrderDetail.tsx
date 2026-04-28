@@ -20,7 +20,7 @@ function formatDate(iso: string) {
 
 const STATUS_COLORS: Record<string, string> = {
   active: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
-  notified: 'bg-blue-500/15 text-blue-400 border-blue-500/20',
+  notified: 'bg-purple-500/15 text-purple-400 border-purple-500/20',
   completed: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
 }
 
@@ -123,16 +123,18 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
           {/* Details */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {[
               { label: 'Customer', value: order.customerName },
               { label: 'Phone', value: order.phone },
               { label: 'Drop-off Date', value: formatDate(order.dropoffDate) },
               { label: 'Due Date', value: formatDate(order.dueDate) },
+              ...(order.totalAmount != null ? [{ label: 'Total Amount', value: `$${order.totalAmount.toFixed(2)}` }] : []),
+              ...(order.itemCount    != null ? [{ label: 'Items', value: `${order.itemCount} item${order.itemCount !== 1 ? 's' : ''}` }] : []),
             ].map(({ label, value }) => (
-              <div key={label} className="flex justify-between items-center">
-                <span className="text-sm text-[#555]">{label}</span>
-                <span className="text-sm text-white font-medium">{value}</span>
+              <div key={label} className="flex justify-between items-center py-1 border-b border-[#1a1a1a] last:border-0">
+                <span className="text-sm text-[#888]">{label}</span>
+                <span className="text-sm text-white font-semibold">{value}</span>
               </div>
             ))}
             {order.notes && (
@@ -147,13 +149,17 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
 
           {/* Status badges */}
           <div className="flex gap-2 flex-wrap">
-            {order.paid && (
-              <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            {order.paid ? (
+              <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
                 Paid
+              </span>
+            ) : (
+              <span className="text-xs px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 font-medium">
+                Unpaid
               </span>
             )}
             {order.pickedUp && (
-              <span className="text-xs px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <span className="text-xs px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">
                 Picked Up
               </span>
             )}
@@ -219,19 +225,36 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
           {/* Meta */}
           <div className="space-y-2 pt-2 border-t border-[#1a1a1a]">
             <div className="flex justify-between">
-              <span className="text-xs text-[#444]">Created</span>
-              <span className="text-xs text-[#555]">
+              <span className="text-xs text-[#666]">Created</span>
+              <span className="text-xs text-[#aaa]">
                 {new Date(order.createdAt).toLocaleString()}
               </span>
             </div>
-            {order.notifiedAt && (
+            {order.pickedUpAt && (
               <div className="flex justify-between">
-                <span className="text-xs text-[#444]">Notified</span>
-                <span className="text-xs text-[#555]">
-                  {new Date(order.notifiedAt).toLocaleString()}
+                <span className="text-xs text-[#666]">Picked Up</span>
+                <span className="text-xs text-[#aaa]">
+                  {new Date(order.pickedUpAt).toLocaleString()}
                 </span>
               </div>
             )}
+            {(() => {
+              const times: string[] = Array.isArray(order.notifiedAt)
+                ? order.notifiedAt
+                : order.notifiedAt
+                  ? [order.notifiedAt as unknown as string]
+                  : []
+              return times.map((t, i) => (
+                <div key={t} className="flex justify-between">
+                  <span className="text-xs text-[#666]">
+                    SMS {times.length > 1 ? `#${i + 1}` : 'Sent'}
+                  </span>
+                  <span className="text-xs text-purple-400/80">
+                    {new Date(t).toLocaleString()}
+                  </span>
+                </div>
+              ))
+            })()}
           </div>
         </div>
       </div>

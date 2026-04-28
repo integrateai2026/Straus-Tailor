@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { updateOrder } from '@/lib/store'
+import { getOrderById, updateOrder } from '@/lib/store'
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,10 +9,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
     }
 
-    // Twilio integration — set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER in .env.local
-    const accountSid = process.env.TWILIO_ACCOUNT_SID
-    const authToken = process.env.TWILIO_AUTH_TOKEN
-    const fromNumber = process.env.TWILIO_FROM_NUMBER
+    const accountSid  = process.env.TWILIO_ACCOUNT_SID
+    const authToken   = process.env.TWILIO_AUTH_TOKEN
+    const fromNumber  = process.env.TWILIO_FROM_NUMBER
 
     if (accountSid && authToken && fromNumber) {
       const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`
@@ -30,17 +29,20 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Mark order as notified regardless (demo mode if no Twilio creds)
+    // Append this send time to the notifiedAt history
+    const current = getOrderById(orderId)
+    const existing: string[] = Array.isArray(current?.notifiedAt)
+      ? current.notifiedAt
+      : current?.notifiedAt
+        ? [current.notifiedAt as unknown as string]  // backwards compat with old string value
+        : []
+
     const updated = updateOrder(orderId, {
       status: 'notified',
-      notifiedAt: new Date().toISOString(),
+      notifiedAt: [...existing, new Date().toISOString()],
     })
 
-    return NextResponse.json({
-      success: true,
-      demo: !accountSid,
-      order: updated,
-    })
+    return NextResponse.json({ success: true, demo: !accountSid, order: updated })
   } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }

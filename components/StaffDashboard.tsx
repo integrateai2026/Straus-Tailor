@@ -16,13 +16,13 @@ const TABS: { key: Tab; label: string }[] = [
 
 const STATUS_DOT: Record<string, string> = {
   active: 'bg-amber-400',
-  notified: 'bg-blue-400',
+  notified: 'bg-purple-400',
   completed: 'bg-emerald-400',
 }
 
 const STATUS_BADGE: Record<string, string> = {
   active: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-  notified: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
+  notified: 'bg-purple-500/10 text-purple-400 border border-purple-500/20',
   completed: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
 }
 
@@ -32,7 +32,11 @@ function formatShortDate(iso: string) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-export default function StaffDashboard() {
+interface Props {
+  onCustomerForm?: () => void
+}
+
+export default function StaffDashboard({ onCustomerForm }: Props) {
   const [tab, setTab] = useState<Tab>('all')
   const [orders, setOrders] = useState<Order[]>([])
   const [search, setSearch] = useState('')
@@ -111,27 +115,21 @@ export default function StaffDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col" style={{ background: 'radial-gradient(ellipse 80% 30% at 50% 0%, rgba(159,18,57,0.07) 0%, transparent 60%), #0a0a0a' }}>
       {/* Header */}
       <div ref={headerRef} className="px-6 pt-8 pb-4 border-b border-[#1a1a1a]" style={{ opacity: 0 }}>
         <div className="flex items-center justify-between max-w-3xl mx-auto">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="6" cy="6" r="3" />
-                <circle cx="6" cy="18" r="3" />
-                <line x1="20" y1="4" x2="8.12" y2="15.88" />
-                <line x1="14.47" y1="14.48" x2="20" y2="20" />
-                <line x1="8.12" y1="8.12" x2="12" y2="12" />
-              </svg>
+            <div className="w-9 h-9 rounded-xl overflow-hidden border border-rose-900/30 shadow-[0_0_14px_rgba(159,18,57,0.2)]">
+              <img src="/logo.png" alt="Straus" className="w-full h-full object-cover" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white tracking-wide">Staff Dashboard</p>
-              <p className="text-[11px] text-[#444]">Straus Tailor Shop</p>
+              <p className="text-sm font-semibold bg-gradient-to-r from-rose-400 to-red-300 bg-clip-text text-transparent tracking-wide">Staff Dashboard</p>
+              <p className="text-[11px] text-rose-900/60">Straus Tailor Shop</p>
             </div>
           </div>
-          <a
-            href="/"
+          <button
+            onClick={onCustomerForm}
             className="text-xs text-[#555] hover:text-white transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#1e1e1e] hover:border-[#2a2a2a]"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -140,7 +138,7 @@ export default function StaffDashboard() {
               <rect x="6" y="14" width="12" height="8" />
             </svg>
             Customer Form
-          </a>
+          </button>
         </div>
       </div>
 
@@ -247,15 +245,17 @@ export default function StaffDashboard() {
                             <span className="text-sm font-medium text-white truncate">{order.customerName}</span>
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-xs text-[#444]">{order.phone}</span>
-                            <span className="text-[#2a2a2a]">·</span>
-                            <span className="text-xs text-[#444]">Due {formatShortDate(order.dueDate)}</span>
+                            <span className="text-xs text-[#777]">{order.phone}</span>
+                            <span className="text-[#444]">·</span>
+                            <span className="text-xs text-[#777]">Due {formatShortDate(order.dueDate)}</span>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0 ml-3">
-                        {order.paid && (
-                          <span className="text-[10px] text-emerald-500">Paid</span>
+                        {order.paid ? (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Paid</span>
+                        ) : (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-red-500/10 text-red-400 border border-red-500/20">Unpaid</span>
                         )}
                         <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_BADGE[order.status]}`}>
                           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}

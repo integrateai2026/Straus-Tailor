@@ -1,0 +1,171 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
+
+interface Props {
+  onLogin: () => void
+}
+
+export default function LoginScreen({ onLogin }: Props) {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPw, setShowPw] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const headerRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLDivElement>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+    tl.fromTo(headerRef.current, { y: -24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 })
+    tl.fromTo(
+      formRef.current!.children,
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.5, stagger: 0.09 },
+      '-=0.3'
+    )
+    tl.fromTo(btnRef.current, { y: 16, opacity: 0, scale: 0.97 }, { y: 0, opacity: 1, scale: 1, duration: 0.4 }, '-=0.2')
+  }, [])
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    gsap.to(btnRef.current, { scale: 0.97, duration: 0.15 })
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      })
+      if (res.ok) {
+        onLogin()
+      } else {
+        const data = await res.json()
+        setError(data.error ?? 'Incorrect username or password.')
+        gsap.to(btnRef.current, { scale: 1, duration: 0.2 })
+        gsap.to(containerRef.current, { x: -7, duration: 0.06, yoyo: true, repeat: 5, ease: 'power2.inOut' })
+      }
+    } catch {
+      setError('Network error. Please try again.')
+      gsap.to(btnRef.current, { scale: 1, duration: 0.2 })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fieldClass = 'flex items-center gap-3 bg-[#1a1a1a] border border-[#252525] rounded-2xl px-5 h-[62px] focus-within:border-rose-700/40 transition-colors group'
+  const inputClass = 'w-full bg-transparent text-white text-sm placeholder-[#3a3a3a] outline-none leading-none'
+
+  return (
+    <div
+      ref={containerRef}
+      className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center px-6 py-10"
+    >
+      {/* Header */}
+      <div ref={headerRef} className="flex flex-col items-center mb-10" style={{ opacity: 0 }}>
+        <h1 className="text-5xl text-white leading-none" style={{ fontFamily: 'var(--font-dancing)' }}>
+          Straus Tailor Shop
+        </h1>
+      </div>
+
+      <form onSubmit={handleSubmit} className="w-full max-w-md">
+        <div ref={formRef} className="space-y-3">
+          {/* Username */}
+          <label className={fieldClass} style={{ opacity: 0 }}>
+            <span className="text-[#555] group-focus-within:text-rose-400/70 transition-colors shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-[#555] group-focus-within:text-rose-400/70 transition-colors leading-none mb-1">
+                Username
+              </p>
+              <input
+                className={inputClass}
+                placeholder="Enter username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                autoFocus
+              />
+            </div>
+          </label>
+
+          {/* Password */}
+          <label className={fieldClass} style={{ opacity: 0 }}>
+            <span className="text-[#555] group-focus-within:text-rose-400/70 transition-colors shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-[#555] group-focus-within:text-rose-400/70 transition-colors leading-none mb-1">
+                Password
+              </p>
+              <input
+                className={inputClass}
+                placeholder="Enter password"
+                type={showPw ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPw((v) => !v)}
+              className="text-[#444] hover:text-rose-400/70 transition-colors shrink-0"
+              tabIndex={-1}
+            >
+              {showPw ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              )}
+            </button>
+          </label>
+        </div>
+
+        {error && (
+          <p className="text-red-400 text-xs text-center px-2 mt-3">{error}</p>
+        )}
+
+        <button
+          ref={btnRef}
+          type="submit"
+          disabled={loading}
+          className="w-full h-[58px] bg-gradient-to-r from-rose-800 to-red-800 hover:from-rose-700 hover:to-red-700 text-white text-sm font-semibold tracking-[0.08em] uppercase rounded-2xl mt-4 flex items-center justify-center gap-2.5 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-[0_4px_24px_rgba(159,18,57,0.4)]"
+          style={{ opacity: 0 }}
+        >
+          {loading ? (
+            <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+              <polyline points="10 17 15 12 10 7" />
+              <line x1="15" y1="12" x2="3" y2="12" />
+            </svg>
+          )}
+          {loading ? 'Signing in…' : 'Sign In'}
+        </button>
+      </form>
+
+    </div>
+  )
+}

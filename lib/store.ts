@@ -48,9 +48,18 @@ export function getOrderById(id: string): Order | undefined {
   return readOrders().find((o) => o.id === id)
 }
 
+function generateOrderNumber(existing: Order[]): number {
+  const used = new Set(existing.map((o) => o.orderNumber))
+  let num: number
+  do {
+    num = Math.floor(10000 + Math.random() * 90000)
+  } while (used.has(num))
+  return num
+}
+
 export function createOrder(input: CreateOrderInput): Order {
   const store = readStore()
-  const orderNumber = store.nextNumber
+  const orderNumber = generateOrderNumber(store.orders)
   const order: Order = {
     id: `#${orderNumber}`,
     orderNumber,
@@ -60,9 +69,11 @@ export function createOrder(input: CreateOrderInput): Order {
     dueDate: input.dueDate,
     notes: input.notes,
     status: 'active',
-    paid: false,
+    paid: input.paid ?? false,
     pickedUp: false,
     createdAt: new Date().toISOString(),
+    ...(input.totalAmount != null && { totalAmount: input.totalAmount }),
+    ...(input.itemCount   != null && { itemCount:   input.itemCount }),
   }
   store.orders.push(order)
   store.nextNumber = orderNumber + 1

@@ -1,5 +1,5 @@
-import CustomerForm from '@/components/CustomerForm'
+import AppShell from '@/components/AppShell'
 
 export default function Home() {
-  return <CustomerForm />
+  return <AppShell />
 }
