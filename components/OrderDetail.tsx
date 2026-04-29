@@ -12,16 +12,25 @@ interface Props {
   onUpdate: (order: Order) => void
 }
 
+function formatPhone(raw: string): string {
+  const digits = raw.replace(/\D/g, '')
+  if (digits.length === 10)
+    return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`
+  if (digits.length === 11 && digits[0] === '1')
+    return `+1 (${digits.slice(1,4)}) ${digits.slice(4,7)}-${digits.slice(7)}`
+  return raw
+}
+
 function formatDate(iso: string) {
   if (!iso) return '—'
   const d = new Date(iso + 'T00:00:00')
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
-  notified: 'bg-purple-500/15 text-purple-400 border-purple-500/20',
-  completed: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
+const STATUS_CONFIG: Record<string, { label: string; badge: string }> = {
+  active:    { label: 'Active',    badge: 'bg-amber-500/12 text-amber-300 border-amber-500/25' },
+  notified:  { label: 'Ready',     badge: 'bg-sky-500/12 text-sky-300 border-sky-500/25' },
+  completed: { label: 'Completed', badge: 'bg-white/[0.06] text-[#888] border-white/[0.1]' },
 }
 
 export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: Props) {
@@ -82,8 +91,8 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
         disabled={!!disabled || isLoading}
         className={`flex items-center gap-2 h-11 px-4 rounded-xl border text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
           active
-            ? 'bg-white/10 border-white/20 text-white'
-            : 'bg-[#1a1a1a] border-[#2a2a2a] text-[#888] hover:border-[#3a3a3a] hover:text-white'
+            ? 'bg-white/[0.08] border-white/[0.15] text-white'
+            : 'bg-transparent border-white/[0.08] text-[#777] hover:border-white/[0.16] hover:text-white'
         }`}
       >
         {isLoading ? (
@@ -102,7 +111,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
     <>
       <div ref={panelRef} className="flex flex-col h-full" style={{ opacity: 0 }}>
         {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[#1e1e1e]">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
           <button
             onClick={goBack}
             className="flex items-center gap-2 text-[#666] hover:text-white transition-colors text-sm"
@@ -113,9 +122,9 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
             Back
           </button>
           <div className="flex items-center gap-2">
-            <span className="text-white font-semibold">{order.id}</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${STATUS_COLORS[order.status]}`}>
-              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+            <span className="text-[#888] font-mono text-sm">{order.id}</span>
+            <span className={`text-[11px] px-2.5 py-[3px] rounded-full border font-semibold ${STATUS_CONFIG[order.status]?.badge}`}>
+              {STATUS_CONFIG[order.status]?.label}
             </span>
           </div>
         </div>
@@ -126,21 +135,21 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
           <div className="space-y-3">
             {[
               { label: 'Customer', value: order.customerName },
-              { label: 'Phone', value: order.phone },
+              { label: 'Phone', value: formatPhone(order.phone) },
               { label: 'Drop-off Date', value: formatDate(order.dropoffDate) },
               { label: 'Due Date', value: formatDate(order.dueDate) },
               ...(order.totalAmount != null ? [{ label: 'Total Amount', value: `$${order.totalAmount.toFixed(2)}` }] : []),
               ...(order.itemCount    != null ? [{ label: 'Items', value: `${order.itemCount} item${order.itemCount !== 1 ? 's' : ''}` }] : []),
             ].map(({ label, value }) => (
-              <div key={label} className="flex justify-between items-center py-1 border-b border-[#1a1a1a] last:border-0">
+              <div key={label} className="flex justify-between items-center py-2 border-b border-white/[0.05] last:border-0">
                 <span className="text-sm text-[#888]">{label}</span>
                 <span className="text-sm text-white font-semibold">{value}</span>
               </div>
             ))}
             {order.notes && (
               <div>
-                <span className="text-sm text-[#555] block mb-1.5">Notes</span>
-                <p className="text-sm text-white bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl px-4 py-3 leading-relaxed">
+                <span className="text-[11px] uppercase tracking-[0.18em] font-medium text-[#555] block mb-1.5">Notes</span>
+                <p className="text-sm text-white bg-white/[0.04] border border-white/[0.07] rounded-xl px-4 py-3 leading-relaxed">
                   {order.notes}
                 </p>
               </div>
@@ -154,12 +163,12 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
                 Paid
               </span>
             ) : (
-              <span className="text-xs px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 font-medium">
+              <span className="text-xs px-3 py-1 rounded-full bg-white/[0.05] text-[#777] border border-white/[0.09] font-medium">
                 Unpaid
               </span>
             )}
             {order.pickedUp && (
-              <span className="text-xs px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">
+              <span className="text-xs px-3 py-1 rounded-full bg-white/[0.06] text-[#888] border border-white/[0.1] font-medium">
                 Picked Up
               </span>
             )}
@@ -167,7 +176,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
 
           {/* Actions */}
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-[#444] mb-3">Actions</p>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-[#555] font-medium mb-3">Actions</p>
             <div className="grid grid-cols-2 gap-2">
               <ActionButton
                 label={order.paid ? 'Paid ✓' : 'Mark Paid'}
@@ -223,7 +232,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
           </div>
 
           {/* Meta */}
-          <div className="space-y-2 pt-2 border-t border-[#1a1a1a]">
+          <div className="space-y-2 pt-2 border-t border-white/[0.06]">
             <div className="flex justify-between">
               <span className="text-xs text-[#666]">Created</span>
               <span className="text-xs text-[#aaa]">
@@ -249,7 +258,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
                   <span className="text-xs text-[#666]">
                     SMS {times.length > 1 ? `#${i + 1}` : 'Sent'}
                   </span>
-                  <span className="text-xs text-purple-400/80">
+                  <span className="text-xs text-sky-400/70">
                     {new Date(t).toLocaleString()}
                   </span>
                 </div>

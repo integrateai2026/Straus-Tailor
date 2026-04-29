@@ -23,7 +23,7 @@ export default function AppShell() {
   if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />
 
   return (
-    <div className="relative">
+    <div className="relative min-h-screen">
       {view === 'customer' ? (
         <>
           <CustomerForm />
