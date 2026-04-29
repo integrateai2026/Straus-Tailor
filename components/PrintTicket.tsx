@@ -22,18 +22,19 @@ function TicketBody({ order }: { order: Order }) {
   return (
     <div className="bg-white text-black w-full max-w-sm mx-auto">
       {/* Header */}
-      <div className="pt-10 pb-6 px-8 flex flex-col items-center border-b border-gray-200">
+      <div className="pt-7 pb-4 px-8 flex flex-col items-center border-b border-gray-200">
         <p className="text-[28px] text-gray-800 leading-none" style={{ fontFamily: 'var(--font-dancing)' }}>
           Straus Tailor Shop
         </p>
-        <p className="text-[10px] tracking-[0.28em] text-gray-400 uppercase mt-2">Order Ticket</p>
+        <p className="text-[11px] text-gray-500 mt-1">1326 25th St S Suite B, Fargo, ND 58103</p>
+        <p className="text-[11px] text-gray-500">(701) 929-8262</p>
       </div>
 
       {/* Order ID + paid badge */}
-      <div className="py-8 flex flex-col items-center border-b border-dashed border-gray-200">
-        <p className="text-xs tracking-widest text-gray-400 uppercase mb-2">Order ID</p>
+      <div className="py-5 flex flex-col items-center border-b border-dashed border-gray-200">
+        <p className="text-xs tracking-widest text-gray-400 uppercase mb-1.5">Order ID</p>
         <p className="text-5xl font-bold tracking-tight text-black">{order.id}</p>
-        <span className={`mt-4 px-4 py-1 rounded-full text-[11px] font-bold tracking-widest uppercase border ${
+        <span className={`mt-3 px-4 py-1 rounded-full text-[11px] font-bold tracking-widest uppercase border ${
           order.paid
             ? 'text-emerald-700 border-emerald-400 bg-emerald-50'
             : 'text-red-600 border-red-300 bg-red-50'
@@ -43,7 +44,7 @@ function TicketBody({ order }: { order: Order }) {
       </div>
 
       {/* Details */}
-      <div className="px-8 py-6 space-y-4 border-b border-dashed border-gray-200">
+      <div className="px-8 py-4 space-y-3 border-b border-dashed border-gray-200">
         {[
           { icon: <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></>, label: 'Customer', value: order.customerName },
           { icon: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 2H6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z" />, label: 'Phone', value: order.phone },
@@ -71,18 +72,15 @@ function TicketBody({ order }: { order: Order }) {
             </svg>
             <div>
               <p className="text-[10px] uppercase tracking-widest text-gray-400">Notes</p>
-              <p className="text-sm text-gray-800 leading-snug whitespace-pre-wrap">{order.notes}</p>
+              <p className="text-sm font-semibold text-gray-900 leading-snug whitespace-pre-wrap">{order.notes}</p>
             </div>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="px-8 py-5 flex flex-col items-center gap-1 text-center border-t border-gray-100">
-        <p className="text-sm text-gray-700" style={{ fontFamily: 'var(--font-dancing)' }}>Straus Tailor Shop</p>
-        <p className="text-[11px] text-gray-500">1326 25th St S Suite B, Fargo, ND 58103</p>
-        <p className="text-[11px] text-gray-500">(701) 929-8262</p>
-        <p className="text-[10px] text-gray-400 mt-1 tracking-wide">Thank you for your business!</p>
+      <div className="px-8 py-4 flex items-center justify-center">
+        <p className="text-[11px] text-gray-400 tracking-wide">Thank you for your business!</p>
       </div>
     </div>
   )
