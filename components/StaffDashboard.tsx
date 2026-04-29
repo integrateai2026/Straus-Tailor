@@ -189,7 +189,11 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                   <p className="text-xs text-[#2a2a2a] mt-1">{search ? 'Try a different search' : 'Orders will appear here'}</p>
                 </div>
               ) : orders.map((order) => {
-                const due = getDueInfo(order.dueDate)
+                const dueRaw = getDueInfo(order.dueDate)
+                // Completed orders are done — never show overdue styling
+                const due = order.status === 'completed'
+                  ? { ...dueRaw, overdue: false, color: 'text-[#555]', bg: 'bg-[#181818]', ring: '' }
+                  : dueRaw
                 return (
                   <button
                     key={order.id}
