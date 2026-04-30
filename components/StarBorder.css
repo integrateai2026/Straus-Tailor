@@ -1,0 +1,37 @@
+/* Bottom: travels left → right */
+@keyframes star-movement-bottom {
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Top: travels right → left (negative direction so center crosses the viewport) */
+@keyframes star-movement-top {
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
+}
+
+.star-border-bottom {
+  position: absolute;
+  width: 300%;
+  height: 50%;
+  bottom: 0;
+  right: 0;
+  animation: star-movement-bottom linear infinite;
+  pointer-events: none;
+  /* Fade in from left, fade out to right — hides hard entry/exit edges */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+  mask-image:         linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+}
+
+.star-border-top {
+  position: absolute;
+  width: 300%;
+  height: 50%;
+  top: 0;
+  left: 0;
+  animation: star-movement-top linear infinite;
+  pointer-events: none;
+  /* Fade in from right, fade out to left */
+  -webkit-mask-image: linear-gradient(to left, transparent 0%, black 12%, black 88%, transparent 100%);
+  mask-image:         linear-gradient(to left, transparent 0%, black 12%, black 88%, transparent 100%);
+}

@@ -4,6 +4,48 @@ import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { Order } from '@/lib/types'
 import PrintTicket from './PrintTicket'
+import './StarBorder.css'
+
+/* ── Star border field wrapper ────────────────────────────── */
+const STAR_COLOR = 'rgba(255,255,255,0.9)'
+const STAR_SPEED = '3.5s'
+
+function FieldWrap({
+  fieldId,
+  focused,
+  onFocus,
+  onBlur,
+  children,
+}: {
+  fieldId: string
+  focused: string
+  onFocus: (id: string) => void
+  onBlur: () => void
+  children: React.ReactNode
+}) {
+  const active = focused === fieldId
+  return (
+    <div
+      className="relative rounded-xl overflow-hidden"
+      style={{ padding: active ? '1.5px' : '1.5px', background: active ? 'transparent' : 'transparent' }}
+      onFocus={() => onFocus(fieldId)}
+      onBlur={onBlur}
+    >
+      {/* Always-present container — active state shows the star, inactive is transparent */}
+      <div
+        className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none"
+        style={{ opacity: active ? 1 : 0, transition: 'opacity 0.25s ease' }}
+      >
+        <div className="star-border-bottom" style={{ background: `radial-gradient(circle, ${STAR_COLOR}, transparent 12%)`, animationDuration: STAR_SPEED }} />
+        <div className="star-border-top"    style={{ background: `radial-gradient(circle, ${STAR_COLOR}, transparent 12%)`, animationDuration: STAR_SPEED }} />
+      </div>
+      {/* Field sits on top with 1.5px inset so the border ring is visible */}
+      <div className="relative rounded-[10px] overflow-hidden" style={{ zIndex: 1 }}>
+        {children}
+      </div>
+    </div>
+  )
+}
 
 /* ── Date helpers ─────────────────────────────────────────── */
 function localDate(offset = 0): string {
@@ -77,6 +119,16 @@ export default function CustomerForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [order, setOrder] = useState<Order | null>(null)
+  const [focused, setFocused] = useState('name')
+  const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function handleFocus(id: string) {
+    if (blurTimer.current) clearTimeout(blurTimer.current)
+    setFocused(id)
+  }
+  function handleBlur() {
+    blurTimer.current = setTimeout(() => setFocused(''), 80)
+  }
 
   const containerRef = useRef<HTMLDivElement>(null)
   const headerRef    = useRef<HTMLDivElement>(null)
@@ -151,43 +203,53 @@ export default function CustomerForm() {
             <div ref={fieldsRef} className="space-y-2.5">
 
               {/* Full Name */}
-              <label className={`${FIELD} h-[64px] cursor-text`}>
-                <span className="text-[#6B7280] shrink-0">{I.user}</span>
-                <div className="flex-1 min-w-0">
-                  <p className={LABEL}>Full Name</p>
-                  <input className={INPUT} placeholder="Customer name" value={form.customerName}
-                    onChange={e => setForm(f => ({ ...f, customerName: e.target.value }))}
-                    autoComplete="off" autoFocus />
-                </div>
-              </label>
+              <FieldWrap fieldId="name" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                <label className={`${FIELD} h-[64px] cursor-text`}>
+                  <span className="text-[#6B7280] shrink-0">{I.user}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className={LABEL}>Full Name</p>
+                    <input className={INPUT} placeholder="Customer name" value={form.customerName}
+                      onChange={e => setForm(f => ({ ...f, customerName: e.target.value }))}
+                      autoComplete="off" autoFocus />
+                  </div>
+                </label>
+              </FieldWrap>
 
               {/* Phone */}
-              <label className={`${FIELD} h-[64px] cursor-text`}>
-                <span className="text-[#6B7280] shrink-0">{I.phone}</span>
-                <div className="flex-1 min-w-0">
-                  <p className={LABEL}>Phone Number</p>
-                  <input className={INPUT} placeholder="(555) 000-0000" type="tel" value={form.phone}
-                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                    autoComplete="off" />
-                </div>
-              </label>
+              <FieldWrap fieldId="phone" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                <label className={`${FIELD} h-[64px] cursor-text`}>
+                  <span className="text-[#6B7280] shrink-0">{I.phone}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className={LABEL}>Phone Number</p>
+                    <input className={INPUT} placeholder="(555) 000-0000" type="tel" value={form.phone}
+                      onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                      autoComplete="off" />
+                  </div>
+                </label>
+              </FieldWrap>
 
               {/* Dates — side by side */}
               <div className="grid grid-cols-2 gap-2.5">
-                <DateField label="Drop-off Date" value={form.dropoffDate} onChange={v => setForm(f => ({ ...f, dropoffDate: v }))} />
-                <DateField label="Due Date" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
+                <FieldWrap fieldId="dropoff" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                  <DateField label="Drop-off Date" value={form.dropoffDate} onChange={v => setForm(f => ({ ...f, dropoffDate: v }))} />
+                </FieldWrap>
+                <FieldWrap fieldId="due" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                  <DateField label="Due Date" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
+                </FieldWrap>
               </div>
 
               {/* Total Amount */}
-              <label className={`${FIELD} h-[64px] cursor-text`}>
-                <span className="text-[#6B7280] shrink-0">{I.dollar}</span>
-                <div className="flex-1 min-w-0">
-                  <p className={LABEL}>Total Amount</p>
-                  <input className={INPUT} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
-                    onChange={e => setForm(f => ({ ...f, totalAmount: e.target.value.replace(/[^0-9.]/g, '') }))}
-                    autoComplete="off" />
-                </div>
-              </label>
+              <FieldWrap fieldId="amount" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                <label className={`${FIELD} h-[64px] cursor-text`}>
+                  <span className="text-[#6B7280] shrink-0">{I.dollar}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className={LABEL}>Total Amount</p>
+                    <input className={INPUT} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
+                      onChange={e => setForm(f => ({ ...f, totalAmount: e.target.value.replace(/[^0-9.]/g, '') }))}
+                      autoComplete="off" />
+                  </div>
+                </label>
+              </FieldWrap>
 
               {/* Paid / Unpaid button group */}
               <div className="grid grid-cols-2 gap-3">
@@ -210,34 +272,38 @@ export default function CustomerForm() {
               </div>
 
               {/* Items stepper */}
-              <div className={`${FIELD} h-[64px]`}>
-                <span className="text-[#6B7280] shrink-0">{I.tag}</span>
-                <div className="flex-1 min-w-0">
-                  <p className={LABEL}>Number of Items</p>
-                  <span className="text-[16px] text-white leading-none">{form.itemCount}</span>
+              <FieldWrap fieldId="items" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                <div className={`${FIELD} h-[64px]`}>
+                  <span className="text-[#6B7280] shrink-0">{I.tag}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className={LABEL}>Number of Items</p>
+                    <span className="text-[16px] text-white leading-none">{form.itemCount}</span>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: Math.max(1, f.itemCount - 1) }))}
+                      className="w-8 h-8 rounded-lg bg-[#222] hover:bg-[#2a2a2a] text-[#9CA3AF] hover:text-white text-lg font-medium flex items-center justify-center transition-colors leading-none border border-[#2a2a2a]">
+                      −
+                    </button>
+                    <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: f.itemCount + 1 }))}
+                      className="w-8 h-8 rounded-lg bg-[#222] hover:bg-[#2a2a2a] text-[#9CA3AF] hover:text-white text-lg font-medium flex items-center justify-center transition-colors leading-none border border-[#2a2a2a]">
+                      +
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: Math.max(1, f.itemCount - 1) }))}
-                    className="w-8 h-8 rounded-lg bg-[#222] hover:bg-[#2a2a2a] text-[#9CA3AF] hover:text-white text-lg font-medium flex items-center justify-center transition-colors leading-none border border-[#2a2a2a]">
-                    −
-                  </button>
-                  <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: f.itemCount + 1 }))}
-                    className="w-8 h-8 rounded-lg bg-[#222] hover:bg-[#2a2a2a] text-[#9CA3AF] hover:text-white text-lg font-medium flex items-center justify-center transition-colors leading-none border border-[#2a2a2a]">
-                    +
-                  </button>
-                </div>
-              </div>
+              </FieldWrap>
 
               {/* Notes */}
-              <label className={`${FIELD} items-start py-4 cursor-text h-auto min-h-[90px]`}>
-                <span className="text-[#6B7280] shrink-0 mt-0.5">{I.notes}</span>
-                <div className="flex-1">
-                  <p className={LABEL}>Notes (optional)</p>
-                  <textarea className="w-full bg-transparent text-[#F9FAFB] text-[15px] placeholder-[#374151] outline-none leading-relaxed resize-none"
-                    placeholder="Hem pants, take in waist 1 inch…" rows={3}
-                    value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-                </div>
-              </label>
+              <FieldWrap fieldId="notes" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                <label className={`${FIELD} items-start py-4 cursor-text h-auto min-h-[90px]`}>
+                  <span className="text-[#6B7280] shrink-0 mt-0.5">{I.notes}</span>
+                  <div className="flex-1">
+                    <p className={LABEL}>Notes (optional)</p>
+                    <textarea className="w-full bg-transparent text-[#F9FAFB] text-[15px] placeholder-[#374151] outline-none leading-relaxed resize-none"
+                      placeholder="Hem pants, take in waist 1 inch…" rows={3}
+                      value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+                  </div>
+                </label>
+              </FieldWrap>
 
             </div>
           </div>
