@@ -3,7 +3,7 @@ import { getOrderById, updateOrder } from '@/lib/store'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const order = getOrderById(decodeURIComponent(id))
+  const order = await getOrderById(decodeURIComponent(id))
   if (!order) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(order)
 }
@@ -15,13 +15,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   // Auto-record pickup timestamp on first mark as picked up
   if (body.pickedUp === true) {
-    const current = getOrderById(decodedId)
+    const current = await getOrderById(decodedId)
     if (!current?.pickedUpAt) {
       body.pickedUpAt = new Date().toISOString()
     }
   }
 
-  const order = updateOrder(decodedId, body)
+  const order = await updateOrder(decodedId, body)
   if (!order) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(order)
 }

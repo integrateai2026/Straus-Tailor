@@ -30,14 +30,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Append this send time to the notifiedAt history
-    const current = getOrderById(orderId)
+    const current = await getOrderById(orderId)
     const existing: string[] = Array.isArray(current?.notifiedAt)
       ? current.notifiedAt
       : current?.notifiedAt
-        ? [current.notifiedAt as unknown as string]  // backwards compat with old string value
+        ? [current.notifiedAt as unknown as string]
         : []
 
-    const updated = updateOrder(orderId, {
+    const updated = await updateOrder(orderId, {
       status: 'notified',
       notifiedAt: [...existing, new Date().toISOString()],
     })

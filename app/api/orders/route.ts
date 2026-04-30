@@ -6,24 +6,10 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const query = searchParams.get('q')?.toLowerCase()
-  const status = searchParams.get('status')
+  const status = searchParams.get('status') ?? undefined
+  const query  = searchParams.get('q')      ?? undefined
 
-  let orders = getAllOrders()
-
-  if (status && status !== 'all') {
-    orders = orders.filter((o) => o.status === status)
-  }
-
-  if (query) {
-    orders = orders.filter(
-      (o) =>
-        o.customerName.toLowerCase().includes(query) ||
-        o.phone.includes(query) ||
-        o.id.includes(query)
-    )
-  }
-
+  const orders = await getAllOrders(status, query)
   return NextResponse.json(orders)
 }
 
@@ -52,9 +38,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid date format' }, { status: 400 })
     }
 
-    const order = createOrder(input)
+    const order = await createOrder(input)
     return NextResponse.json(order, { status: 201 })
-  } catch {
+  } catch (err) {
+    console.error(err)
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 }

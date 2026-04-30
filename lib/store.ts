@@ -1,91 +1,97 @@
-import fs from 'fs'
-import path from 'path'
+import { supabase } from './supabase'
 import { Order, CreateOrderInput, UpdateOrderInput } from './types'
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'orders.json')
-
-function readOrders(): Order[] {
-  try {
-    if (!fs.existsSync(DATA_FILE)) {
-      fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true })
-      fs.writeFileSync(DATA_FILE, JSON.stringify({ orders: [], nextNumber: 10001 }, null, 2))
-      return []
-    }
-    const raw = fs.readFileSync(DATA_FILE, 'utf-8')
-    return JSON.parse(raw).orders as Order[]
-  } catch {
-    return []
+// Map Supabase snake_case row → camelCase Order
+function toOrder(row: Record<string, unknown>): Order {
+  return {
+    id:           row.id           as string,
+    orderNumber:  row.order_number as number,
+    customerName: row.customer_name as string,
+    phone:        row.phone        as string,
+    dropoffDate:  row.dropoff_date as string,
+    dueDate:      row.due_date     as string,
+    notes:        row.notes        as string,
+    status:       row.status       as Order['status'],
+    paid:         row.paid         as boolean,
+    pickedUp:     row.picked_up    as boolean,
+    createdAt:    row.created_at   as string,
+    ...(row.notified_at  ? { notifiedAt:  row.notified_at  as string[] } : {}),
+    ...(row.picked_up_at ? { pickedUpAt:  row.picked_up_at as string   } : {}),
+    ...(row.completed_at ? { completedAt: row.completed_at as string   } : {}),
+    ...(row.total_amount != null ? { totalAmount: row.total_amount as number } : {}),
+    ...(row.item_count   != null ? { itemCount:   row.item_count   as number } : {}),
   }
 }
 
-function readStore(): { orders: Order[]; nextNumber: number } {
-  try {
-    if (!fs.existsSync(DATA_FILE)) {
-      const initial = { orders: [], nextNumber: 10001 }
-      fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true })
-      fs.writeFileSync(DATA_FILE, JSON.stringify(initial, null, 2))
-      return initial
-    }
-    const raw = fs.readFileSync(DATA_FILE, 'utf-8')
-    return JSON.parse(raw)
-  } catch {
-    return { orders: [], nextNumber: 10001 }
+async function uniqueOrderNumber(): Promise<number> {
+  for (let i = 0; i < 20; i++) {
+    const num = Math.floor(10000 + Math.random() * 90000)
+    const { data } = await supabase
+      .from('orders').select('id').eq('order_number', num).maybeSingle()
+    if (!data) return num
   }
+  throw new Error('Could not generate a unique order number')
 }
 
-function writeStore(store: { orders: Order[]; nextNumber: number }) {
-  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true })
-  fs.writeFileSync(DATA_FILE, JSON.stringify(store, null, 2))
-}
-
-export function getAllOrders(): Order[] {
-  return readOrders().sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  )
-}
-
-export function getOrderById(id: string): Order | undefined {
-  return readOrders().find((o) => o.id === id)
-}
-
-function generateOrderNumber(existing: Order[]): number {
-  const used = new Set(existing.map((o) => o.orderNumber))
-  let num: number
-  do {
-    num = Math.floor(10000 + Math.random() * 90000)
-  } while (used.has(num))
-  return num
-}
-
-export function createOrder(input: CreateOrderInput): Order {
-  const store = readStore()
-  const orderNumber = generateOrderNumber(store.orders)
-  const order: Order = {
-    id: `#${orderNumber}`,
-    orderNumber,
-    customerName: input.customerName,
-    phone: input.phone,
-    dropoffDate: input.dropoffDate,
-    dueDate: input.dueDate,
-    notes: input.notes,
-    status: 'active',
-    paid: input.paid ?? false,
-    pickedUp: false,
-    createdAt: new Date().toISOString(),
-    ...(input.totalAmount != null && { totalAmount: input.totalAmount }),
-    ...(input.itemCount   != null && { itemCount:   input.itemCount }),
+export async function getAllOrders(status?: string, query?: string): Promise<Order[]> {
+  let q = supabase.from('orders').select('*').order('created_at', { ascending: false })
+  if (status && status !== 'all') q = q.eq('status', status)
+  if (query) {
+    q = q.or(
+      `customer_name.ilike.%${query}%,phone.ilike.%${query}%,id.ilike.%${query}%`
+    )
   }
-  store.orders.push(order)
-  store.nextNumber = orderNumber + 1
-  writeStore(store)
-  return order
+  const { data, error } = await q
+  if (error) throw new Error(error.message)
+  return (data ?? []).map(toOrder)
 }
 
-export function updateOrder(id: string, input: UpdateOrderInput): Order | undefined {
-  const store = readStore()
-  const idx = store.orders.findIndex((o) => o.id === id)
-  if (idx === -1) return undefined
-  store.orders[idx] = { ...store.orders[idx], ...input }
-  writeStore(store)
-  return store.orders[idx]
+export async function getOrderById(id: string): Promise<Order | undefined> {
+  const { data } = await supabase.from('orders').select('*').eq('id', id).maybeSingle()
+  return data ? toOrder(data) : undefined
+}
+
+export async function createOrder(input: CreateOrderInput): Promise<Order> {
+  const orderNumber = await uniqueOrderNumber()
+  const { data, error } = await supabase
+    .from('orders')
+    .insert({
+      id:            `#${orderNumber}`,
+      order_number:  orderNumber,
+      customer_name: input.customerName,
+      phone:         input.phone,
+      dropoff_date:  input.dropoffDate,
+      due_date:      input.dueDate,
+      notes:         input.notes ?? '',
+      status:        'active',
+      paid:          input.paid ?? false,
+      picked_up:     false,
+      created_at:    new Date().toISOString(),
+      total_amount:  input.totalAmount ?? null,
+      item_count:    input.itemCount   ?? null,
+    })
+    .select()
+    .single()
+  if (error || !data) throw new Error(error?.message ?? 'Failed to create order')
+  return toOrder(data)
+}
+
+export async function updateOrder(
+  id: string,
+  input: UpdateOrderInput
+): Promise<Order | undefined> {
+  const patch: Record<string, unknown> = {}
+  if (input.status      !== undefined) patch.status       = input.status
+  if (input.paid        !== undefined) patch.paid         = input.paid
+  if (input.pickedUp    !== undefined) patch.picked_up    = input.pickedUp
+  if (input.pickedUpAt  !== undefined) patch.picked_up_at = input.pickedUpAt
+  if (input.notifiedAt  !== undefined) patch.notified_at  = input.notifiedAt
+  if (input.completedAt !== undefined) patch.completed_at = input.completedAt
+  if (input.totalAmount !== undefined) patch.total_amount = input.totalAmount
+  if (input.itemCount   !== undefined) patch.item_count   = input.itemCount
+
+  const { data, error } = await supabase
+    .from('orders').update(patch).eq('id', id).select().single()
+  if (error || !data) return undefined
+  return toOrder(data)
 }
