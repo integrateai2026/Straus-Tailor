@@ -74,13 +74,14 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
 
   useEffect(() => {
     const tl = gsap.timeline()
-    tl.fromTo(headerRef.current, { y: -16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' })
-    tl.fromTo(tabsRef.current,   { y: -8,  opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' }, '-=0.2')
+    if (headerRef.current) tl.fromTo(headerRef.current, { y: -16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' })
+    if (tabsRef.current)   tl.fromTo(tabsRef.current,   { y: -8,  opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' }, '-=0.2')
   }, [])
 
   useEffect(() => {
     if (!loading && listRef.current) {
-      gsap.fromTo(listRef.current.querySelectorAll('.order-row'),
+      const rows = listRef.current.querySelectorAll('.order-row')
+      if (rows.length) gsap.fromTo(rows,
         { y: 10, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.3, stagger: 0.04, ease: 'power2.out' }
       )

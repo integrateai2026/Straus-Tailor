@@ -4,7 +4,7 @@ import { verifyToken, COOKIE_NAME } from '@/lib/session'
 // These routes are accessible without a session
 const PUBLIC_ROUTES = ['/api/auth/login', '/api/auth/logout', '/api/auth/me']
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   // Only guard API routes
