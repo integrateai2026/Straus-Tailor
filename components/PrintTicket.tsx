@@ -18,6 +18,77 @@ function formatDate(iso: string): string {
   })
 }
 
+/* ── Thermal receipt layout — used only for printing ─────── */
+function ThermalBody({ order }: { order: Order }) {
+  const s = {
+    wrap:    { fontFamily: 'Arial, Helvetica, sans-serif', fontSize: '12px', color: '#000', background: '#fff', width: '72mm', padding: '3mm 4mm' } as React.CSSProperties,
+    center:  { textAlign: 'center' as const },
+    dash:    { borderTop: '1px dashed #000', margin: '5px 0' } as React.CSSProperties,
+    label:   { fontSize: '9px', letterSpacing: '1.5px', color: '#555', textTransform: 'uppercase' as const },
+    row:     { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px', gap: '6px' } as React.CSSProperties,
+    rowVal:  { fontSize: '11px', fontWeight: '600', textAlign: 'right' as const, maxWidth: '45mm', wordBreak: 'break-word' as const },
+  }
+  const rows = [
+    ['Customer', order.customerName],
+    ['Phone',    order.phone],
+    ['Drop-off', formatDate(order.dropoffDate)],
+    ['Due Date', formatDate(order.dueDate)],
+    ...(order.totalAmount != null ? [['Total',     `$${order.totalAmount.toFixed(2)}`]] : []),
+    ...(order.itemCount   != null ? [['Items',     `${order.itemCount} item${order.itemCount !== 1 ? 's' : ''}`]] : []),
+  ]
+  return (
+    <div style={s.wrap}>
+      {/* Header */}
+      <div style={{ ...s.center, paddingBottom: '4px' }}>
+        <p style={{ fontSize: '20px', fontFamily: 'var(--font-dancing)', lineHeight: 1.1, marginBottom: '2px' }}>Straus Tailor Shop</p>
+        <p style={{ fontSize: '10px', lineHeight: 1.4 }}>1326 25th St S Suite B, Fargo, ND 58103</p>
+        <p style={{ fontSize: '10px', lineHeight: 1.4 }}>(701) 929-8262</p>
+      </div>
+
+      <div style={s.dash} />
+
+      {/* Order ID */}
+      <div style={{ ...s.center, padding: '4px 0' }}>
+        <p style={{ fontSize: '9px', letterSpacing: '2px', color: '#555', marginBottom: '2px' }}>ORDER ID</p>
+        <p style={{ fontSize: '32px', fontWeight: '900', letterSpacing: '-1px', lineHeight: 1 }}>{order.id}</p>
+        <div style={{ marginTop: '6px', display: 'inline-block', border: '1px solid #000', borderRadius: '50px', padding: '2px 10px', fontSize: '9px', fontWeight: '700', letterSpacing: '1.5px' }}>
+          {order.paid ? '✓ PAID' : 'UNPAID'}
+        </div>
+      </div>
+
+      <div style={s.dash} />
+
+      {/* Details */}
+      <div style={{ padding: '2px 0' }}>
+        {rows.map(([label, value]) => (
+          <div key={label} style={s.row}>
+            <span style={s.label}>{label}</span>
+            <span style={s.rowVal}>{value}</span>
+          </div>
+        ))}
+      </div>
+
+      {order.notes && (
+        <>
+          <div style={s.dash} />
+          <div>
+            <p style={{ ...s.label, marginBottom: '3px' }}>Notes</p>
+            <p style={{ fontSize: '11px', fontWeight: '700', whiteSpace: 'pre-wrap' }}>{order.notes}</p>
+          </div>
+        </>
+      )}
+
+      <div style={s.dash} />
+
+      {/* Footer */}
+      <p style={{ ...s.center, fontSize: '10px', color: '#555', paddingTop: '2px' }}>
+        Thank you for your business!
+      </p>
+    </div>
+  )
+}
+
+/* ── Visual card layout — shown on screen ─────────────────── */
 function TicketBody({ order }: { order: Order }) {
   return (
     <div className="bg-white text-black w-full max-w-sm mx-auto">
@@ -143,10 +214,10 @@ export default function PrintTicket({ order, onPrint, onClose }: Props) {
         </div>
       </div>
 
-      {/* Print-only portal — direct child of <body> so display:none on siblings works */}
+      {/* Print-only portal — thermal 80mm receipt layout */}
       {mounted && createPortal(
         <div id="print-ticket" style={{ position: 'fixed', left: '-9999px', top: 0 }} aria-hidden="true">
-          <TicketBody order={order} />
+          <ThermalBody order={order} />
         </div>,
         document.body
       )}
