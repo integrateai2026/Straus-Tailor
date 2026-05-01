@@ -182,22 +182,19 @@ export default function PrintTicket({ order, onClose }: Omit<Props, 'onPrint'> &
   async function handlePrint() {
     if (printing || printed) return
     setPrinting(true)
-    try {
-      const res = await fetch('/api/printer/queue', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order }),
-      })
-      if (!res.ok) throw new Error(`Queue failed: ${res.status}`)
-      setPrinted(true)
-      // Auto-close after 1.5s so staff can move on
-      setTimeout(handleClose, 1500)
-    } catch (err) {
-      console.error('Print queue error:', err)
-      setPrinting(false)
-      // Fallback: open browser print dialog with thermal layout
-      window.print()
-    }
+
+    // Queue for thermal printer in background (works once Server Direct Print is configured)
+    fetch('/api/printer/queue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order }),
+    }).catch(() => {})
+
+    // Open browser print dialog immediately — works now via AirPrint / any printer
+    window.print()
+
+    setPrinted(true)
+    setTimeout(handleClose, 1500)
   }
 
   return (
