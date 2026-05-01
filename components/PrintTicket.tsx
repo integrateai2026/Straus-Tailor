@@ -157,11 +157,13 @@ function TicketBody({ order }: { order: Order }) {
   )
 }
 
-export default function PrintTicket({ order, onPrint, onClose }: Props) {
+export default function PrintTicket({ order, onClose }: Omit<Props, 'onPrint'> & { onPrint?: () => void }) {
   const [mounted, setMounted] = useState(false)
+  const [printing, setPrinting] = useState(false)
+  const [printed, setPrinted]   = useState(false)
   const backdropRef = useRef<HTMLDivElement>(null)
-  const ticketRef = useRef<HTMLDivElement>(null)
-  const actionsRef = useRef<HTMLDivElement>(null)
+  const ticketRef   = useRef<HTMLDivElement>(null)
+  const actionsRef  = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -173,8 +175,25 @@ export default function PrintTicket({ order, onPrint, onClose }: Props) {
 
   function handleClose() {
     const tl = gsap.timeline({ onComplete: onClose })
-    tl.to(ticketRef.current, { y: -20, opacity: 0, scale: 0.97, duration: 0.25, ease: 'power2.in' })
+    tl.to(ticketRef.current,  { y: -20, opacity: 0, scale: 0.97, duration: 0.25, ease: 'power2.in' })
     tl.to(backdropRef.current, { opacity: 0, duration: 0.2 }, '-=0.1')
+  }
+
+  async function handlePrint() {
+    if (printing || printed) return
+    setPrinting(true)
+    try {
+      await fetch('/api/printer/queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order }),
+      })
+      setPrinted(true)
+      // Auto-close after 1.5s so staff can move on
+      setTimeout(handleClose, 1500)
+    } catch {
+      setPrinting(false)
+    }
   }
 
   return (
@@ -201,15 +220,35 @@ export default function PrintTicket({ order, onPrint, onClose }: Props) {
             Close
           </button>
           <button
-            onClick={onPrint}
-            className="flex-1 h-12 rounded-xl bg-white text-black text-sm font-semibold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"
+            onClick={handlePrint}
+            disabled={printing || printed}
+            className={`flex-1 h-12 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all ${
+              printed
+                ? 'bg-emerald-500 text-white'
+                : 'bg-white text-black hover:bg-gray-100'
+            }`}
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 6 2 18 2 18 9" />
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-              <rect x="6" y="14" width="12" height="8" />
-            </svg>
-            Print Ticket
+            {printed ? (
+              <>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Sent to Printer!
+              </>
+            ) : printing ? (
+              <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+            ) : (
+              <>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9" />
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                  <rect x="6" y="14" width="12" height="8" />
+                </svg>
+                Print Ticket
+              </>
+            )}
           </button>
         </div>
       </div>

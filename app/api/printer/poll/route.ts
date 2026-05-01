@@ -1,21 +1,13 @@
+export const runtime = 'nodejs'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { buildReceipt } from '@/lib/escpos'
 import { Order } from '@/lib/types'
 
-// The printer polls this endpoint every 5 seconds.
-// If there's a pending job, we return ESC/POS bytes and mark it printed.
-// If nothing to print, return 204 No Content.
-
-export async function GET(req: NextRequest) {
-  // Optional: verify printer token
-  const token = req.nextUrl.searchParams.get('token')
-  if (process.env.PRINTER_TOKEN && token !== process.env.PRINTER_TOKEN) {
-    return new NextResponse(null, { status: 401 })
-  }
-
+async function handler(req: NextRequest) {
   // Fetch oldest pending job
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from('print_queue')
     .select('*')
     .eq('status', 'pending')
@@ -23,7 +15,7 @@ export async function GET(req: NextRequest) {
     .limit(1)
     .maybeSingle()
 
-  if (error || !data) {
+  if (!data) {
     return new NextResponse(null, { status: 204 })
   }
 
@@ -33,7 +25,7 @@ export async function GET(req: NextRequest) {
     .update({ status: 'printed', printed_at: new Date().toISOString() })
     .eq('id', data.id)
 
-  // Build ESC/POS receipt
+  // Build ESC/POS receipt bytes
   const order = data.order_data as Order
   const receipt = buildReceipt(order)
 
@@ -41,10 +33,9 @@ export async function GET(req: NextRequest) {
     status: 200,
     headers: {
       'Content-Type': 'application/octet-stream',
-      'Content-Length': receipt.length.toString(),
+      'Content-Length': String(receipt.length),
     },
   })
 }
 
-// Also support POST (some printer firmware uses POST)
-export { GET as POST }
+export { handler as GET, handler as POST }
