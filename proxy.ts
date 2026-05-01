@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken, COOKIE_NAME } from '@/lib/session'
 
 // These routes are accessible without a session
-const PUBLIC_ROUTES = ['/api/auth/login', '/api/auth/logout', '/api/auth/me']
+const PUBLIC_ROUTES = [
+  '/api/auth/login',
+  '/api/auth/logout',
+  '/api/auth/me',
+  '/api/printer/poll',   // Epson printer polls this — no browser session
+  '/api/printer/queue',  // Print Ticket button posts here from client
+]
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
