@@ -29,11 +29,12 @@ async function handler(req: NextRequest) {
   const order = data.order_data as Order
   const receipt = buildReceipt(order)
 
-  return new NextResponse(receipt, {
+  const body = new Uint8Array(receipt)
+  return new NextResponse(body, {
     status: 200,
     headers: {
       'Content-Type': 'application/octet-stream',
-      'Content-Length': String(receipt.length),
+      'Content-Length': String(body.length),
     },
   })
 }
