@@ -183,16 +183,20 @@ export default function PrintTicket({ order, onClose }: Omit<Props, 'onPrint'> &
     if (printing || printed) return
     setPrinting(true)
     try {
-      await fetch('/api/printer/queue', {
+      const res = await fetch('/api/printer/queue', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order }),
       })
+      if (!res.ok) throw new Error(`Queue failed: ${res.status}`)
       setPrinted(true)
       // Auto-close after 1.5s so staff can move on
       setTimeout(handleClose, 1500)
-    } catch {
+    } catch (err) {
+      console.error('Print queue error:', err)
       setPrinting(false)
+      // Fallback: open browser print dialog with thermal layout
+      window.print()
     }
   }
 
