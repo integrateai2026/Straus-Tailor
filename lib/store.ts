@@ -73,7 +73,16 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     .select()
     .single()
   if (error || !data) throw new Error(error?.message ?? 'Failed to create order')
-  return toOrder(data)
+  const order = toOrder(data)
+
+  // Auto-queue for thermal printer
+  await supabase.from('print_queue').insert({
+    order_id:   order.id,
+    order_data: order,
+    status:     'pending',
+  })
+
+  return order
 }
 
 export async function updateOrder(
