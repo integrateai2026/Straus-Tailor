@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { Order } from '@/lib/types'
+import { printDirect } from '@/lib/epos-direct'
 
 interface Props {
   order: Order
@@ -183,16 +184,30 @@ export default function PrintTicket({ order, onClose }: Omit<Props, 'onPrint'> &
     if (printing || printed) return
     setPrinting(true)
 
-    // Queue for thermal printer in background (works once Server Direct Print is configured)
-    fetch('/api/printer/queue', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ order }),
-    }).catch(() => {})
+    // Layer 1: Direct ePOS XML to printer (instant, works on shop WiFi)
+    const directOk = await printDirect(order)
+    if (directOk) {
+      setPrinted(true)
+      setTimeout(handleClose, 1500)
+      return
+    }
 
-    // Open browser print dialog immediately — works now via AirPrint / any printer
+    // Layer 2: Queue for Server Direct Print (~5s delay, works anywhere)
+    try {
+      const res = await fetch('/api/printer/queue', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ order }),
+      })
+      if (res.ok) {
+        setPrinted(true)
+        setTimeout(handleClose, 1500)
+        return
+      }
+    } catch { /* fall through */ }
+
+    // Layer 3: Browser print dialog (last resort)
     window.print()
-
     setPrinted(true)
     setTimeout(handleClose, 1500)
   }
