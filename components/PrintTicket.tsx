@@ -162,6 +162,7 @@ export default function PrintTicket({ order, onClose }: Omit<Props, 'onPrint'> &
   const [mounted, setMounted] = useState(false)
   const [printing, setPrinting] = useState(false)
   const [printed, setPrinted]   = useState(false)
+  const [status, setStatus]     = useState('')
   const backdropRef = useRef<HTMLDivElement>(null)
   const ticketRef   = useRef<HTMLDivElement>(null)
   const actionsRef  = useRef<HTMLDivElement>(null)
@@ -185,14 +186,17 @@ export default function PrintTicket({ order, onClose }: Omit<Props, 'onPrint'> &
     setPrinting(true)
 
     // Layer 1: Direct ePOS XML to printer (instant, works on shop WiFi)
+    setStatus('Connecting to printer…')
     const directOk = await printDirect(order)
     if (directOk) {
+      setStatus('Printing!')
       setPrinted(true)
       setTimeout(handleClose, 1500)
       return
     }
 
     // Layer 2: Queue for Server Direct Print (~5s delay, works anywhere)
+    setStatus('Sending to print queue…')
     try {
       const res = await fetch('/api/printer/queue', {
         method:  'POST',
@@ -200,6 +204,7 @@ export default function PrintTicket({ order, onClose }: Omit<Props, 'onPrint'> &
         body:    JSON.stringify({ order }),
       })
       if (res.ok) {
+        setStatus('Queued — printing shortly')
         setPrinted(true)
         setTimeout(handleClose, 1500)
         return
@@ -207,6 +212,7 @@ export default function PrintTicket({ order, onClose }: Omit<Props, 'onPrint'> &
     } catch { /* fall through */ }
 
     // Layer 3: Browser print dialog (last resort)
+    setStatus('Opening print dialog…')
     window.print()
     setPrinted(true)
     setTimeout(handleClose, 1500)
@@ -228,7 +234,11 @@ export default function PrintTicket({ order, onClose }: Omit<Props, 'onPrint'> &
           <TicketBody order={order} />
         </div>
 
-        <div ref={actionsRef} className="flex gap-3 mt-6 w-full max-w-sm" style={{ opacity: 0 }}>
+        {status ? (
+          <p className="mt-4 text-xs text-white/60 tracking-wide text-center">{status}</p>
+        ) : null}
+
+        <div ref={actionsRef} className="flex gap-3 mt-3 w-full max-w-sm" style={{ opacity: 0 }}>
           <button
             onClick={handleClose}
             className="flex-1 h-12 rounded-xl border border-white/20 text-white/70 text-sm font-medium hover:bg-white/10 transition-colors"
