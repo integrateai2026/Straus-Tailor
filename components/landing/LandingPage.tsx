@@ -274,30 +274,31 @@ function Services() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // Slide-only animations — no opacity so content is always visible
       gsap.from(headerRef.current, {
-        opacity: 0, y: 50, duration: 0.9, ease: 'power2.out',
-        scrollTrigger: { trigger: headerRef.current, start: 'top 85%', once: true },
+        y: 40, duration: 0.9, ease: 'power2.out',
+        scrollTrigger: { trigger: headerRef.current, start: 'top 92%', once: true },
       })
       gsap.from(garmentRef.current, {
-        opacity: 0, y: 40, duration: 0.8, ease: 'power2.out',
-        scrollTrigger: { trigger: garmentRef.current, start: 'top 88%', once: true },
+        y: 30, duration: 0.8, ease: 'power2.out',
+        scrollTrigger: { trigger: garmentRef.current, start: 'top 92%', once: true },
       })
       if (garGridRef.current) {
         gsap.from(Array.from(garGridRef.current.children), {
-          opacity: 0, y: 22, scale: 0.96,
-          stagger: 0.03, duration: 0.45, ease: 'power2.out',
-          scrollTrigger: { trigger: garGridRef.current, start: 'top 88%', once: true },
+          y: 18, scale: 0.97,
+          stagger: 0.025, duration: 0.4, ease: 'power2.out',
+          scrollTrigger: { trigger: garGridRef.current, start: 'top 92%', once: true },
         })
       }
       gsap.from(alterRef.current, {
-        opacity: 0, y: 40, duration: 0.8, ease: 'power2.out',
-        scrollTrigger: { trigger: alterRef.current, start: 'top 88%', once: true },
+        y: 30, duration: 0.8, ease: 'power2.out',
+        scrollTrigger: { trigger: alterRef.current, start: 'top 92%', once: true },
       })
       if (altGridRef.current) {
         gsap.from(Array.from(altGridRef.current.children), {
-          opacity: 0, y: 22, scale: 0.96,
-          stagger: 0.025, duration: 0.45, ease: 'power2.out',
-          scrollTrigger: { trigger: altGridRef.current, start: 'top 88%', once: true },
+          y: 18, scale: 0.97,
+          stagger: 0.02, duration: 0.4, ease: 'power2.out',
+          scrollTrigger: { trigger: altGridRef.current, start: 'top 92%', once: true },
         })
       }
     }, sectionRef)
@@ -363,8 +364,8 @@ function StatCounter({ target, label, suffix = '' }: { target: string; label: st
   const numRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     gsap.from(numRef.current, {
-      opacity: 0, y: 10, duration: 0.6, ease: 'power2.out',
-      scrollTrigger: { trigger: numRef.current, start: 'top 88%', once: true },
+      y: 10, duration: 0.6, ease: 'power2.out',
+      scrollTrigger: { trigger: numRef.current, start: 'top 95%', once: true },
     })
   }, [])
   return (
@@ -383,12 +384,12 @@ function About() {
 
   useEffect(() => {
     gsap.from(imgRef.current, {
-      opacity: 0, x: -60, duration: 1.0, ease: 'power2.out',
-      scrollTrigger: { trigger: imgRef.current, start: 'top 85%', once: true },
+      x: -50, duration: 1.0, ease: 'power2.out',
+      scrollTrigger: { trigger: imgRef.current, start: 'top 92%', once: true },
     })
     gsap.from(textRef.current, {
-      opacity: 0, x: 60, duration: 1.0, ease: 'power2.out',
-      scrollTrigger: { trigger: textRef.current, start: 'top 85%', once: true },
+      x: 50, duration: 1.0, ease: 'power2.out',
+      scrollTrigger: { trigger: textRef.current, start: 'top 92%', once: true },
     })
   }, [])
 
@@ -431,8 +432,8 @@ function Testimonials() {
 
   useEffect(() => {
     gsap.from(sectionRef.current, {
-      opacity: 0, duration: 0.8, ease: 'power2.out',
-      scrollTrigger: { trigger: sectionRef.current, start: 'top 85%', once: true },
+      y: 20, duration: 0.8, ease: 'power2.out',
+      scrollTrigger: { trigger: sectionRef.current, start: 'top 92%', once: true },
     })
   }, [])
 
@@ -480,12 +481,12 @@ function Showcase() {
 
   useEffect(() => {
     gsap.from(sectionRef.current, {
-      opacity: 0, y: 40, duration: 0.9, ease: 'power2.out',
-      scrollTrigger: { trigger: sectionRef.current, start: 'top 85%', once: true },
+      y: 30, duration: 0.9, ease: 'power2.out',
+      scrollTrigger: { trigger: sectionRef.current, start: 'top 92%', once: true },
     })
     gsap.from(overlayRef.current, {
-      opacity: 0, x: -40, duration: 0.9, ease: 'power2.out',
-      scrollTrigger: { trigger: overlayRef.current, start: 'top 85%', once: true },
+      x: -30, duration: 0.9, ease: 'power2.out',
+      scrollTrigger: { trigger: overlayRef.current, start: 'top 92%', once: true },
     })
     // Subtle parallax inside the image
     gsap.to(imgRef.current, {
@@ -528,13 +529,13 @@ function Contact() {
   useEffect(() => {
     if (formRef.current) {
       gsap.from(Array.from(formRef.current.children), {
-        opacity: 0, y: 30, stagger: 0.1, duration: 0.6, ease: 'power2.out',
-        scrollTrigger: { trigger: formRef.current, start: 'top 85%', once: true },
+        y: 20, stagger: 0.1, duration: 0.6, ease: 'power2.out',
+        scrollTrigger: { trigger: formRef.current, start: 'top 92%', once: true },
       })
     }
     gsap.from(infoRef.current, {
-      opacity: 0, x: 40, duration: 0.9, ease: 'power2.out',
-      scrollTrigger: { trigger: infoRef.current, start: 'top 85%', once: true },
+      x: 30, duration: 0.9, ease: 'power2.out',
+      scrollTrigger: { trigger: infoRef.current, start: 'top 92%', once: true },
     })
   }, [])
 
@@ -622,8 +623,8 @@ function Footer() {
   useEffect(() => {
     if (!ref.current) return
     gsap.from(Array.from(ref.current.querySelectorAll<HTMLElement>('.footer-col')), {
-      opacity: 0, y: 30, stagger: 0.1, duration: 0.7, ease: 'power2.out',
-      scrollTrigger: { trigger: ref.current, start: 'top 90%', once: true },
+      y: 20, stagger: 0.1, duration: 0.7, ease: 'power2.out',
+      scrollTrigger: { trigger: ref.current, start: 'top 95%', once: true },
     })
   }, [])
 
