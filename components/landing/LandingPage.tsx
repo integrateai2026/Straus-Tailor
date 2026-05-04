@@ -166,7 +166,7 @@ function Hero() {
 
       <div style={{ position: 'relative', maxWidth: 1280, margin: '0 auto', padding: '180px 48px 220px', textAlign: 'center' }}>
         <div ref={tagRef} style={{ fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.3px', textTransform: 'uppercase', color: '#E6CDD2', marginBottom: 28 }}>
-          Master Tailor · Serving Fargo for 10+ Years · <a href="tel:+17019298262" style={{ color: '#fff', textDecoration: 'underline', textUnderlineOffset: 3 }}>(701) 929-8262</a>
+          Master Tailor · Serving Fargo for 10+ Years
         </div>
 
         <h1 style={{ margin: '0 auto 24px', lineHeight: 0.93 }}>
@@ -179,7 +179,7 @@ function Hero() {
           fontFamily: BODY, fontSize: 18, color: '#E6CDD2', marginBottom: 56
         }}>
           <span style={{ width: 44, height: 1, background: B, flexShrink: 0 }}/>
-          Cut for the gentleman, fit for everyone
+          Trusted Alterations for Every Occasion
           <span style={{ width: 44, height: 1, background: B, flexShrink: 0 }}/>
         </div>
 
@@ -344,14 +344,18 @@ function Services() {
           <p style={{ fontFamily: BODY, fontSize: 16, color: '#3b3b40', marginBottom: 20 }}>
             Don't see what you need? We've probably done it before.
           </p>
-          <a href="#contact" style={{
-            display: 'inline-block', background: NK, color: '#fff', borderRadius: 32,
+          <a href="tel:+17019298262" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: NK, color: '#fff', borderRadius: 32,
             padding: '14px 28px', fontSize: 15, fontWeight: 500, textDecoration: 'none',
             fontFamily: BODY, transition: 'background 200ms ease, transform 200ms ease',
           }}
           onMouseEnter={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.background = '#2a2a31'; el.style.transform = 'translateY(-2px)' }}
           onMouseLeave={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.background = NK; el.style.transform = 'translateY(0)' }}>
-            Request a quote
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 2H6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z"/>
+            </svg>
+            Call Us
           </a>
         </div>
       </div>
