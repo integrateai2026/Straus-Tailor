@@ -31,6 +31,44 @@ export const garmentCategories = [
   },
 ]
 
+export const alterationCategories = [
+  {
+    icon: 'hem',
+    label: 'Hemming & Length Adjustments',
+    items: ['Regular hem', 'Original jean hem', 'Dress hem', 'Gown hem', 'Skirt hem', 'Pant hem', 'Shorten', 'Lengthen'],
+  },
+  {
+    icon: 'takein',
+    label: 'Fit Adjustments',
+    items: ['Take in', 'Let out', 'Waist adjustment', 'Side adjustment', 'Tapering', 'Sleeve adjustment', 'Strap adjustment', 'Shoulder adjustment', 'Cuff adjustment', 'Shirt length adjustment', 'Jacket length adjustment', 'Dress top / bodice adjustment'],
+  },
+  {
+    icon: 'wedding',
+    label: 'Formalwear Alterations',
+    items: ['Bustle', 'Dress adjustment', 'Gown adjustment', 'Wedding dress alteration', 'Prom dress alteration', 'Bridesmaid dress alteration', 'Cups / padding'],
+  },
+  {
+    icon: 'suit',
+    label: 'Suit & Jacket Alterations',
+    items: ['Jacket sleeve adjustment', 'Jacket side adjustment', 'Jacket length adjustment', 'Shoulder adjustment', 'Pant waist adjustment', 'Pant tapering', 'Suit fitting adjustment'],
+  },
+  {
+    icon: 'zipper',
+    label: 'Zippers, Buttons & Closures',
+    items: ['Zipper repair', 'Zipper replacement', 'Coat zipper replacement', 'Pant zipper replacement', 'Button sewing', 'Button replacement', 'Snap replacement', 'Hook replacement', 'Velcro replacement'],
+  },
+  {
+    icon: 'patch',
+    label: 'Repairs & Patching',
+    items: ['Hole repair', 'Patch repair', 'Tear repair', 'Seam repair', 'Seam reinforcement', 'Pocket repair', 'Belt loop repair', 'Cuff repair', 'Hem repair', 'Patch sewing'],
+  },
+  {
+    icon: 'lining',
+    label: 'Lining, Elastic & Small Fixes',
+    items: ['Lining repair', 'Lining replacement', 'Elastic waistband replacement', 'Drawstring replacement', 'General clothing repair'],
+  },
+]
+
 export const garments = [
   { icon: 'wedding',     label: 'Wedding Dresses' },
   { icon: 'prom',        label: 'Prom Dresses' },

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Icon } from './icons'
-import { garmentCategories, alterations, quotes } from './data'
+import { garmentCategories, alterationCategories, quotes } from './data'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -47,7 +47,7 @@ function Nav() {
     <nav ref={navRef} style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '16px 48px',
+      padding: '14px clamp(16px, 4vw, 48px)',
       background: scrolled ? 'rgba(255,255,255,0.96)' : 'rgba(255,255,255,0)',
       backdropFilter: scrolled ? 'saturate(180%) blur(12px)' : 'none',
       borderBottom: scrolled ? '1px solid #f2f2f2' : '1px solid transparent',
@@ -60,7 +60,7 @@ function Nav() {
         <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase' }}>Tailor Shop</span>
       </a>
 
-      <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+      <div className="landing-nav-links">
         {['Home','Services','About','Reviews','Contact'].map(item => {
           const id = item.toLowerCase()
           return (
@@ -164,7 +164,7 @@ function Hero() {
         background: `linear-gradient(180deg, rgba(12,12,14,0.5) 0%, rgba(12,12,14,0.25) 40%, rgba(12,12,14,0.88) 100%)`,
       }}/>
 
-      <div style={{ position: 'relative', maxWidth: 1280, margin: '0 auto', padding: '180px 48px 220px', textAlign: 'center' }}>
+      <div className="landing-hero-pad" style={{ position: 'relative', maxWidth: 1280, margin: '0 auto', textAlign: 'center' }}>
         <div ref={tagRef} style={{ fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.3px', textTransform: 'uppercase', color: '#E6CDD2', marginBottom: 28 }}>
           Master Tailor · Serving Fargo for 10+ Years
         </div>
@@ -206,10 +206,10 @@ function Hero() {
       </div>
 
       {/* Info cards */}
-      <div ref={cardsRef} style={{
-        position: 'relative', maxWidth: 1180, margin: '0 auto', padding: '0 48px',
+      <div ref={cardsRef} className="landing-cards" style={{
+        position: 'relative', maxWidth: 1180, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)',
         transform: 'translateY(50%)', display: 'grid',
-        gridTemplateColumns: '2fr 1fr', gap: 24, zIndex: 2,
+        gap: 16, zIndex: 2,
       }}>
         <div style={{ background: NK, color: '#fff', borderRadius: 22, padding: '36px 40px' }}>
           <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase', color: BS, marginBottom: 22 }}>Working Hours</div>
@@ -295,7 +295,7 @@ function GarmentCategoryCard({ icon, label, items }: { icon: string; label: stri
       {/* Expandable items */}
       {open && (
         <div ref={bodyRef} style={{ overflow: 'hidden' }}>
-          <div style={{ padding: '4px 28px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px' }}>
+          <div className="landing-cat-items" style={{ padding: '4px 28px 24px', display: 'grid', gap: '8px 16px' }}>
             {items.map(item => (
               <div key={item} style={{
                 display: 'flex', alignItems: 'center', gap: 8,
@@ -381,41 +381,43 @@ function Services() {
   }, [])
 
   return (
-    <section id="services" ref={sectionRef} style={{ background: CR, padding: '220px 48px 120px' }}>
+    <section id="services" ref={sectionRef} style={{ background: CR, padding: 'clamp(140px, 18vw, 220px) clamp(16px, 4vw, 48px) clamp(60px, 8vw, 120px)' }}>
       <div style={{ maxWidth: 1180, margin: '0 auto' }}>
-        <div ref={headerRef} style={{ textAlign: 'center', marginBottom: 80 }}>
+        <div ref={headerRef} style={{ textAlign: 'center', marginBottom: 64 }}>
           <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.32px', textTransform: 'uppercase', color: B, marginBottom: 18 }}>Only the finest craftsmanship</div>
-          <h2 style={{ fontFamily: BODY, fontWeight: 400, fontSize: 'clamp(44px,5vw,64px)', lineHeight: 1.05, letterSpacing: '-1.2px', margin: '0 0 18px', color: NK }}>
+          <h2 style={{ fontFamily: BODY, fontWeight: 400, fontSize: 'clamp(36px,5vw,64px)', lineHeight: 1.05, letterSpacing: '-1.2px', margin: '0 0 18px', color: NK }}>
             Amazing quality, every stitch.
           </h2>
-          <p style={{ fontFamily: BODY, fontSize: 18, lineHeight: 1.5, color: '#3b3b40', maxWidth: 620, margin: '0 auto' }}>
+          <p style={{ fontFamily: BODY, fontSize: 'clamp(15px,2vw,18px)', lineHeight: 1.5, color: '#3b3b40', maxWidth: 620, margin: '0 auto' }}>
             From wedding gowns to weekend jeans — every garment that comes through our door is treated with patience and precision.
           </p>
         </div>
 
-        <div ref={garmentRef} style={{ marginBottom: 64 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 24, marginBottom: 28, paddingBottom: 18, borderBottom: `1px solid ${NK}22` }}>
+        {/* ── Garments ── */}
+        <div ref={garmentRef} style={{ marginBottom: 56 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24, paddingBottom: 16, borderBottom: `1px solid ${NK}22`, flexWrap: 'wrap' }}>
             <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: NK, opacity: 0.4 }}>01</span>
-            <h3 style={{ fontFamily: BODY, fontWeight: 400, fontSize: 30, letterSpacing: '-0.4px', margin: 0, color: NK }}>Garments we tailor</h3>
+            <h3 style={{ fontFamily: BODY, fontWeight: 400, fontSize: 'clamp(22px,3vw,30px)', letterSpacing: '-0.4px', margin: 0, color: NK }}>Garments we tailor</h3>
             <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: '#75758a' }}>6 categories</span>
           </div>
-          <div ref={garGridRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <div ref={garGridRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 14 }}>
             {garmentCategories.map((cat, i) => <GarmentCategoryCard key={i} {...cat}/>)}
           </div>
         </div>
 
+        {/* ── Alterations ── */}
         <div ref={alterRef}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 24, marginBottom: 28, paddingBottom: 18, borderBottom: `1px solid ${NK}22` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24, paddingBottom: 16, borderBottom: `1px solid ${NK}22`, flexWrap: 'wrap' }}>
             <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: NK, opacity: 0.4 }}>02</span>
-            <h3 style={{ fontFamily: BODY, fontWeight: 400, fontSize: 30, letterSpacing: '-0.4px', margin: 0, color: NK }}>Alterations & repairs</h3>
-            <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: '#75758a' }}>{alterations.length} services</span>
+            <h3 style={{ fontFamily: BODY, fontWeight: 400, fontSize: 'clamp(22px,3vw,30px)', letterSpacing: '-0.4px', margin: 0, color: NK }}>Alterations & repairs</h3>
+            <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: '#75758a' }}>7 categories</span>
           </div>
-          <div ref={altGridRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10 }}>
-            {alterations.map((a, i) => <ServiceTile key={i} {...a}/>)}
+          <div ref={altGridRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 14 }}>
+            {alterationCategories.map((cat, i) => <GarmentCategoryCard key={i} {...cat}/>)}
           </div>
         </div>
 
-        <div style={{ marginTop: 80, textAlign: 'center' }}>
+        <div style={{ marginTop: 64, textAlign: 'center' }}>
           <p style={{ fontFamily: BODY, fontSize: 16, color: '#3b3b40', marginBottom: 20 }}>
             Don't see what you need? We've probably done it before.
           </p>
@@ -473,8 +475,8 @@ function About() {
   }, [])
 
   return (
-    <section id="about" style={{ background: '#fff', padding: '120px 48px' }}>
-      <div style={{ maxWidth: 1180, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 80, alignItems: 'center' }}>
+    <section id="about" style={{ background: '#fff', padding: 'clamp(60px,8vw,120px) clamp(16px,4vw,48px)' }}>
+      <div className="landing-about" style={{ maxWidth: 1180, margin: '0 auto', display: 'grid', alignItems: 'center' }}>
         <div ref={imgRef} style={{
           borderRadius: 22, overflow: 'hidden', aspectRatio: '4/5',
           backgroundImage: 'url(https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80)',
@@ -633,8 +635,8 @@ function Contact() {
   }
 
   return (
-    <section id="contact" style={{ background: '#fff', padding: '120px 48px' }}>
-      <div style={{ maxWidth: 1180, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80 }}>
+    <section id="contact" style={{ background: '#fff', padding: 'clamp(60px,8vw,120px) clamp(16px,4vw,48px)' }}>
+      <div className="landing-contact" style={{ maxWidth: 1180, margin: '0 auto', display: 'grid' }}>
         <form ref={formRef} onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <input placeholder="Your name" value={form.name} onChange={up('name')} style={inp} onFocus={e => (e.currentTarget.style.borderColor = B)} onBlur={e => (e.currentTarget.style.borderColor = '#e5e7eb')}/>
           <input type="email" placeholder="Email address" value={form.email} onChange={up('email')} style={inp} onFocus={e => (e.currentTarget.style.borderColor = B)} onBlur={e => (e.currentTarget.style.borderColor = '#e5e7eb')}/>
@@ -708,9 +710,9 @@ function Footer() {
   }, [])
 
   return (
-    <footer ref={ref} style={{ background: NK, color: '#fff', padding: '64px 48px 36px', fontFamily: BODY }}>
+    <footer ref={ref} style={{ background: NK, color: '#fff', padding: 'clamp(40px,6vw,64px) clamp(16px,4vw,48px) 36px', fontFamily: BODY }}>
       <div style={{ maxWidth: 1180, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr', gap: 56, paddingBottom: 48, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="landing-footer" style={{ display: 'grid', paddingBottom: 48, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="footer-col">
             <div style={{ fontFamily: DANCE, fontSize: 38, fontWeight: 600, color: BS, lineHeight: 1, marginBottom: 4 }}>Straus</div>
             <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase', marginBottom: 22 }}>Tailor Shop</div>
@@ -761,6 +763,29 @@ function Footer() {
   )
 }
 
+// ── Responsive CSS ────────────────────────────────────────────────────────────
+const responsiveStyles = `
+  .landing-nav-links { display: flex; gap: 32px; align-items: center; }
+  .landing-hero-pad  { padding: 180px 48px 220px; }
+  .landing-cards     { grid-template-columns: 2fr 1fr; }
+  .landing-about     { grid-template-columns: 1fr 1.2fr; gap: 80px; }
+  .landing-contact   { grid-template-columns: 1fr 1fr; gap: 80px; }
+  .landing-footer    { grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 56px; }
+  .landing-cat-items { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 900px) {
+    .landing-nav-links { display: none; }
+    .landing-hero-pad  { padding: 140px 24px 180px; }
+    .landing-cards     { grid-template-columns: 1fr; }
+    .landing-about     { grid-template-columns: 1fr; gap: 40px; }
+    .landing-contact   { grid-template-columns: 1fr; gap: 48px; }
+    .landing-footer    { grid-template-columns: 1fr 1fr; gap: 32px; }
+  }
+  @media (max-width: 600px) {
+    .landing-footer    { grid-template-columns: 1fr; gap: 28px; }
+    .landing-cat-items { grid-template-columns: 1fr; }
+  }
+`
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   useEffect(() => {
@@ -782,6 +807,7 @@ export default function LandingPage() {
 
   return (
     <div id="top" style={{ background: '#fff', color: NK, overflowX: 'hidden' }}>
+      <style>{responsiveStyles}</style>
       <Nav/>
       <Hero/>
       <Services/>
