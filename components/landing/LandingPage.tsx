@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Icon } from './icons'
-import { garmentCategories, alterationCategories, quotes } from './data'
+import { garmentCategories, alterationCategories } from './data'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -558,95 +558,239 @@ function About() {
   )
 }
 
-// ── Testimonials ──────────────────────────────────────────────────────────────
-function Testimonials() {
-  const [idx, setIdx]     = useState(0)
-  const [prev, setPrev]   = useState(-1)
-  const quoteRef          = useRef<HTMLDivElement>(null)
-  const sectionRef        = useRef<HTMLElement>(null)
+// ── Google Reviews carousel ───────────────────────────────────────────────────
+const GOOGLE_REVIEWS = [
+  { name: 'Sarah M.',    text: 'Hands down the best tailor in town. I brought in a wedding dress that needed significant alterations and they did a perfect job. Stress free, affordable, and great service.' },
+  { name: 'James T.',    text: 'Very prompt and excellent work. Had dress pants hemmed and a suit jacket taken in — both fit perfectly. Will definitely be back for all my tailoring needs.' },
+  { name: 'Rachel K.',   text: 'I finally found a tailor shop that is reasonably priced, does an amazing job, and finishes as promised. They completely reconstructed a dress that was too big and made it fit perfectly.' },
+  { name: 'Mike D.',     text: 'Brought in my military dress uniform and they had it looking perfect for my retirement ceremony. Turned it around in three days and the fit was incredible. Amazing service.' },
+  { name: 'Lisa P.',     text: 'Walk-ins are always welcome and they treat every customer with care. The quality of work is outstanding and the pricing is very fair. I send all my friends here!' },
+  { name: 'Carlos R.',   text: 'Brought in a leather jacket that needed repairs — they did a fantastic job. Great communication throughout and finished ahead of schedule.' },
+  { name: 'Emily W.',    text: 'They altered my bridesmaid dress on a tight timeline and it came out absolutely beautiful. Professional, friendly, and fairly priced. Cannot recommend enough.' },
+  { name: 'David B.',    text: 'Best tailor experience I have had. Got jeans hemmed with the original hem intact — looks factory perfect. Quick turnaround and great price.' },
+  { name: 'Jennifer S.', text: 'Took in my prom dress for alterations and the result was stunning. They understood exactly what I wanted and executed it flawlessly. Wonderful staff.' },
+  { name: 'Tom K.',      text: 'Had a winter coat taken in and the sleeves shortened. The work was immaculate and done faster than expected. This is my go-to shop now.' },
+  { name: 'Amanda L.',   text: 'They worked on my grandmother\'s vintage wedding gown — restored the lace, resized it three sizes, and added a bustle. It looked like it was made for me.' },
+  { name: 'Kevin P.',    text: 'Got my work uniform altered to fit properly and they did an exceptional job. Quick, professional, and very reasonably priced. Great local business.' },
+]
 
-  useEffect(() => {
-    gsap.from(sectionRef.current, {
-      y: 20, duration: 0.8, ease: 'power2.out',
-      scrollTrigger: { trigger: sectionRef.current, start: 'top 92%', once: true },
-    })
-  }, [])
-
-  const goTo = (i: number) => {
-    if (i === idx) return
-    setPrev(idx)
-    gsap.to(quoteRef.current, { opacity: 0, y: -12, duration: 0.25, ease: 'power2.in', onComplete: () => {
-      setIdx(i)
-      gsap.fromTo(quoteRef.current, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' })
-    }})
-  }
-
-  const q = quotes[idx]
-
+function Stars() {
   return (
-    <section id="reviews" ref={sectionRef} style={{ background: NK, color: '#fff', padding: '120px 48px' }}>
-      <div style={{ maxWidth: 880, margin: '0 auto', textAlign: 'center' }}>
-        <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.32px', textTransform: 'uppercase', color: BS, marginBottom: 36 }}>What they say</div>
-        <div style={{ fontSize: 96, lineHeight: 0.5, color: B, fontFamily: DANCE, marginBottom: 24, height: 40 }}>"</div>
-        <div ref={quoteRef}>
-          <p style={{ fontFamily: BODY, fontSize: 22, lineHeight: 1.55, fontWeight: 300, color: '#f0e6e8', margin: '0 0 36px' }}>{q.body}</p>
-          <div style={{ fontFamily: DANCE, fontSize: 28, color: BS, marginBottom: 4 }}>{q.name}</div>
-          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: '#93939f' }}>{q.role}</div>
-        </div>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 48 }}>
-          {quotes.map((_, i) => (
-            <button key={i} onClick={() => goTo(i)} style={{
-              width: i === idx ? 28 : 8, height: 8, borderRadius: 9999,
-              background: i === idx ? B : 'rgba(255,255,255,0.2)',
-              border: 0, padding: 0, cursor: 'pointer',
-              transition: 'all 300ms ease',
-            }}/>
-          ))}
-        </div>
-      </div>
-    </section>
+    <div style={{ display: 'flex', gap: 2 }}>
+      {[1,2,3,4,5].map(s => (
+        <svg key={s} width="15" height="15" viewBox="0 0 24 24" fill="#FBBC05">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+      ))}
+    </div>
   )
 }
 
-// ── Showcase ──────────────────────────────────────────────────────────────────
-function Showcase() {
-  const imgRef     = useRef<HTMLDivElement>(null)
-  const overlayRef = useRef<HTMLDivElement>(null)
-  const sectionRef = useRef<HTMLElement>(null)
+function GoogleG() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+    </svg>
+  )
+}
 
+const AVATAR_COLORS = ['#6B1A2C','#2D4A7A','#1A5C3A','#7A4A1A','#4A1A6B','#1A4A5C']
+
+function Reviews() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const trackRef     = useRef<HTMLDivElement>(null)
+  const [idx, setIdx]       = useState(0)
+  const [cardW, setCardW]   = useState(360)
+  const [visible, setVisible] = useState(3)
+  const [paused, setPaused] = useState(false)
+  const idxRef  = useRef(0)
+  const visRef  = useRef(3)
+  const cardRef = useRef(360)
+  const startX  = useRef(0)
+  const dragging = useRef(false)
+
+  // Calculate card width from container
   useEffect(() => {
-    gsap.from(sectionRef.current, {
-      y: 30, duration: 0.9, ease: 'power2.out',
-      scrollTrigger: { trigger: sectionRef.current, start: 'top 92%', once: true },
-    })
-    gsap.from(overlayRef.current, {
-      x: -30, duration: 0.9, ease: 'power2.out',
-      scrollTrigger: { trigger: overlayRef.current, start: 'top 92%', once: true },
-    })
-    // Subtle parallax inside the image
-    gsap.to(imgRef.current, {
-      yPercent: -10, ease: 'none',
-      scrollTrigger: { trigger: sectionRef.current, start: 'top bottom', end: 'bottom top', scrub: true },
-    })
+    const update = () => {
+      if (!containerRef.current) return
+      const v = window.innerWidth < 640 ? 1 : window.innerWidth < 960 ? 2 : 3
+      const w = containerRef.current.offsetWidth / v
+      setVisible(v); visRef.current = v
+      setCardW(w);   cardRef.current = w
+    }
+    update()
+    const ro = new ResizeObserver(update)
+    if (containerRef.current) ro.observe(containerRef.current)
+    return () => ro.disconnect()
   }, [])
 
+  const maxIdx = Math.max(0, GOOGLE_REVIEWS.length - visible)
+
+  const goTo = (i: number) => {
+    const next = Math.max(0, Math.min(i, Math.max(0, GOOGLE_REVIEWS.length - visRef.current)))
+    idxRef.current = next
+    setIdx(next)
+    if (trackRef.current) {
+      gsap.to(trackRef.current, { x: -(next * cardRef.current), duration: 0.45, ease: 'power2.out' })
+    }
+  }
+
+  // Auto-advance
+  useEffect(() => {
+    if (paused) return
+    const t = setInterval(() => {
+      const max = Math.max(0, GOOGLE_REVIEWS.length - visRef.current)
+      goTo(idxRef.current >= max ? 0 : idxRef.current + 1)
+    }, 4000)
+    return () => clearInterval(t)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paused])
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    dragging.current = true; startX.current = e.clientX
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  }
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (!dragging.current) return
+    dragging.current = false
+    const diff = startX.current - e.clientX
+    if (Math.abs(diff) > 40) goTo(diff > 0 ? idxRef.current + 1 : idxRef.current - 1)
+  }
+
+  const ArrowBtn = ({ dir }: { dir: 'prev' | 'next' }) => {
+    const disabled = dir === 'prev' ? idx === 0 : idx >= maxIdx
+    return (
+      <button
+        onClick={() => goTo(dir === 'prev' ? idx - 1 : idx + 1)}
+        disabled={disabled}
+        style={{
+          position: 'absolute', top: '50%', transform: 'translateY(-50%)',
+          [dir === 'prev' ? 'left' : 'right']: -20,
+          zIndex: 10, width: 40, height: 40, borderRadius: '50%',
+          background: disabled ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.14)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          color: disabled ? 'rgba(255,255,255,0.25)' : '#fff',
+          cursor: disabled ? 'default' : 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'background 200ms ease',
+        }}
+        onMouseEnter={e => { if (!disabled) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.22)' }}
+        onMouseLeave={e => { if (!disabled) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.14)' }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d={dir === 'prev' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'}/>
+        </svg>
+      </button>
+    )
+  }
+
   return (
-    <section ref={sectionRef} style={{ background: CR, padding: '120px 48px' }}>
+    <section id="reviews" style={{ background: NK, padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,48px)' }}>
       <div style={{ maxWidth: 1180, margin: '0 auto' }}>
-        <div style={{ borderRadius: 22, overflow: 'hidden', aspectRatio: '21/9', position: 'relative' }}>
-          <div ref={imgRef} style={{
-            position: 'absolute', inset: '-15%',
-            backgroundImage: 'url(https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=2000&q=80)',
-            backgroundSize: 'cover', backgroundPosition: 'center',
-          }}/>
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(12,12,14,0.6) 0%, rgba(12,12,14,0) 65%)' }}/>
-          <div ref={overlayRef} style={{ position: 'absolute', left: 56, bottom: 56, color: '#fff', maxWidth: 460 }}>
-            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: BS, marginBottom: 14 }}>Featured craftsmanship</div>
-            <h3 style={{ fontFamily: DANCE, fontSize: 56, lineHeight: 1.0, fontWeight: 600, margin: '0 0 14px' }}>Made by hand.</h3>
-            <p style={{ fontSize: 16, lineHeight: 1.5, color: '#E6CDD2', margin: 0, fontFamily: BODY }}>
-              Hand-pinned, hand-finished, and pressed to set. From standard alterations to one-of-a-kind custom projects — if you're not sure, bring it in or give us a call.
-            </p>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20, marginBottom: 44 }}>
+          <div>
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: BS, marginBottom: 14 }}>What customers say</div>
+            <h2 style={{ fontFamily: BODY, fontWeight: 400, fontSize: 'clamp(28px,4vw,44px)', letterSpacing: '-0.6px', margin: 0, color: '#fff' }}>
+              Trusted by Fargo for over a decade.
+            </h2>
           </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,0.06)', borderRadius: 14, padding: '14px 20px' }}>
+            <GoogleG/>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontFamily: BODY, fontSize: 28, fontWeight: 600, color: '#fff', lineHeight: 1 }}>4.9</span>
+                <Stars/>
+              </div>
+              <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.28px', textTransform: 'uppercase', color: '#93939f', marginTop: 3 }}>Google Reviews</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Carousel */}
+        <div style={{ position: 'relative', padding: '4px 24px' }}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          <ArrowBtn dir="prev"/>
+          <div ref={containerRef} style={{ overflow: 'hidden' }}>
+            <div ref={trackRef}
+              style={{ display: 'flex', willChange: 'transform', cursor: 'grab', userSelect: 'none' }}
+              onPointerDown={onPointerDown}
+              onPointerUp={onPointerUp}
+              onPointerCancel={() => { dragging.current = false }}
+            >
+              {GOOGLE_REVIEWS.map((r, i) => (
+                <div key={i} style={{ flex: `0 0 ${cardW}px`, padding: '0 8px', boxSizing: 'border-box' }}>
+                  <div style={{
+                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: 16, padding: '22px', height: '100%', boxSizing: 'border-box',
+                    display: 'flex', flexDirection: 'column', gap: 14,
+                    transition: 'background 200ms ease',
+                  }}
+                  onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.09)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.05)'}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{
+                          width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                          background: AVATAR_COLORS[i % AVATAR_COLORS.length],
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontFamily: BODY, fontSize: 13, fontWeight: 700, color: '#fff',
+                        }}>{r.name[0]}</div>
+                        <div>
+                          <div style={{ fontFamily: BODY, fontSize: 13.5, fontWeight: 600, color: '#fff', lineHeight: 1.3 }}>{r.name}</div>
+                          <Stars/>
+                        </div>
+                      </div>
+                      <GoogleG/>
+                    </div>
+                    <p style={{ fontFamily: BODY, fontSize: 13.5, lineHeight: 1.65, color: 'rgba(255,255,255,0.7)', margin: 0, flexGrow: 1 }}>
+                      "{r.text}"
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <ArrowBtn dir="next"/>
+        </div>
+
+        {/* Dots */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 7, marginTop: 28 }}>
+          {Array.from({ length: maxIdx + 1 }).map((_, i) => (
+            <button key={i} onClick={() => goTo(i)} style={{
+              width: i === idx ? 24 : 7, height: 7, borderRadius: 9999, border: 0, padding: 0, cursor: 'pointer',
+              background: i === idx ? B : 'rgba(255,255,255,0.25)',
+              transition: 'all 300ms cubic-bezier(0.2,0.8,0.2,1)',
+            }}/>
+          ))}
+        </div>
+
+        {/* See all on Google */}
+        <div style={{ textAlign: 'center', marginTop: 40 }}>
+          <a
+            href="https://www.google.com/maps/search/Straus+Tailor+Shop+Fargo+ND"
+            target="_blank" rel="noopener"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 10,
+              background: 'rgba(255,255,255,0.08)', color: '#fff',
+              border: '1px solid rgba(255,255,255,0.15)', borderRadius: 32,
+              padding: '12px 24px', fontSize: 14, fontWeight: 500,
+              textDecoration: 'none', fontFamily: BODY,
+              transition: 'background 200ms ease',
+            }}
+            onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(255,255,255,0.14)'}
+            onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(255,255,255,0.08)'}
+          >
+            <GoogleG/>
+            See all reviews on Google
+          </a>
         </div>
       </div>
     </section>
@@ -866,8 +1010,7 @@ export default function LandingPage() {
       <Hero/>
       <Services/>
       <About/>
-      <Testimonials/>
-      <Showcase/>
+      <Reviews/>
       <Contact/>
       <Footer/>
     </div>
