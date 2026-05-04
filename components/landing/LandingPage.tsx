@@ -560,18 +560,21 @@ function About() {
 
 // ── Google Reviews carousel ───────────────────────────────────────────────────
 const GOOGLE_REVIEWS = [
-  { name: 'Sarah M.',    text: 'Hands down the best tailor in town. I brought in a wedding dress that needed significant alterations and they did a perfect job. Stress free, affordable, and great service.' },
-  { name: 'James T.',    text: 'Very prompt and excellent work. Had dress pants hemmed and a suit jacket taken in — both fit perfectly. Will definitely be back for all my tailoring needs.' },
-  { name: 'Rachel K.',   text: 'I finally found a tailor shop that is reasonably priced, does an amazing job, and finishes as promised. They completely reconstructed a dress that was too big and made it fit perfectly.' },
-  { name: 'Mike D.',     text: 'Brought in my military dress uniform and they had it looking perfect for my retirement ceremony. Turned it around in three days and the fit was incredible. Amazing service.' },
-  { name: 'Lisa P.',     text: 'Walk-ins are always welcome and they treat every customer with care. The quality of work is outstanding and the pricing is very fair. I send all my friends here!' },
-  { name: 'Carlos R.',   text: 'Brought in a leather jacket that needed repairs — they did a fantastic job. Great communication throughout and finished ahead of schedule.' },
-  { name: 'Emily W.',    text: 'They altered my bridesmaid dress on a tight timeline and it came out absolutely beautiful. Professional, friendly, and fairly priced. Cannot recommend enough.' },
-  { name: 'David B.',    text: 'Best tailor experience I have had. Got jeans hemmed with the original hem intact — looks factory perfect. Quick turnaround and great price.' },
-  { name: 'Jennifer S.', text: 'Took in my prom dress for alterations and the result was stunning. They understood exactly what I wanted and executed it flawlessly. Wonderful staff.' },
-  { name: 'Tom K.',      text: 'Had a winter coat taken in and the sleeves shortened. The work was immaculate and done faster than expected. This is my go-to shop now.' },
-  { name: 'Amanda L.',   text: 'They worked on my grandmother\'s vintage wedding gown — restored the lace, resized it three sizes, and added a bustle. It looked like it was made for me.' },
-  { name: 'Kevin P.',    text: 'Got my work uniform altered to fit properly and they did an exceptional job. Quick, professional, and very reasonably priced. Great local business.' },
+  { name: 'Alexia Olson',           text: 'After having an awful experience at the place in the mall, I brought my wedding dress here and they were able to make all the changes I needed. They provided recommendations and were very efficient and had great customer service. I won\'t be going anywhere else. So so satisfied!' },
+  { name: 'Katie Ressemann',        text: 'I visited Straus for the first time to get some alterations done on a bridesmaid dress. I totally procrastinated and needed it done in a week. Not only did they say no problem, they actually had it done in 3 days! They did a great job with the alterations and the price was totally fair as well. I will definitely be back for future needs!' },
+  { name: 'Alyssa Anderson',        text: 'She did such a good job and was so fast! I needed the chest altered on my wedding dress. I called Monday before the wedding and she got me in and I got it back on Wednesday and I felt so much more comfortable and it looked great!' },
+  { name: 'Ganistipan Animikii',    text: 'I bring all my suits there. Once you\'ve worn a tailored suit two things will happen: You will get the rest of them tailored. You will begin to notice how other men need to go get their suits tailored.' },
+  { name: 'Joseph Fiedler',         text: 'I had never been to a tailor shop in Fargo. I searched a place with great reviews. I agree with the reviews. Excellent results and reasonably priced.' },
+  { name: 'W J',                    text: 'I have been taking my clothes here for years. They are the best place to go in the Fargo Moorhead area for alterations hands down. Very courteous, excellent service, and the finished product has always been perfect. Thank you!' },
+  { name: 'Robin Johansen',         text: 'Pabitra did a great job hemming my formal dress for my husband\'s military ball! She was kind and very professional. She also adjusted my husband\'s military jacket and it looks and fits great! I highly recommend Straus Tailor Shop.' },
+  { name: 'Linda Dietz',            text: 'Pabitra took my wedding dress that was almost ruined, and made it look beautiful and fit like a glove! I cannot give her enough praise! And her prices are more than fair.' },
+  { name: 'Darsh Desai',            text: 'Amazing service. Hands down the best tailor in town. Every new suit/shirt/jeans I purchase goes to get tailored there first. Always above expectation, always done in a timely fashion.' },
+  { name: 'Derek Morton',           text: 'My backpack was all ripped up and she fixed it very quickly. I highly recommend this place — she is a very good person to deal with.' },
+  { name: 'Ryan T',                 text: 'The lady who helped me couldn\'t have been nicer and helped adjust a pair of pants for me. The cost was minimal and the turnaround was only 2 days even though I let them know I wasn\'t in a hurry.' },
+  { name: 'Jordan Gleason',         text: 'Patched a flannel shirt and Carhartt jacket for me. Did very nice work at a reasonable rate. Very friendly as well.' },
+  { name: 'Vinnan Tamil',           text: 'Had my dress blues rank updated. Good place to get your military clothes altered.' },
+  { name: 'Kelsey Duffney-Aanerud', text: 'The owner did an AMAZING job!! I\'m definitely recommending her to anyone that needs any alterations!' },
+  { name: 'Chad Herring',           text: 'Pabitra has always done fantastic work for my wife and I. She has done mens, women\'s and kids alterations for us and its been perfect every time!!!' },
 ]
 
 function Stars() {
