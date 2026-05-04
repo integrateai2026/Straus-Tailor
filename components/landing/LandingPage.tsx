@@ -118,20 +118,22 @@ function Nav() {
 const HERO_SLIDES = [
   // Wedding dress
   { url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2000&q=80', pos: 'center 30%' },
-  // Suit
+  // Suit — man in dark suit (confirmed)
   { url: 'https://images.unsplash.com/photo-1593030103066-0093718efeb9?auto=format&fit=crop&w=2000&q=80', pos: 'center 25%' },
-  // Coat
+  // Dress shirt — man in white dress shirt
+  { url: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=2000&q=80', pos: 'center 20%' },
+  // Formal / prom dress
+  { url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=2000&q=80', pos: 'center 20%' },
+  // Winter coat — woman in long coat
   { url: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=2000&q=80', pos: 'center 20%' },
-  // Wedding photo
-  { url: 'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?auto=format&fit=crop&w=2000&q=80', pos: 'center 25%' },
-  // Prom dress
-  { url: 'https://images.unsplash.com/photo-1596451190630-186aff535bf2?auto=format&fit=crop&w=2000&q=80', pos: 'center 20%' },
+  // Regular pants / jeans
+  { url: 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=2000&q=80', pos: 'center 30%' },
+  // Casual shirt
+  { url: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=2000&q=80', pos: 'center 25%' },
   // Winter jacket
   { url: 'https://images.unsplash.com/photo-1551232864-3f0890e580d9?auto=format&fit=crop&w=2000&q=80', pos: 'center 25%' },
-  // Shirt / dressed up
+  // Second suit — businessman
   { url: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=2000&q=80', pos: 'center 15%' },
-  // Fashion / clothing
-  { url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=2000&q=80', pos: 'center center' },
 ]
 
 const SLIDE_DURATION = 5000   // ms each slide shows
