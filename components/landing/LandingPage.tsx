@@ -238,76 +238,70 @@ function Hero() {
 }
 
 // ── Garment category accordion card ──────────────────────────────────────────
+// Uses CSS grid-template-rows trick: animates between 0fr and 1fr for
+// reliable height animation without GSAP race conditions.
 function GarmentCategoryCard({ icon, label, items }: { icon: string; label: string; items: string[] }) {
   const [open, setOpen] = useState(false)
-  const bodyRef = useRef<HTMLDivElement>(null)
-
-  const toggle = () => {
-    const el = bodyRef.current
-    if (!el) { setOpen(o => !o); return }
-    if (!open) {
-      setOpen(true)
-      gsap.fromTo(el, { height: 0, opacity: 0 }, { height: 'auto', opacity: 1, duration: 0.35, ease: 'power2.out' })
-    } else {
-      gsap.to(el, { height: 0, opacity: 0, duration: 0.25, ease: 'power2.in', onComplete: () => setOpen(false) })
-    }
-  }
 
   return (
     <div style={{
       background: open ? BS : '#fff',
-      border: `1px solid ${open ? B + '40' : '#eceae5'}`,
+      border: `1px solid ${open ? B + '55' : '#eceae5'}`,
       borderRadius: 18,
-      overflow: 'hidden',
-      transition: 'background 250ms ease, border-color 250ms ease',
-      boxShadow: open ? `0 4px 20px ${B}14` : 'none',
+      transition: 'background 250ms ease, border-color 250ms ease, box-shadow 250ms ease',
+      boxShadow: open ? `0 4px 24px ${B}18` : 'none',
     }}>
-      <button onClick={toggle} style={{
-        width: '100%', background: 'none', border: 0, cursor: 'pointer',
-        display: 'flex', alignItems: 'center', gap: 18, padding: '24px 28px',
-        textAlign: 'left',
-      }}>
-        {/* Icon circle */}
+      {/* Header button */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', background: 'none', border: 0, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 18,
+          padding: '22px 24px', textAlign: 'left',
+        }}
+      >
         <div style={{
-          width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+          width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
           background: open ? '#fff' : BS,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'background 250ms ease',
         }}>
-          <Icon name={icon} size={28} stroke={B}/>
+          <Icon name={icon} size={26} stroke={B}/>
         </div>
 
-        {/* Label + count */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: BODY, fontSize: 16, fontWeight: 600, color: NK, lineHeight: 1.25, marginBottom: 4 }}>{label}</div>
-          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase', color: '#75758a' }}>
+          <div style={{ fontFamily: BODY, fontSize: 15, fontWeight: 600, color: NK, lineHeight: 1.3, marginBottom: 3 }}>{label}</div>
+          <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.28px', textTransform: 'uppercase', color: '#75758a' }}>
             {items.length} item{items.length !== 1 ? 's' : ''}
           </div>
         </div>
 
-        {/* Chevron */}
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={B} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 300ms ease' }}>
+        <svg
+          width="17" height="17" viewBox="0 0 24 24" fill="none"
+          stroke={B} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+          style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 320ms cubic-bezier(0.2,0.8,0.2,1)' }}
+        >
           <path d="M6 9l6 6 6-6"/>
         </svg>
       </button>
 
-      {/* Expandable items */}
-      {open && (
-        <div ref={bodyRef} style={{ overflow: 'hidden' }}>
-          <div className="landing-cat-items" style={{ padding: '4px 28px 24px', display: 'grid', gap: '8px 16px' }}>
+      {/* Expandable body — CSS grid trick, no GSAP, no race conditions */}
+      <div style={{
+        display: 'grid',
+        gridTemplateRows: open ? '1fr' : '0fr',
+        transition: 'grid-template-rows 320ms cubic-bezier(0.2,0.8,0.2,1)',
+      }}>
+        <div style={{ overflow: 'hidden' }}>
+          <div className="landing-cat-items" style={{ padding: '2px 24px 22px', display: 'grid', gap: '9px 14px' }}>
             {items.map(item => (
-              <div key={item} style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                fontFamily: BODY, fontSize: 13.5, color: NK, lineHeight: 1.4,
-              }}>
+              <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: BODY, fontSize: 13.5, color: NK, lineHeight: 1.4 }}>
                 <span style={{ width: 4, height: 4, borderRadius: '50%', background: B, flexShrink: 0 }}/>
                 {item}
               </div>
             ))}
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
