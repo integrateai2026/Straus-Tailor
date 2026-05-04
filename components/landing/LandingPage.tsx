@@ -81,11 +81,11 @@ function Nav() {
           background: 'transparent',
           border: `1px solid ${scrolled ? NK + '30' : 'rgba(255,255,255,0.35)'}`,
           color: scrolled ? NK : '#fff',
-          borderRadius: 32, padding: '8px 18px',
+          borderRadius: 32, padding: '8px 14px',
           fontSize: 13, fontWeight: 500, cursor: 'pointer',
-          fontFamily: BODY,
-          display: 'flex', alignItems: 'center', gap: 6,
+          fontFamily: BODY, display: 'flex', alignItems: 'center', gap: 6,
           transition: 'background 200ms ease, border-color 200ms ease',
+          whiteSpace: 'nowrap',
         }}
         onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = scrolled ? NK + '0a' : 'rgba(255,255,255,0.12)' }}
         onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
@@ -93,21 +93,21 @@ function Nav() {
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
-          Staff
+          <span className="nav-staff-text">Staff</span>
         </button>
-        <a href="tel:+17019298262" style={{
+        <a href="tel:+17019298262" className="nav-phone-pad" style={{
           background: B, color: '#fff', borderRadius: 32,
-          padding: '10px 20px', fontSize: 13, fontWeight: 500, textDecoration: 'none',
+          fontSize: 13, fontWeight: 500, textDecoration: 'none',
           fontFamily: BODY, display: 'inline-flex', alignItems: 'center', gap: 7,
-          transition: 'background 200ms ease',
+          transition: 'background 200ms ease', whiteSpace: 'nowrap',
         }}
         onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.background = BD}
         onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.background = B}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 2H6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z"/>
           </svg>
-          (701) 929-8262
+          <span className="nav-phone-text">(701) 929-8262</span>
         </a>
       </div>
     </nav>
@@ -267,9 +267,10 @@ function Hero() {
 
       {/* Info cards */}
       <div ref={cardsRef} className="landing-cards" style={{
-        position: 'relative', maxWidth: 1180, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)',
+        position: 'relative', maxWidth: 1180, margin: '0 auto',
+        padding: '0 clamp(16px,4vw,48px)',
         transform: 'translateY(50%)', display: 'grid',
-        gap: 16, zIndex: 4,
+        gap: 14, zIndex: 4,
       }}>
         <div style={{ background: NK, color: '#fff', borderRadius: 22, padding: '36px 40px' }}>
           <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase', color: BS, marginBottom: 22 }}>Working Hours</div>
@@ -435,7 +436,7 @@ function Services() {
   }, [])
 
   return (
-    <section id="services" ref={sectionRef} style={{ background: CR, padding: 'clamp(140px, 18vw, 220px) clamp(16px, 4vw, 48px) clamp(60px, 8vw, 120px)' }}>
+    <section id="services" ref={sectionRef} style={{ background: CR, padding: 'clamp(120px, 22vw, 240px) clamp(16px, 4vw, 48px) clamp(60px, 8vw, 120px)' }}>
       <div style={{ maxWidth: 1180, margin: '0 auto' }}>
         <div ref={headerRef} style={{ textAlign: 'center', marginBottom: 64 }}>
           <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.32px', textTransform: 'uppercase', color: B, marginBottom: 18 }}>Only the finest craftsmanship</div>
@@ -531,10 +532,11 @@ function About() {
   return (
     <section id="about" style={{ background: '#fff', padding: 'clamp(60px,8vw,120px) clamp(16px,4vw,48px)' }}>
       <div className="landing-about" style={{ maxWidth: 1180, margin: '0 auto', display: 'grid', alignItems: 'center' }}>
-        <div ref={imgRef} style={{
+        <div ref={imgRef} className="landing-about-img" style={{
           borderRadius: 22, overflow: 'hidden', aspectRatio: '4/5',
           backgroundImage: 'url(https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80)',
           backgroundSize: 'cover', backgroundPosition: 'center',
+          maxHeight: 480,
         }}/>
         <div ref={textRef}>
           <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.32px', textTransform: 'uppercase', color: B, marginBottom: 18 }}>About the shop</div>
@@ -547,7 +549,7 @@ function About() {
           <p style={{ fontFamily: BODY, fontSize: 16, lineHeight: 1.55, color: '#3b3b40', margin: '0 0 32px' }}>
             We work on pretty much everything — and we love a unique custom project. Walk-ins are always welcome, no appointment needed. Typical turnaround is within two weeks, but we'll work with you if you need it sooner.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24, paddingTop: 28, borderTop: `1px solid ${NK}1a` }}>
+          <div className="landing-stats" style={{ display: 'grid', gap: 24, paddingTop: 28, borderTop: `1px solid ${NK}1a` }}>
             <StatCounter target="10+" label="Years in business"/>
             <StatCounter target="Walk‑ins" label="No appointment needed"/>
             <StatCounter target="2 wks" label="Typical turnaround"/>
@@ -667,6 +669,7 @@ function Reviews() {
     const disabled = dir === 'prev' ? idx === 0 : idx >= maxIdx
     return (
       <button
+        className="carousel-arrow"
         onClick={() => goTo(dir === 'prev' ? idx - 1 : idx + 1)}
         disabled={disabled}
         style={{
@@ -715,7 +718,7 @@ function Reviews() {
         </div>
 
         {/* Carousel */}
-        <div style={{ position: 'relative', padding: '4px 24px' }}
+        <div style={{ position: 'relative', padding: '4px 28px' }}
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
@@ -869,12 +872,12 @@ function Contact() {
               { label: 'Email',  value: 'Straustailorshop@gmail.com' },
               { label: 'Hours',  value: 'Mon – Fri · 9 am – 5 pm\nSaturday & Sunday · Closed' },
             ].map(row => (
-              <div key={row.label} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 24, paddingBottom: 16, borderBottom: '1px solid #f2f2f2' }}>
+              <div key={row.label} style={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 16, paddingBottom: 16, borderBottom: '1px solid #f2f2f2' }}>
                 <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: '#75758a' }}>{row.label}</div>
-                <div style={{ fontFamily: BODY, fontSize: 15, lineHeight: 1.4, color: NK, whiteSpace: 'pre-line' }}>{row.value}</div>
+                <div style={{ fontFamily: BODY, fontSize: 14, lineHeight: 1.5, color: NK, whiteSpace: 'pre-line', wordBreak: 'break-word' }}>{row.value}</div>
               </div>
             ))}
-            <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
               {[
                 { href: 'https://www.facebook.com/straustailorshop/', label: 'Facebook', icon: <path d="M22 12.07C22 6.48 17.52 2 12 2S2 6.48 2 12.07c0 5 3.66 9.16 8.44 9.93v-7.02H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.91h-2.33V22c4.78-.77 8.44-4.93 8.44-9.93z"/> },
                 { href: 'https://www.tiktok.com/@straustailorshop', label: 'TikTok', icon: <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43V8.86a8.16 8.16 0 0 0 4.77 1.52V7a4.85 4.85 0 0 1-1.84-.31z"/> },
@@ -945,7 +948,7 @@ function Footer() {
             </ul>
           </div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginTop: 28, fontSize: 12, color: '#93939f' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginTop: 28, fontSize: 12, color: '#93939f' }}>
           <span>© 2026 Straus Tailor Shop. All rights reserved.</span>
           <div style={{ display: 'flex', gap: 24 }}>
             {[
@@ -966,24 +969,49 @@ function Footer() {
 
 // ── Responsive CSS ────────────────────────────────────────────────────────────
 const responsiveStyles = `
-  .landing-nav-links { display: flex; gap: 32px; align-items: center; }
-  .landing-hero-pad  { padding: 180px 48px 220px; }
-  .landing-cards     { grid-template-columns: 2fr 1fr; }
-  .landing-about     { grid-template-columns: 1fr 1.2fr; gap: 80px; }
-  .landing-contact   { grid-template-columns: 1fr 1fr; gap: 80px; }
-  .landing-footer    { grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 56px; }
-  .landing-cat-items { grid-template-columns: 1fr 1fr; }
+  /* Nav */
+  .landing-nav-links  { display: flex; gap: 32px; align-items: center; }
+  .nav-phone-text     { display: inline; }
+  .nav-phone-pad      { padding: 10px 20px; }
+  .nav-staff-text     { display: inline; }
+  /* Hero */
+  .landing-hero-pad   { padding: 180px 48px 220px; }
+  .landing-cards      { grid-template-columns: 2fr 1fr; }
+  /* About */
+  .landing-about      { grid-template-columns: 1fr 1.2fr; gap: 80px; }
+  .landing-about-img  { display: block; }
+  .landing-stats      { grid-template-columns: repeat(3, 1fr); }
+  /* Layout */
+  .landing-contact    { grid-template-columns: 1fr 1fr; gap: 80px; }
+  .landing-footer     { grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 56px; }
+  .landing-cat-items  { grid-template-columns: 1fr 1fr; }
+  /* Carousel */
+  .carousel-arrow     { display: flex; }
+
   @media (max-width: 900px) {
     .landing-nav-links { display: none; }
-    .landing-hero-pad  { padding: 140px 24px 180px; }
-    .landing-cards     { grid-template-columns: 1fr; }
-    .landing-about     { grid-template-columns: 1fr; gap: 40px; }
-    .landing-contact   { grid-template-columns: 1fr; gap: 48px; }
+    .landing-hero-pad  { padding: 130px 20px 160px; }
+    .landing-cards     { grid-template-columns: 1fr; gap: 12px; }
+    .landing-about     { grid-template-columns: 1fr; gap: 36px; }
+    .landing-contact   { grid-template-columns: 1fr; gap: 40px; }
     .landing-footer    { grid-template-columns: 1fr 1fr; gap: 32px; }
+    .landing-stats     { grid-template-columns: repeat(3, 1fr); gap: 16px; }
   }
+
   @media (max-width: 600px) {
-    .landing-footer    { grid-template-columns: 1fr; gap: 28px; }
+    .nav-phone-text    { display: none; }
+    .nav-phone-pad     { padding: 10px 14px; }
+    .nav-staff-text    { display: none; }
+    .landing-hero-pad  { padding: 110px 16px 150px; }
+    .landing-footer    { grid-template-columns: 1fr 1fr; gap: 24px; }
     .landing-cat-items { grid-template-columns: 1fr; }
+    .landing-stats     { grid-template-columns: 1fr 1fr; gap: 16px; }
+    .carousel-arrow    { display: none; }
+  }
+
+  @media (max-width: 400px) {
+    .landing-footer    { grid-template-columns: 1fr; gap: 20px; }
+    .landing-stats     { grid-template-columns: 1fr; gap: 12px; }
   }
 `
 
