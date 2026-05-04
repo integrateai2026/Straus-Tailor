@@ -115,22 +115,52 @@ function Nav() {
 }
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
+const HERO_SLIDES = [
+  // Wedding dress
+  { url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2000&q=80', pos: 'center 30%' },
+  // Suit
+  { url: 'https://images.unsplash.com/photo-1593030103066-0093718efeb9?auto=format&fit=crop&w=2000&q=80', pos: 'center 25%' },
+  // Coat
+  { url: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=2000&q=80', pos: 'center 20%' },
+  // Wedding photo
+  { url: 'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?auto=format&fit=crop&w=2000&q=80', pos: 'center 25%' },
+  // Prom dress
+  { url: 'https://images.unsplash.com/photo-1596451190630-186aff535bf2?auto=format&fit=crop&w=2000&q=80', pos: 'center 20%' },
+  // Winter jacket
+  { url: 'https://images.unsplash.com/photo-1551232864-3f0890e580d9?auto=format&fit=crop&w=2000&q=80', pos: 'center 25%' },
+  // Shirt / dressed up
+  { url: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=2000&q=80', pos: 'center 15%' },
+  // Fashion / clothing
+  { url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=2000&q=80', pos: 'center center' },
+]
+
+const SLIDE_DURATION = 5000   // ms each slide shows
+const ZOOM_SCALE     = 1.10   // Ken Burns end scale
+const FADE_DURATION  = 1.1    // crossfade seconds
+
 function Hero() {
-  const bgRef     = useRef<HTMLDivElement>(null)
-  const tagRef    = useRef<HTMLDivElement>(null)
-  const title1Ref = useRef<HTMLSpanElement>(null)
-  const title2Ref = useRef<HTMLSpanElement>(null)
-  const taglineRef= useRef<HTMLDivElement>(null)
-  const ctaRef    = useRef<HTMLDivElement>(null)
-  const cardsRef  = useRef<HTMLDivElement>(null)
+  const slideRefs  = useRef<(HTMLDivElement | null)[]>([])
+  const currentRef = useRef(0)
+
+  const tagRef     = useRef<HTMLDivElement>(null)
+  const title1Ref  = useRef<HTMLSpanElement>(null)
+  const title2Ref  = useRef<HTMLSpanElement>(null)
+  const taglineRef = useRef<HTMLDivElement>(null)
+  const ctaRef     = useRef<HTMLDivElement>(null)
+  const cardsRef   = useRef<HTMLDivElement>(null)
+
+  // Start Ken Burns zoom on a slide element
+  const startZoom = (el: HTMLDivElement) => {
+    gsap.killTweensOf(el, 'scale')
+    gsap.fromTo(el, { scale: 1 }, { scale: ZOOM_SCALE, duration: SLIDE_DURATION / 1000 + FADE_DURATION, ease: 'none' })
+  }
 
   useEffect(() => {
-    // Set initial hidden states via GSAP (not inline styles)
+    // ── Entrance text animations ────────────────────────────────
     gsap.set([tagRef.current, title1Ref.current, title2Ref.current, taglineRef.current, ctaRef.current, cardsRef.current], { opacity: 0 })
     gsap.set([title1Ref.current, title2Ref.current], { y: 70 })
     gsap.set([tagRef.current, taglineRef.current, ctaRef.current], { y: 20 })
     gsap.set(cardsRef.current, { y: 60 })
-
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
     tl.to(tagRef.current,    { opacity: 1, y: 0, duration: 0.6 }, 0.4)
       .to(title1Ref.current, { opacity: 1, y: 0, duration: 0.9 }, 0.6)
@@ -139,12 +169,31 @@ function Hero() {
       .to(ctaRef.current,    { opacity: 1, y: 0, duration: 0.7 }, 1.15)
       .to(cardsRef.current,  { opacity: 1, y: 0, duration: 0.9, ease: 'back.out(1.4)' }, 1.3)
 
-    // Parallax on scroll
-    gsap.to(bgRef.current, {
-      yPercent: 20,
-      ease: 'none',
-      scrollTrigger: { trigger: '#home', start: 'top top', end: 'bottom top', scrub: true },
-    })
+    // ── Slideshow ───────────────────────────────────────────────
+    // Show first slide
+    const first = slideRefs.current[0]
+    if (first) { gsap.set(first, { opacity: 1 }); startZoom(first) }
+
+    const advance = () => {
+      const prev = currentRef.current
+      const next = (prev + 1) % HERO_SLIDES.length
+      const prevEl = slideRefs.current[prev]
+      const nextEl = slideRefs.current[next]
+
+      if (nextEl) {
+        gsap.set(nextEl, { scale: 1 })          // reset zoom
+        gsap.to(nextEl, { opacity: 1, duration: FADE_DURATION, ease: 'power1.inOut' })
+        startZoom(nextEl)
+      }
+      if (prevEl) {
+        gsap.to(prevEl, { opacity: 0, duration: FADE_DURATION, ease: 'power1.inOut' })
+      }
+      currentRef.current = next
+    }
+
+    const timer = setInterval(advance, SLIDE_DURATION)
+    return () => { clearInterval(timer); gsap.killTweensOf(slideRefs.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -152,19 +201,28 @@ function Hero() {
       position: 'relative', minHeight: 'min(840px, 96vh)',
       background: '#0c0c0e', color: '#fff', overflow: 'hidden',
     }}>
-      <div ref={bgRef} style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: 'url(https://images.unsplash.com/photo-1593030103066-0093718efeb9?auto=format&fit=crop&w=2000&q=80)',
-        backgroundSize: 'cover', backgroundPosition: 'center 30%',
-        filter: 'brightness(0.5) saturate(0.8)',
-        willChange: 'transform',
-      }}/>
+      {/* Slides — all stacked, only current is visible */}
+      {HERO_SLIDES.map((slide, i) => (
+        <div
+          key={i}
+          ref={el => { slideRefs.current[i] = el }}
+          style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: `url(${slide.url})`,
+            backgroundSize: 'cover', backgroundPosition: slide.pos,
+            filter: 'brightness(0.48) saturate(0.75)',
+            opacity: 0, willChange: 'transform, opacity',
+          }}
+        />
+      ))}
+
+      {/* Gradient overlay */}
       <div style={{
-        position: 'absolute', inset: 0,
-        background: `linear-gradient(180deg, rgba(12,12,14,0.5) 0%, rgba(12,12,14,0.25) 40%, rgba(12,12,14,0.88) 100%)`,
+        position: 'absolute', inset: 0, zIndex: 1,
+        background: `linear-gradient(180deg, rgba(12,12,14,0.45) 0%, rgba(12,12,14,0.2) 40%, rgba(12,12,14,0.88) 100%)`,
       }}/>
 
-      <div className="landing-hero-pad" style={{ position: 'relative', maxWidth: 1280, margin: '0 auto', textAlign: 'center' }}>
+      <div className="landing-hero-pad" style={{ position: 'relative', zIndex: 2, maxWidth: 1280, margin: '0 auto', textAlign: 'center' }}>
         <div ref={tagRef} style={{ fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.3px', textTransform: 'uppercase', color: '#E6CDD2', marginBottom: 28 }}>
           Master Tailor · Serving Fargo for 10+ Years
         </div>
@@ -209,7 +267,7 @@ function Hero() {
       <div ref={cardsRef} className="landing-cards" style={{
         position: 'relative', maxWidth: 1180, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)',
         transform: 'translateY(50%)', display: 'grid',
-        gap: 16, zIndex: 2,
+        gap: 16, zIndex: 4,
       }}>
         <div style={{ background: NK, color: '#fff', borderRadius: 22, padding: '36px 40px' }}>
           <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase', color: BS, marginBottom: 22 }}>Working Hours</div>
