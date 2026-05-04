@@ -125,13 +125,19 @@ function Hero() {
   const cardsRef  = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    // Set initial hidden states via GSAP (not inline styles)
+    gsap.set([tagRef.current, title1Ref.current, title2Ref.current, taglineRef.current, ctaRef.current, cardsRef.current], { opacity: 0 })
+    gsap.set([title1Ref.current, title2Ref.current], { y: 70 })
+    gsap.set([tagRef.current, taglineRef.current, ctaRef.current], { y: 20 })
+    gsap.set(cardsRef.current, { y: 60 })
+
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-    tl.from(tagRef.current,    { opacity: 0, y: 20, duration: 0.6 }, 0.4)
-      .from(title1Ref.current, { opacity: 0, y: 70, duration: 0.9 }, 0.6)
-      .from(title2Ref.current, { opacity: 0, y: 70, duration: 0.9 }, 0.75)
-      .from(taglineRef.current,{ opacity: 0, y: 20, duration: 0.7 }, 1.0)
-      .from(ctaRef.current,    { opacity: 0, y: 24, duration: 0.7 }, 1.15)
-      .from(cardsRef.current,  { opacity: 0, y: 60, duration: 0.9, ease: 'back.out(1.4)' }, 1.3)
+    tl.to(tagRef.current,    { opacity: 1, y: 0, duration: 0.6 }, 0.4)
+      .to(title1Ref.current, { opacity: 1, y: 0, duration: 0.9 }, 0.6)
+      .to(title2Ref.current, { opacity: 1, y: 0, duration: 0.9 }, 0.75)
+      .to(taglineRef.current,{ opacity: 1, y: 0, duration: 0.7 }, 1.0)
+      .to(ctaRef.current,    { opacity: 1, y: 0, duration: 0.7 }, 1.15)
+      .to(cardsRef.current,  { opacity: 1, y: 0, duration: 0.9, ease: 'back.out(1.4)' }, 1.3)
 
     // Parallax on scroll
     gsap.to(bgRef.current, {
@@ -159,25 +165,25 @@ function Hero() {
       }}/>
 
       <div style={{ position: 'relative', maxWidth: 1280, margin: '0 auto', padding: '180px 48px 220px', textAlign: 'center' }}>
-        <div ref={tagRef} style={{ fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.3px', textTransform: 'uppercase', color: '#E6CDD2', marginBottom: 28, opacity: 0 }}>
+        <div ref={tagRef} style={{ fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.3px', textTransform: 'uppercase', color: '#E6CDD2', marginBottom: 28 }}>
           Master Tailor · Serving Fargo for 10+ Years · <a href="tel:+17019298262" style={{ color: '#fff', textDecoration: 'underline', textUnderlineOffset: 3 }}>(701) 929-8262</a>
         </div>
 
         <h1 style={{ margin: '0 auto 24px', lineHeight: 0.93 }}>
-          <span ref={title1Ref} style={{ display: 'block', fontFamily: DANCE, fontWeight: 600, fontSize: 'clamp(80px, 12vw, 172px)', color: '#fff', textShadow: '0 4px 40px rgba(0,0,0,0.4)', opacity: 0 }}>Straus</span>
-          <span ref={title2Ref} style={{ display: 'block', fontFamily: DANCE, fontWeight: 600, fontSize: 'clamp(80px, 12vw, 172px)', color: '#fff', textShadow: '0 4px 40px rgba(0,0,0,0.4)', opacity: 0 }}>Tailor Shop</span>
+          <span ref={title1Ref} style={{ display: 'block', fontFamily: DANCE, fontWeight: 600, fontSize: 'clamp(80px, 12vw, 172px)', color: '#fff', textShadow: '0 4px 40px rgba(0,0,0,0.4)' }}>Straus</span>
+          <span ref={title2Ref} style={{ display: 'block', fontFamily: DANCE, fontWeight: 600, fontSize: 'clamp(80px, 12vw, 172px)', color: '#fff', textShadow: '0 4px 40px rgba(0,0,0,0.4)' }}>Tailor Shop</span>
         </h1>
 
         <div ref={taglineRef} style={{
           display: 'inline-flex', alignItems: 'center', gap: 18,
-          fontFamily: BODY, fontSize: 18, color: '#E6CDD2', marginBottom: 56, opacity: 0
+          fontFamily: BODY, fontSize: 18, color: '#E6CDD2', marginBottom: 56
         }}>
           <span style={{ width: 44, height: 1, background: B, flexShrink: 0 }}/>
           Cut for the gentleman, fit for everyone
           <span style={{ width: 44, height: 1, background: B, flexShrink: 0 }}/>
         </div>
 
-        <div ref={ctaRef} style={{ display: 'flex', gap: 20, justifyContent: 'center', alignItems: 'center', opacity: 0 }}>
+        <div ref={ctaRef} style={{ display: 'flex', gap: 20, justifyContent: 'center', alignItems: 'center' }}>
           <a href="#services" style={{
             background: B, color: '#fff', borderRadius: 32,
             padding: '14px 30px', fontSize: 15, fontWeight: 500, textDecoration: 'none',
@@ -203,7 +209,7 @@ function Hero() {
       <div ref={cardsRef} style={{
         position: 'relative', maxWidth: 1180, margin: '0 auto', padding: '0 48px',
         transform: 'translateY(50%)', display: 'grid',
-        gridTemplateColumns: '2fr 1fr', gap: 24, zIndex: 2, opacity: 0,
+        gridTemplateColumns: '2fr 1fr', gap: 24, zIndex: 2,
       }}>
         <div style={{ background: NK, color: '#fff', borderRadius: 22, padding: '36px 40px' }}>
           <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase', color: BS, marginBottom: 22 }}>Working Hours</div>
