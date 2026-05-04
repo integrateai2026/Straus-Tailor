@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Icon } from './icons'
-import { garments, alterations, quotes } from './data'
+import { garmentCategories, alterations, quotes } from './data'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -237,6 +237,81 @@ function Hero() {
   )
 }
 
+// ── Garment category accordion card ──────────────────────────────────────────
+function GarmentCategoryCard({ icon, label, items }: { icon: string; label: string; items: string[] }) {
+  const [open, setOpen] = useState(false)
+  const bodyRef = useRef<HTMLDivElement>(null)
+
+  const toggle = () => {
+    const el = bodyRef.current
+    if (!el) { setOpen(o => !o); return }
+    if (!open) {
+      setOpen(true)
+      gsap.fromTo(el, { height: 0, opacity: 0 }, { height: 'auto', opacity: 1, duration: 0.35, ease: 'power2.out' })
+    } else {
+      gsap.to(el, { height: 0, opacity: 0, duration: 0.25, ease: 'power2.in', onComplete: () => setOpen(false) })
+    }
+  }
+
+  return (
+    <div style={{
+      background: open ? BS : '#fff',
+      border: `1px solid ${open ? B + '40' : '#eceae5'}`,
+      borderRadius: 18,
+      overflow: 'hidden',
+      transition: 'background 250ms ease, border-color 250ms ease',
+      boxShadow: open ? `0 4px 20px ${B}14` : 'none',
+    }}>
+      <button onClick={toggle} style={{
+        width: '100%', background: 'none', border: 0, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', gap: 18, padding: '24px 28px',
+        textAlign: 'left',
+      }}>
+        {/* Icon circle */}
+        <div style={{
+          width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+          background: open ? '#fff' : BS,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'background 250ms ease',
+        }}>
+          <Icon name={icon} size={28} stroke={B}/>
+        </div>
+
+        {/* Label + count */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: BODY, fontSize: 16, fontWeight: 600, color: NK, lineHeight: 1.25, marginBottom: 4 }}>{label}</div>
+          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase', color: '#75758a' }}>
+            {items.length} item{items.length !== 1 ? 's' : ''}
+          </div>
+        </div>
+
+        {/* Chevron */}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={B} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 300ms ease' }}>
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+
+      {/* Expandable items */}
+      {open && (
+        <div ref={bodyRef} style={{ overflow: 'hidden' }}>
+          <div style={{ padding: '4px 28px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px' }}>
+            {items.map(item => (
+              <div key={item} style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                fontFamily: BODY, fontSize: 13.5, color: NK, lineHeight: 1.4,
+              }}>
+                <span style={{ width: 4, height: 4, borderRadius: '50%', background: B, flexShrink: 0 }}/>
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Services ──────────────────────────────────────────────────────────────────
 function ServiceTile({ icon, label }: { icon: string; label: string }) {
   const [hovered, setHovered] = useState(false)
@@ -322,10 +397,10 @@ function Services() {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 24, marginBottom: 28, paddingBottom: 18, borderBottom: `1px solid ${NK}22` }}>
             <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: NK, opacity: 0.4 }}>01</span>
             <h3 style={{ fontFamily: BODY, fontWeight: 400, fontSize: 30, letterSpacing: '-0.4px', margin: 0, color: NK }}>Garments we tailor</h3>
-            <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: '#75758a' }}>{garments.length} items</span>
+            <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: '#75758a' }}>6 categories</span>
           </div>
-          <div ref={garGridRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10 }}>
-            {garments.map((g, i) => <ServiceTile key={i} {...g}/>)}
+          <div ref={garGridRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+            {garmentCategories.map((cat, i) => <GarmentCategoryCard key={i} {...cat}/>)}
           </div>
         </div>
 

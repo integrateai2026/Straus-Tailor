@@ -1,3 +1,36 @@
+export const garmentCategories = [
+  {
+    icon: 'wedding',
+    label: 'Formal & Special Occasion Wear',
+    items: ['Wedding dress', 'Prom dress', 'Bridesmaid dress', 'Gown', 'Dress', 'Skirt', 'Tuxedo', 'Vest'],
+  },
+  {
+    icon: 'suit',
+    label: 'Suits & Professional Wear',
+    items: ["Men's suit", "Women's suit", 'Suit jacket', 'Blazer', 'Sport coat', 'Dress pants', 'Dress shirt', 'Blouse'],
+  },
+  {
+    icon: 'shirt',
+    label: 'Everyday Clothing',
+    items: ['Pants', 'Jeans', 'Shorts', 'Shirt', 'T-shirt', 'Polo shirt', 'Hoodie', 'Sweater'],
+  },
+  {
+    icon: 'coat',
+    label: 'Outerwear',
+    items: ['Coat', 'Winter coat', 'Jacket'],
+  },
+  {
+    icon: 'uniform',
+    label: 'Uniforms & Specialty Clothing',
+    items: ['Military uniform', 'Work uniform', 'Scrubs', 'Choir outfit', 'Performance wear', 'Cultural / traditional clothing', 'Leather item', 'Faux leather item'],
+  },
+  {
+    icon: 'curtain',
+    label: 'Home & Specialty Sewing Items',
+    items: ['Curtains', 'Simple household sewing item', 'Other'],
+  },
+]
+
 export const garments = [
   { icon: 'wedding',     label: 'Wedding Dresses' },
   { icon: 'prom',        label: 'Prom Dresses' },
