@@ -74,6 +74,10 @@ export function Icon({ name, size = 36, stroke = NEAR_BLACK }: IconProps) {
     case 'pantzip': return <svg viewBox="0 0 48 48" {...s}><path d="M14 8 L34 8 L33 24 L36 42 L28 42 L24 26 L20 42 L12 42 L15 24 Z"/><path d="M24 10 L24 24"/><path d="M22 14 L26 14 M22 18 L26 18 M22 22 L26 22"/></svg>
     case 'taper': return <svg viewBox="0 0 48 48" {...s}><path d="M16 8 L32 8 L28 42 L20 42 Z"/><path d="M20 14 L18 14 M20 22 L18 22 M20 30 L18 30"/><path d="M28 14 L30 14 M28 22 L30 22 M28 30 L30 30"/></svg>
     case 'reinforce': return <svg viewBox="0 0 48 48" {...s}><path d="M8 24 L40 24" strokeWidth={2.2}/><path d="M8 20 L40 20" strokeDasharray="2 2"/><path d="M8 28 L40 28" strokeDasharray="2 2"/></svg>
+    case 'formal-c': return <svg viewBox="0 0 48 48" {...s}><path d="M20 8 L24 11 L28 8"/><path d="M20 8 L18 20 Q24 17 30 20 L28 8"/><path d="M18 20 L8 42 L40 42 L30 20"/><path d="M14 34 Q24 38 34 34"/></svg>
+    case 'home-b': return <svg viewBox="0 0 48 48" {...s}><ellipse cx="24" cy="11" rx="11" ry="4"/><ellipse cx="24" cy="37" rx="11" ry="4"/><line x1="13" y1="11" x2="13" y2="37"/><line x1="35" y1="11" x2="35" y2="37"/><path d="M24 11 L24 37"/><path d="M19 13 L29 35 M29 13 L19 35"/></svg>
+    case 'hem-b': return <svg viewBox="0 0 48 48" {...s}><rect x="8" y="10" width="32" height="6" rx="2"/><path d="M10 16 L10 38 M38 16 L38 38"/><path d="M8 38 L40 38" strokeWidth="2.5"/><path d="M10 30 L14 34 M14 30 L18 34 M18 30 L22 34 M22 30 L26 34 M26 30 L30 34 M30 30 L34 34 M34 30 L38 34"/></svg>
+    case 'fit-c': return <svg viewBox="0 0 48 48" {...s}><circle cx="24" cy="9" r="3.5"/><path d="M18 14 Q24 12 30 14 L28 34 L24 30 L20 34 Z"/><path d="M15 22 L10 22 M15 22 L13 19 M15 22 L13 25"/><path d="M33 22 L38 22 M33 22 L35 19 M33 22 L35 25"/></svg>
     default: return <svg viewBox="0 0 48 48" {...s}><circle cx="24" cy="24" r="16"/><path d="M24 16 L24 32 M16 24 L32 24"/></svg>
   }
 }

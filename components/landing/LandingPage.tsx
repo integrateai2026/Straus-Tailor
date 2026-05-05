@@ -303,7 +303,6 @@ function Hero() {
 // reliable height animation without GSAP race conditions.
 function GarmentCategoryCard({ icon, label, items }: { icon: string; label: string; items: string[] }) {
   const [open, setOpen] = useState(false)
-
   return (
     <div style={{
       background: open ? BS : '#fff',
@@ -455,7 +454,7 @@ function Services() {
             <h3 style={{ fontFamily: BODY, fontWeight: 400, fontSize: 'clamp(22px,3vw,30px)', letterSpacing: '-0.4px', margin: 0, color: NK }}>Garments we tailor</h3>
             <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: '#75758a' }}>6 categories</span>
           </div>
-          <div ref={garGridRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 14 }}>
+          <div ref={garGridRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 14, alignItems: 'start' }}>
             {garmentCategories.map((cat, i) => <GarmentCategoryCard key={i} {...cat}/>)}
           </div>
         </div>
@@ -467,7 +466,7 @@ function Services() {
             <h3 style={{ fontFamily: BODY, fontWeight: 400, fontSize: 'clamp(22px,3vw,30px)', letterSpacing: '-0.4px', margin: 0, color: NK }}>Alterations & repairs</h3>
             <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11, letterSpacing: '0.32px', textTransform: 'uppercase', color: '#75758a' }}>7 categories</span>
           </div>
-          <div ref={altGridRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 14 }}>
+          <div ref={altGridRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 14, alignItems: 'start' }}>
             {alterationCategories.map((cat, i) => <GarmentCategoryCard key={i} {...cat}/>)}
           </div>
         </div>
@@ -534,8 +533,8 @@ function About() {
       <div className="landing-about" style={{ maxWidth: 1180, margin: '0 auto', display: 'grid', alignItems: 'center' }}>
         <div ref={imgRef} className="landing-about-img" style={{
           borderRadius: 22, overflow: 'hidden', aspectRatio: '4/5',
-          backgroundImage: 'url(https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80)',
-          backgroundSize: 'cover', backgroundPosition: 'center',
+          backgroundImage: 'url(/pabitra.jpg)',
+          backgroundSize: 'cover', backgroundPosition: 'center top',
           maxHeight: 480,
         }}/>
         <div ref={textRef}>
@@ -813,11 +812,14 @@ function Reviews() {
 function Contact() {
   const formRef    = useRef<HTMLFormElement>(null)
   const infoRef    = useRef<HTMLDivElement>(null)
-  const [form, setForm] = useState({ name: '', email: '', message: '' })
-  const [sent, setSent] = useState(false)
+  const loadedAt   = useRef<number>(Date.now())
+  const [form, setForm]     = useState({ name: '', email: '', message: '' })
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [errorMsg, setErrorMsg] = useState('')
   const up = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm(f => ({ ...f, [k]: e.target.value }))
 
   useEffect(() => {
+    loadedAt.current = Date.now()
     if (formRef.current) {
       gsap.from(Array.from(formRef.current.children), {
         y: 20, stagger: 0.1, duration: 0.6, ease: 'power2.out',
@@ -830,11 +832,26 @@ function Contact() {
     })
   }, [])
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.name || !form.email) return
-    setSent(true)
-    setTimeout(() => { setSent(false); setForm({ name: '', email: '', message: '' }) }, 4000)
+    if (!form.name || !form.email || !form.message) return
+    setStatus('sending')
+    setErrorMsg('')
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, website: '', loadedAt: loadedAt.current }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setStatus('error'); setErrorMsg(data.error ?? 'Something went wrong.'); return }
+      setStatus('sent')
+      setForm({ name: '', email: '', message: '' })
+      setTimeout(() => setStatus('idle'), 5000)
+    } catch {
+      setStatus('error')
+      setErrorMsg('Could not send message. Please try again.')
+    }
   }
 
   const inp: React.CSSProperties = {
@@ -848,18 +865,30 @@ function Contact() {
     <section id="contact" style={{ background: '#fff', padding: 'clamp(60px,8vw,120px) clamp(16px,4vw,48px)' }}>
       <div className="landing-contact" style={{ maxWidth: 1180, margin: '0 auto', display: 'grid' }}>
         <form ref={formRef} onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <input placeholder="Your name" value={form.name} onChange={up('name')} style={inp} onFocus={e => (e.currentTarget.style.borderColor = B)} onBlur={e => (e.currentTarget.style.borderColor = '#e5e7eb')}/>
-          <input type="email" placeholder="Email address" value={form.email} onChange={up('email')} style={inp} onFocus={e => (e.currentTarget.style.borderColor = B)} onBlur={e => (e.currentTarget.style.borderColor = '#e5e7eb')}/>
-          <textarea placeholder="Tell us what you'd like tailored…" value={form.message} onChange={up('message')} rows={5} style={{ ...inp, resize: 'vertical' }} onFocus={e => (e.currentTarget.style.borderColor = B)} onBlur={e => (e.currentTarget.style.borderColor = '#e5e7eb')}/>
-          <button type="submit" disabled={sent} style={{
-            background: sent ? '#3b8a4f' : B, color: '#fff', border: 0, borderRadius: 32,
-            padding: '14px 28px', fontSize: 15, fontWeight: 500, cursor: sent ? 'default' : 'pointer',
+          {/* Honeypot — hidden from real users, bots fill it and get silently rejected */}
+          <input name="website" tabIndex={-1} autoComplete="off" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }} readOnly/>
+
+          <input placeholder="Your name" value={form.name} onChange={up('name')} required style={inp} onFocus={e => (e.currentTarget.style.borderColor = B)} onBlur={e => (e.currentTarget.style.borderColor = '#e5e7eb')}/>
+          <input type="email" placeholder="Email address" value={form.email} onChange={up('email')} required style={inp} onFocus={e => (e.currentTarget.style.borderColor = B)} onBlur={e => (e.currentTarget.style.borderColor = '#e5e7eb')}/>
+          <textarea placeholder="Tell us what you'd like tailored…" value={form.message} onChange={up('message')} required rows={5} style={{ ...inp, resize: 'vertical' }} onFocus={e => (e.currentTarget.style.borderColor = B)} onBlur={e => (e.currentTarget.style.borderColor = '#e5e7eb')}/>
+
+          {status === 'error' && (
+            <div style={{ fontFamily: BODY, fontSize: 13, color: '#b91c1c', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px' }}>
+              {errorMsg}
+            </div>
+          )}
+
+          <button type="submit" disabled={status === 'sending' || status === 'sent'} style={{
+            background: status === 'sent' ? '#3b8a4f' : B, color: '#fff', border: 0, borderRadius: 32,
+            padding: '14px 28px', fontSize: 15, fontWeight: 500,
+            cursor: status === 'sending' || status === 'sent' ? 'default' : 'pointer',
             fontFamily: BODY, alignSelf: 'flex-start', marginTop: 10,
             transition: 'background 200ms ease, transform 200ms ease',
+            opacity: status === 'sending' ? 0.7 : 1,
           }}
-          onMouseEnter={e => { if (!sent) { const el = e.currentTarget as HTMLButtonElement; el.style.background = BD; el.style.transform = 'translateY(-2px)' }}}
-          onMouseLeave={e => { if (!sent) { const el = e.currentTarget as HTMLButtonElement; el.style.background = B; el.style.transform = 'translateY(0)' }}}>
-            {sent ? "Message sent. We'll be in touch." : 'Send message'}
+          onMouseEnter={e => { if (status === 'idle') { const el = e.currentTarget as HTMLButtonElement; el.style.background = BD; el.style.transform = 'translateY(-2px)' }}}
+          onMouseLeave={e => { if (status === 'idle') { const el = e.currentTarget as HTMLButtonElement; el.style.background = B; el.style.transform = 'translateY(0)' }}}>
+            {status === 'sending' ? 'Sending…' : status === 'sent' ? "✓ Message sent — we'll be in touch!" : 'Send message'}
           </button>
         </form>
 
@@ -927,16 +956,21 @@ function Footer() {
             <div style={{ fontFamily: DANCE, fontSize: 38, fontWeight: 600, color: BS, lineHeight: 1, marginBottom: 4 }}>Straus</div>
             <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase', marginBottom: 22 }}>Tailor Shop</div>
             <p style={{ fontSize: 13, color: '#93939f', margin: 0, maxWidth: 300, lineHeight: 1.6 }}>
-              Master tailoring and alterations in Fargo for over 10 years. Walk-ins welcome — no appointment needed.
+              Expert tailoring and alterations in Fargo with over 20 years of sewing experience. Walk-ins welcome, no appointment needed.
+              <br/><br/>
+              Thank you for trusting us with your clothing and your special moments. We are always happy to see you.
             </p>
           </div>
           <div className="footer-col">
             <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase', marginBottom: 16 }}>Services</div>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {['Bridal','Suits','Uniforms','Repairs'].map(x => (
-                <li key={x}><a href="#services" style={{ color: '#93939f', textDecoration: 'none', fontSize: 14, transition: 'color 200ms ease' }}
+              {[
+                { label: 'Garments We Tailor', href: '#services' },
+                { label: 'Alterations & Repairs', href: '#services' },
+              ].map(x => (
+                <li key={x.label}><a href={x.href} style={{ color: '#93939f', textDecoration: 'none', fontSize: 14, transition: 'color 200ms ease' }}
                   onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = BS}
-                  onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = '#93939f'}>{x}</a></li>
+                  onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = '#93939f'}>{x.label}</a></li>
               ))}
             </ul>
           </div>

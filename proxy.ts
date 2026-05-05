@@ -8,6 +8,7 @@ const PUBLIC_ROUTES = [
   '/api/auth/me',
   '/api/printer/poll',   // Epson printer polls this — no browser session
   '/api/printer/queue',  // Print Ticket button posts here from client
+  '/api/contact',        // Public contact form
 ]
 
 export async function proxy(req: NextRequest) {

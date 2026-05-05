@@ -1,6 +1,6 @@
 export const garmentCategories = [
   {
-    icon: 'wedding',
+    icon: 'formal-c',
     label: 'Formal & Special Occasion Wear',
     items: ['Wedding dress', 'Prom dress', 'Bridesmaid dress', 'Gown', 'Dress', 'Skirt', 'Tuxedo', 'Vest'],
   },
@@ -25,7 +25,7 @@ export const garmentCategories = [
     items: ['Military uniform', 'Work uniform', 'Scrubs', 'Choir outfit', 'Performance wear', 'Cultural / traditional clothing', 'Leather item', 'Faux leather item'],
   },
   {
-    icon: 'curtain',
+    icon: 'home-b',
     label: 'Home & Specialty Sewing Items',
     items: ['Curtains', 'Simple household sewing item', 'Other'],
   },
@@ -33,17 +33,17 @@ export const garmentCategories = [
 
 export const alterationCategories = [
   {
-    icon: 'hem',
+    icon: 'hem-b',
     label: 'Hemming & Length Adjustments',
     items: ['Regular hem', 'Original jean hem', 'Dress hem', 'Gown hem', 'Skirt hem', 'Pant hem', 'Shorten', 'Lengthen'],
   },
   {
-    icon: 'takein',
+    icon: 'fit-c',
     label: 'Fit Adjustments',
     items: ['Take in', 'Let out', 'Waist adjustment', 'Side adjustment', 'Tapering', 'Sleeve adjustment', 'Strap adjustment', 'Shoulder adjustment', 'Cuff adjustment', 'Shirt length adjustment', 'Jacket length adjustment', 'Dress top / bodice adjustment'],
   },
   {
-    icon: 'wedding',
+    icon: 'formal-c',
     label: 'Formalwear Alterations',
     items: ['Bustle', 'Dress adjustment', 'Gown adjustment', 'Wedding dress alteration', 'Prom dress alteration', 'Bridesmaid dress alteration', 'Cups / padding'],
   },
@@ -53,9 +53,14 @@ export const alterationCategories = [
     items: ['Jacket sleeve adjustment', 'Jacket side adjustment', 'Jacket length adjustment', 'Shoulder adjustment', 'Pant waist adjustment', 'Pant tapering', 'Suit fitting adjustment'],
   },
   {
+    icon: 'suit',
+    label: 'Suit & Jacket Alterations',
+    items: ['Jacket sleeve adjustment', 'Jacket side adjustment', 'Jacket length adjustment', 'Shoulder adjustment', 'Pant waist adjustment', 'Pant tapering', 'Suit fitting adjustment'],
+  },
+  {
     icon: 'zipper',
     label: 'Zippers, Buttons & Closures',
-    items: ['Zipper repair', 'Zipper replacement', 'Coat zipper replacement', 'Pant zipper replacement', 'Button sewing', 'Button replacement', 'Snap replacement', 'Hook replacement', 'Velcro replacement'],
+    items: ['Zipper repair', 'Zipper replacement', 'Coat zipper replacement', 'Pant zipper replacement', 'Button sewing', 'Button replacement', 'Hook replacement', 'Velcro replacement'],
   },
   {
     icon: 'patch',
