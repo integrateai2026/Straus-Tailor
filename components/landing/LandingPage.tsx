@@ -540,17 +540,23 @@ function About() {
         }}/>
         <div ref={textRef}>
           <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.32px', textTransform: 'uppercase', color: B, marginBottom: 18 }}>About the shop</div>
-          <h2 style={{ fontFamily: BODY, fontWeight: 400, fontSize: 'clamp(36px,4vw,52px)', lineHeight: 1.1, letterSpacing: '-0.8px', margin: '0 0 28px', color: NK }}>
-            Two generations of needle, thread, and patience.
+          <h2 style={{ fontFamily: DANCE, fontWeight: 600, fontSize: 'clamp(36px,4vw,52px)', lineHeight: 1.15, margin: '0 0 28px', color: NK }}>
+            A Note From Pabitra
           </h2>
-          <p style={{ fontFamily: BODY, fontSize: 18, lineHeight: 1.55, color: '#3b3b40', margin: '0 0 20px' }}>
-            For more than a decade, Straus Tailor Shop has dressed brides on their wedding day, fathers on their daughters', service members in dress uniform, and quiet locals who simply want their favorite jacket to fit again.
+          <p style={{ fontFamily: BODY, fontSize: 17, lineHeight: 1.7, color: '#3b3b40', margin: '0 0 18px' }}>
+            Hello, I'm Pabitra, the owner of Straus Tailor Shop. I'm originally from Bhutan, and I have been sewing for more than 20 years.
           </p>
-          <p style={{ fontFamily: BODY, fontSize: 16, lineHeight: 1.55, color: '#3b3b40', margin: '0 0 32px' }}>
-            We work on pretty much everything — and we love a unique custom project. Walk-ins are always welcome, no appointment needed. Typical turnaround is within two weeks, but we'll work with you if you need it sooner.
+          <p style={{ fontFamily: BODY, fontSize: 16, lineHeight: 1.7, color: '#3b3b40', margin: '0 0 18px' }}>
+            At Straus Tailor Shop, we love helping customers feel confident in the pieces that matter to them. Sometimes it is a wedding dress, a suit, a uniform, everyday clothing, or even a special project for the home.
+          </p>
+          <p style={{ fontFamily: BODY, fontSize: 16, lineHeight: 1.7, color: '#3b3b40', margin: '0 0 18px' }}>
+            Over the years, the shop has grown, and I am grateful to work alongside amazing tailors who share the same care and pride in their work. What we enjoy most is meeting our customers, hearing their stories, and building relationships that go beyond business.
+          </p>
+          <p style={{ fontFamily: BODY, fontSize: 16, lineHeight: 1.7, color: '#3b3b40', margin: '0 0 32px' }}>
+            Thank you for trusting us with your clothing and your special moments. We are always happy to see you.
           </p>
           <div className="landing-stats" style={{ display: 'grid', gap: 24, paddingTop: 28, borderTop: `1px solid ${NK}1a` }}>
-            <StatCounter target="10+" label="Years in business"/>
+            <StatCounter target="20+" label="Years of sewing experience"/>
             <StatCounter target="Walk‑ins" label="No appointment needed"/>
             <StatCounter target="2 wks" label="Typical turnaround"/>
           </div>
