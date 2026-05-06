@@ -989,7 +989,12 @@ function Footer() {
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginTop: 28, fontSize: 12, color: '#93939f' }}>
-          <span>© 2026 Straus Tailor Shop. All rights reserved.</span>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span>© 2026 Straus Tailor Shop. All rights reserved.</span>
+            <a href="/privacy" style={{ color: '#93939f', textDecoration: 'none', transition: 'color 200ms ease' }}
+              onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = BS}
+              onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = '#93939f'}>Privacy Policy</a>
+          </div>
           <div style={{ display: 'flex', gap: 24 }}>
             {[
               { href: 'https://www.facebook.com/straustailorshop/', label: 'Facebook' },
