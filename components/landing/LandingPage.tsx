@@ -994,6 +994,9 @@ function Footer() {
             <a href="/privacy" style={{ color: '#93939f', textDecoration: 'none', transition: 'color 200ms ease' }}
               onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = BS}
               onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = '#93939f'}>Privacy Policy</a>
+            <a href="/terms" style={{ color: '#93939f', textDecoration: 'none', transition: 'color 200ms ease' }}
+              onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = BS}
+              onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = '#93939f'}>Terms & Conditions</a>
           </div>
           <div style={{ display: 'flex', gap: 24 }}>
             {[
