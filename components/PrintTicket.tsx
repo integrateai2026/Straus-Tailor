@@ -182,20 +182,22 @@ export default function PrintTicket({ order, onClose }: Omit<Props, 'onPrint'> &
   }
 
   async function handlePrint() {
-    if (printing || printed) return
+    if (printing) return
     setPrinting(true)
+    setPrinted(false)
 
     // Layer 1: Direct ePOS XML to printer (instant, works on shop WiFi)
     setStatus('Connecting to printer…')
     const directOk = await printDirect(order)
     if (directOk) {
-      setStatus('Printing!')
+      setStatus('Sent to printer!')
       setPrinted(true)
-      setTimeout(handleClose, 1500)
+      setPrinting(false)
+      setTimeout(() => { setPrinted(false); setStatus('') }, 2500)
       return
     }
 
-    // Layer 2: Queue for Server Direct Print (~5s delay, works anywhere)
+    // Layer 2: Queue for print agent (~2s delay, works from any device)
     setStatus('Sending to print queue…')
     try {
       const res = await fetch('/api/printer/queue', {
@@ -204,9 +206,10 @@ export default function PrintTicket({ order, onClose }: Omit<Props, 'onPrint'> &
         body:    JSON.stringify({ order }),
       })
       if (res.ok) {
-        setStatus('Queued — printing shortly')
+        setStatus('Queued — will print shortly')
         setPrinted(true)
-        setTimeout(handleClose, 1500)
+        setPrinting(false)
+        setTimeout(() => { setPrinted(false); setStatus('') }, 2500)
         return
       }
     } catch { /* fall through */ }
@@ -215,7 +218,8 @@ export default function PrintTicket({ order, onClose }: Omit<Props, 'onPrint'> &
     setStatus('Opening print dialog…')
     window.print()
     setPrinted(true)
-    setTimeout(handleClose, 1500)
+    setPrinting(false)
+    setTimeout(() => { setPrinted(false); setStatus('') }, 2500)
   }
 
   return (
