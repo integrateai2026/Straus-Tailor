@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react' // useRef still used by containerRef, headerRef, etc.
 import gsap from 'gsap'
 import { Order } from '@/lib/types'
 import PrintTicket from './PrintTicket'
@@ -86,20 +86,23 @@ const I = {
 
 /* ── DateField ────────────────────────────────────────────── */
 function DateField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  function open() {
-    try { inputRef.current?.showPicker() } catch { inputRef.current?.click() }
-  }
   return (
-    <div onClick={open} className={`${FIELD} h-[64px] cursor-pointer`}>
-      <span className="text-[#6B7280] shrink-0">{I.cal}</span>
-      <div className="flex-1 min-w-0">
+    <div className={`${FIELD} h-[64px] cursor-pointer relative`}>
+      <span className="text-[#6B7280] shrink-0 pointer-events-none">{I.cal}</span>
+      <div className="flex-1 min-w-0 pointer-events-none">
         <p className={LABEL}>{label}</p>
         <p className={`text-[16px] leading-none ${value ? 'text-[#F9FAFB]' : 'text-[#374151]'}`}>
           {value ? formatDate(value) : 'Select date'}
         </p>
       </div>
-      <input ref={inputRef} type="date" value={value} onChange={e => onChange(e.target.value)} className="sr-only" tabIndex={-1} />
+      {/* Covers the full field area — opacity:0 keeps it invisible but
+          iOS Safari requires it to be in the layout to open the date picker */}
+      <input
+        type="date"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+      />
     </div>
   )
 }
