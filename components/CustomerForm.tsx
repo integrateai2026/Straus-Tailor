@@ -180,6 +180,14 @@ export default function CustomerForm() {
       if (!res.ok) throw new Error('Failed')
       const created: Order = await res.json()
       gsap.to(btnRef.current, { scale: 1, duration: 0.2, ease: 'back.out(2)' })
+
+      // Auto-print one ticket immediately — fire and forget
+      fetch('/api/printer/queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: created }),
+      }).catch(() => {})
+
       setOrder(created)
     } catch {
       setError('Something went wrong. Please try again.')
