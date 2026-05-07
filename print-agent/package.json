@@ -1,0 +1,13 @@
+{
+  "name": "straus-print-agent",
+  "version": "1.0.0",
+  "description": "Print agent for Straus Tailor Shop — polls Supabase and sends jobs to TM-T20IV",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.4.5"
+  }
+}
