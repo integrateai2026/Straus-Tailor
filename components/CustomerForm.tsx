@@ -214,14 +214,14 @@ export default function CustomerForm() {
       >
 
         {/* Header */}
-        <div ref={headerRef} className="mb-5 shrink-0 w-full max-w-lg md:max-w-xl" style={{ opacity: 0 }}>
+        <div ref={headerRef} className="mb-5 shrink-0 w-full max-w-xl md:max-w-2xl" style={{ opacity: 0 }}>
           <h1 className="text-5xl md:text-6xl text-white text-center leading-none" style={{ fontFamily: 'var(--font-dancing)' }}>
             Straus Tailor Shop
           </h1>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="w-full max-w-lg md:max-w-xl">
+        <form onSubmit={handleSubmit} className="w-full max-w-xl md:max-w-2xl">
           <div className="bg-[#141414] border border-white/[0.06] rounded-2xl p-4 md:p-6 mb-3">
             <div ref={fieldsRef} className="space-y-3 md:space-y-4">
 
