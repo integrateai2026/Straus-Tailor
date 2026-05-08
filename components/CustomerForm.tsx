@@ -261,6 +261,26 @@ export default function CustomerForm() {
                 </FieldWrap>
               </div>
 
+              {/* Notes */}
+              <FieldWrap fieldId="notes" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                <label className={`${FIELD} items-start py-4 cursor-text h-auto min-h-[90px]`}>
+                  <span className="text-[#6B7280] shrink-0 mt-0.5">{I.notes}</span>
+                  <div className="flex-1">
+                    <p className={LABEL}>Notes (optional)</p>
+                    <textarea className="w-full bg-transparent text-[#F9FAFB] text-[15px] placeholder-[#374151] outline-none leading-relaxed resize-none"
+                      placeholder="Hem pants, take in waist 1 inch…" rows={3}
+                      value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+                  </div>
+                </label>
+              </FieldWrap>
+
+              {/* Staff section divider */}
+              <div className="flex items-center gap-3 py-1">
+                <div className="flex-1 h-px bg-white/50"/>
+                <span className="text-[11px] font-semibold tracking-[0.2em] text-white/70 uppercase">Staff</span>
+                <div className="flex-1 h-px bg-white/50"/>
+              </div>
+
               {/* Total Amount */}
               <FieldWrap fieldId="amount" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
                 <label className={`${FIELD} ${FIELD_H} cursor-text`}>
@@ -313,19 +333,6 @@ export default function CustomerForm() {
                     </button>
                   </div>
                 </div>
-              </FieldWrap>
-
-              {/* Notes */}
-              <FieldWrap fieldId="notes" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                <label className={`${FIELD} items-start py-4 cursor-text h-auto min-h-[90px]`}>
-                  <span className="text-[#6B7280] shrink-0 mt-0.5">{I.notes}</span>
-                  <div className="flex-1">
-                    <p className={LABEL}>Notes (optional)</p>
-                    <textarea className="w-full bg-transparent text-[#F9FAFB] text-[15px] placeholder-[#374151] outline-none leading-relaxed resize-none"
-                      placeholder="Hem pants, take in waist 1 inch…" rows={3}
-                      value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-                  </div>
-                </label>
               </FieldWrap>
 
             </div>
