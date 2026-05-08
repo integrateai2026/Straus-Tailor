@@ -70,9 +70,9 @@ function formatDate(iso: string) {
 }
 
 /* ── Shared styles ────────────────────────────────────────── */
-const FIELD = 'flex items-center gap-4 px-4 bg-[#1a1a1a] border border-white/[0.06] rounded-xl focus-within:border-white/[0.12] transition-colors group'
-const LABEL = 'text-[11px] uppercase tracking-[0.2em] font-medium text-[#A1A1AA] group-focus-within:text-[#D1D5DB] transition-colors leading-none mb-[5px]'
-const INPUT = 'w-full bg-transparent text-[#F9FAFB] text-[16px] placeholder-[#3D3D3D] outline-none leading-none'
+const FIELD = 'flex items-center gap-4 px-5 bg-[#1a1a1a] border border-white/[0.06] rounded-xl focus-within:border-white/[0.12] transition-colors group'
+const LABEL = 'text-[12px] md:text-[13px] uppercase tracking-[0.2em] font-medium text-[#A1A1AA] group-focus-within:text-[#D1D5DB] transition-colors leading-none mb-[6px]'
+const INPUT = 'w-full bg-transparent text-[#F9FAFB] text-[17px] md:text-[19px] placeholder-[#3D3D3D] outline-none leading-none'
 
 /* ── Icons ────────────────────────────────────────────────── */
 const I = {
@@ -91,7 +91,7 @@ function DateField({ label, value, onChange }: { label: string; value: string; o
       <span className="text-[#6B7280] shrink-0 pointer-events-none">{I.cal}</span>
       <div className="flex-1 min-w-0 pointer-events-none">
         <p className={LABEL}>{label}</p>
-        <p className={`text-[16px] leading-none ${value ? 'text-[#F9FAFB]' : 'text-[#374151]'}`}>
+        <p className={`text-[17px] md:text-[19px] leading-none ${value ? 'text-[#F9FAFB]' : 'text-[#374151]'}`}>
           {value ? formatDate(value) : 'Select date'}
         </p>
       </div>
@@ -108,7 +108,7 @@ function DateField({ label, value, onChange }: { label: string; value: string; o
 }
 
 // Taller field height on tablet
-const FIELD_H = 'h-[68px] md:h-[76px]'
+const FIELD_H = 'h-[72px] md:h-[84px]'
 
 /* ── Main Component ───────────────────────────────────────── */
 export default function CustomerForm() {
@@ -267,7 +267,7 @@ export default function CustomerForm() {
                   <span className="text-[#6B7280] shrink-0 mt-0.5">{I.notes}</span>
                   <div className="flex-1">
                     <p className={LABEL}>Notes (optional)</p>
-                    <textarea className="w-full bg-transparent text-[#F9FAFB] text-[15px] placeholder-[#374151] outline-none leading-relaxed resize-none"
+                    <textarea className="w-full bg-transparent text-[#F9FAFB] text-[17px] md:text-[19px] placeholder-[#374151] outline-none leading-relaxed resize-none"
                       placeholder="Hem pants, take in waist 1 inch…" rows={3}
                       value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
                   </div>
@@ -320,7 +320,7 @@ export default function CustomerForm() {
                   <span className="text-[#6B7280] shrink-0">{I.tag}</span>
                   <div className="flex-1 min-w-0">
                     <p className={LABEL}>Number of Items</p>
-                    <span className="text-[16px] text-white leading-none">{form.itemCount}</span>
+                    <span className="text-[17px] md:text-[19px] text-white leading-none">{form.itemCount}</span>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: Math.max(1, f.itemCount - 1) }))}
