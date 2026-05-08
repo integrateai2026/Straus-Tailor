@@ -199,19 +199,19 @@ export default function CustomerForm() {
 
   return (
     <>
-      <div ref={containerRef} className="min-h-screen flex flex-col items-center justify-center px-5 py-10">
+      <div ref={containerRef} className="min-h-screen flex flex-col items-center justify-center px-4 py-8 md:px-8">
 
         {/* Header */}
-        <div ref={headerRef} className="mb-8" style={{ opacity: 0 }}>
-          <h1 className="text-5xl text-white text-center leading-none" style={{ fontFamily: 'var(--font-dancing)' }}>
+        <div ref={headerRef} className="mb-6 md:mb-8" style={{ opacity: 0 }}>
+          <h1 className="text-5xl md:text-6xl text-white text-center leading-none" style={{ fontFamily: 'var(--font-dancing)' }}>
             Straus Tailor Shop
           </h1>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="w-full max-w-md">
-          <div className="bg-[#141414] border border-white/[0.06] rounded-2xl p-4 mb-3">
-            <div ref={fieldsRef} className="space-y-2.5">
+        {/* Form — grows wider on tablet/iPad */}
+        <form onSubmit={handleSubmit} className="w-full max-w-md md:max-w-2xl lg:max-w-3xl">
+          <div className="bg-[#141414] border border-white/[0.06] rounded-2xl p-4 md:p-5 mb-3">
+            <div ref={fieldsRef} className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
 
               {/* Full Name */}
               <FieldWrap fieldId="name" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
@@ -239,8 +239,8 @@ export default function CustomerForm() {
                 </label>
               </FieldWrap>
 
-              {/* Dates — side by side */}
-              <div className="grid grid-cols-2 gap-2.5">
+              {/* Dates — always side by side, spans full width on tablet */}
+              <div className="grid grid-cols-2 gap-2.5 md:col-span-2">
                 <FieldWrap fieldId="dropoff" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
                   <DateField label="Drop-off Date" value={form.dropoffDate} onChange={v => setForm(f => ({ ...f, dropoffDate: v }))} />
                 </FieldWrap>
@@ -262,10 +262,10 @@ export default function CustomerForm() {
                 </label>
               </FieldWrap>
 
-              {/* Paid / Unpaid button group */}
+              {/* Paid / Unpaid */}
               <div className="grid grid-cols-2 gap-3">
                 <button type="button" onClick={() => setForm(f => ({ ...f, paid: false }))}
-                  className={`h-12 rounded-xl text-sm font-semibold transition-all ${
+                  className={`h-[64px] rounded-xl text-sm font-semibold transition-all ${
                     !form.paid
                       ? 'bg-white/[0.08] text-[#D1D5DB] border border-white/[0.15]'
                       : 'bg-transparent text-[#555] border border-white/[0.06] hover:border-white/[0.1] hover:text-[#888]'
@@ -273,7 +273,7 @@ export default function CustomerForm() {
                   Unpaid
                 </button>
                 <button type="button" onClick={() => setForm(f => ({ ...f, paid: true }))}
-                  className={`h-12 rounded-xl text-sm font-semibold transition-all ${
+                  className={`h-[64px] rounded-xl text-sm font-semibold transition-all ${
                     form.paid
                       ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                       : 'bg-transparent text-[#555] border border-white/[0.06] hover:border-white/[0.1] hover:text-[#888]'
@@ -303,18 +303,20 @@ export default function CustomerForm() {
                 </div>
               </FieldWrap>
 
-              {/* Notes */}
-              <FieldWrap fieldId="notes" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                <label className={`${FIELD} items-start py-4 cursor-text h-auto min-h-[90px]`}>
-                  <span className="text-[#6B7280] shrink-0 mt-0.5">{I.notes}</span>
-                  <div className="flex-1">
-                    <p className={LABEL}>Notes (optional)</p>
-                    <textarea className="w-full bg-transparent text-[#F9FAFB] text-[15px] placeholder-[#374151] outline-none leading-relaxed resize-none"
-                      placeholder="Hem pants, take in waist 1 inch…" rows={3}
-                      value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-                  </div>
-                </label>
-              </FieldWrap>
+              {/* Notes — full width */}
+              <div className="md:col-span-2">
+                <FieldWrap fieldId="notes" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                  <label className={`${FIELD} items-start py-4 cursor-text h-auto min-h-[90px]`}>
+                    <span className="text-[#6B7280] shrink-0 mt-0.5">{I.notes}</span>
+                    <div className="flex-1">
+                      <p className={LABEL}>Notes (optional)</p>
+                      <textarea className="w-full bg-transparent text-[#F9FAFB] text-[15px] placeholder-[#374151] outline-none leading-relaxed resize-none"
+                        placeholder="Hem pants, take in waist 1 inch…" rows={3}
+                        value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+                    </div>
+                  </label>
+                </FieldWrap>
+              </div>
 
             </div>
           </div>
@@ -322,7 +324,7 @@ export default function CustomerForm() {
           {error && <p className="text-red-400 text-sm text-center mb-2">{error}</p>}
 
           <button ref={btnRef} type="submit" disabled={loading}
-            className="w-full h-[56px] rounded-xl text-white text-[15px] font-semibold tracking-wide flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] disabled:opacity-50"
+            className="w-full h-[56px] md:h-[60px] rounded-xl text-white text-[15px] md:text-[16px] font-semibold tracking-wide flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] disabled:opacity-50"
             style={{ opacity: 0, background: '#065F46' }}
             onMouseEnter={e => (e.currentTarget.style.background = '#047857')}
             onMouseLeave={e => (e.currentTarget.style.background = '#065F46')}>
