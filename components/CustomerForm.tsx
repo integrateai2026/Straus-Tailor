@@ -71,17 +71,17 @@ function formatDate(iso: string) {
 
 /* ── Shared styles ────────────────────────────────────────── */
 const FIELD = 'flex items-center gap-4 px-5 bg-[#1a1a1a] border border-white/[0.06] rounded-xl focus-within:border-white/[0.12] transition-colors group'
-const LABEL = 'text-[12px] md:text-[13px] uppercase tracking-[0.2em] font-medium text-[#A1A1AA] group-focus-within:text-[#D1D5DB] transition-colors leading-none mb-[6px]'
-const INPUT = 'w-full bg-transparent text-[#F9FAFB] text-[17px] md:text-[19px] placeholder-[#3D3D3D] outline-none leading-none'
+const LABEL = 'text-[13px] md:text-[15px] uppercase tracking-[0.2em] font-medium text-[#A1A1AA] group-focus-within:text-[#D1D5DB] transition-colors leading-none mb-[7px]'
+const INPUT = 'w-full bg-transparent text-[#F9FAFB] text-[18px] md:text-[22px] placeholder-[#3D3D3D] outline-none leading-none'
 
 /* ── Icons ────────────────────────────────────────────────── */
 const I = {
-  user: <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  phone: <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 2H6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z"/></svg>,
-  cal: <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
-  dollar: <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
-  tag: <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>,
-  notes: <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+  user: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  phone: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 2H6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z"/></svg>,
+  cal: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  dollar: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+  tag: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>,
+  notes: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
 }
 
 /* ── DateField ────────────────────────────────────────────── */
@@ -108,7 +108,7 @@ function DateField({ label, value, onChange }: { label: string; value: string; o
 }
 
 // Taller field height on tablet
-const FIELD_H = 'h-[72px] md:h-[84px]'
+const FIELD_H = 'h-[76px] md:h-[96px]'
 
 /* ── Main Component ───────────────────────────────────────── */
 export default function CustomerForm() {
@@ -267,8 +267,8 @@ export default function CustomerForm() {
                   <span className="text-[#6B7280] shrink-0 mt-0.5">{I.notes}</span>
                   <div className="flex-1">
                     <p className={LABEL}>Notes (optional)</p>
-                    <textarea className="w-full bg-transparent text-[#F9FAFB] text-[17px] md:text-[19px] placeholder-[#374151] outline-none leading-relaxed resize-none"
-                      placeholder="Hem pants, take in waist 1 inch…" rows={3}
+                    <textarea className="w-full bg-transparent text-[#F9FAFB] text-[18px] md:text-[22px] placeholder-[#374151] outline-none leading-relaxed resize-none"
+                      placeholder="Hem pants, take in waist 1 inch…" rows={4}
                       value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
                   </div>
                 </label>
@@ -297,7 +297,7 @@ export default function CustomerForm() {
               {/* Paid / Unpaid */}
               <div className="grid grid-cols-2 gap-3">
                 <button type="button" onClick={() => setForm(f => ({ ...f, paid: false }))}
-                  className={`${FIELD_H} rounded-xl text-sm font-semibold transition-all ${
+                  className={`${FIELD_H} rounded-xl text-base md:text-lg font-semibold transition-all ${
                     !form.paid
                       ? 'bg-white/[0.08] text-[#D1D5DB] border border-white/[0.15]'
                       : 'bg-transparent text-[#555] border border-white/[0.06] hover:border-white/[0.1] hover:text-[#888]'
@@ -305,7 +305,7 @@ export default function CustomerForm() {
                   Unpaid
                 </button>
                 <button type="button" onClick={() => setForm(f => ({ ...f, paid: true }))}
-                  className={`${FIELD_H} rounded-xl text-sm font-semibold transition-all ${
+                  className={`${FIELD_H} rounded-xl text-base md:text-lg font-semibold transition-all ${
                     form.paid
                       ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                       : 'bg-transparent text-[#555] border border-white/[0.06] hover:border-white/[0.1] hover:text-[#888]'
