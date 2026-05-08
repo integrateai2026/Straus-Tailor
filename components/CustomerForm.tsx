@@ -87,7 +87,7 @@ const I = {
 /* ── DateField ────────────────────────────────────────────── */
 function DateField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <div className={`${FIELD} h-[64px] cursor-pointer relative`}>
+    <div className={`${FIELD} ${FIELD_H} cursor-pointer relative`}>
       <span className="text-[#6B7280] shrink-0 pointer-events-none">{I.cal}</span>
       <div className="flex-1 min-w-0 pointer-events-none">
         <p className={LABEL}>{label}</p>
@@ -106,6 +106,9 @@ function DateField({ label, value, onChange }: { label: string; value: string; o
     </div>
   )
 }
+
+// Taller field height on tablet
+const FIELD_H = 'h-[68px] md:h-[76px]'
 
 /* ── Main Component ───────────────────────────────────────── */
 export default function CustomerForm() {
@@ -206,25 +209,25 @@ export default function CustomerForm() {
       */}
       <div
         ref={containerRef}
-        className="flex flex-col items-center justify-center px-4 py-6 md:px-8"
+        className="flex flex-col items-center justify-center px-4 py-8 md:px-8 md:py-10"
         style={{ minHeight: '100dvh' }}
       >
 
         {/* Header */}
-        <div ref={headerRef} className="mb-4 shrink-0 w-full max-w-lg md:max-w-xl" style={{ opacity: 0 }}>
+        <div ref={headerRef} className="mb-5 shrink-0 w-full max-w-lg md:max-w-xl" style={{ opacity: 0 }}>
           <h1 className="text-5xl md:text-6xl text-white text-center leading-none" style={{ fontFamily: 'var(--font-dancing)' }}>
             Straus Tailor Shop
           </h1>
         </div>
 
-        {/* Form — fills available vertical space, scrollable when keyboard is up */}
-        <form onSubmit={handleSubmit} className="w-full max-w-lg md:max-w-xl flex flex-col">
-          <div className="bg-[#141414] border border-white/[0.06] rounded-2xl p-4 md:p-6 mb-3 overflow-y-auto">
-            <div ref={fieldsRef} className="space-y-2.5">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="w-full max-w-lg md:max-w-xl">
+          <div className="bg-[#141414] border border-white/[0.06] rounded-2xl p-4 md:p-6 mb-3">
+            <div ref={fieldsRef} className="space-y-3 md:space-y-4">
 
               {/* Full Name */}
               <FieldWrap fieldId="name" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                <label className={`${FIELD} h-[64px] cursor-text`}>
+                <label className={`${FIELD} h-[68px] md:h-[76px] cursor-text`}>
                   <span className="text-[#6B7280] shrink-0">{I.user}</span>
                   <div className="flex-1 min-w-0">
                     <p className={LABEL}>Full Name</p>
@@ -237,7 +240,7 @@ export default function CustomerForm() {
 
               {/* Phone */}
               <FieldWrap fieldId="phone" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                <label className={`${FIELD} h-[64px] cursor-text`}>
+                <label className={`${FIELD} h-[68px] md:h-[76px] cursor-text`}>
                   <span className="text-[#6B7280] shrink-0">{I.phone}</span>
                   <div className="flex-1 min-w-0">
                     <p className={LABEL}>Phone Number</p>
@@ -249,7 +252,7 @@ export default function CustomerForm() {
               </FieldWrap>
 
               {/* Dates — side by side */}
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 gap-3">
                 <FieldWrap fieldId="dropoff" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
                   <DateField label="Drop-off Date" value={form.dropoffDate} onChange={v => setForm(f => ({ ...f, dropoffDate: v }))} />
                 </FieldWrap>
@@ -260,7 +263,7 @@ export default function CustomerForm() {
 
               {/* Total Amount */}
               <FieldWrap fieldId="amount" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                <label className={`${FIELD} h-[64px] cursor-text`}>
+                <label className={`${FIELD} ${FIELD_H} cursor-text`}>
                   <span className="text-[#6B7280] shrink-0">{I.dollar}</span>
                   <div className="flex-1 min-w-0">
                     <p className={LABEL}>Total Amount</p>
@@ -274,7 +277,7 @@ export default function CustomerForm() {
               {/* Paid / Unpaid */}
               <div className="grid grid-cols-2 gap-3">
                 <button type="button" onClick={() => setForm(f => ({ ...f, paid: false }))}
-                  className={`h-12 rounded-xl text-sm font-semibold transition-all ${
+                  className={`${FIELD_H} rounded-xl text-sm font-semibold transition-all ${
                     !form.paid
                       ? 'bg-white/[0.08] text-[#D1D5DB] border border-white/[0.15]'
                       : 'bg-transparent text-[#555] border border-white/[0.06] hover:border-white/[0.1] hover:text-[#888]'
@@ -282,7 +285,7 @@ export default function CustomerForm() {
                   Unpaid
                 </button>
                 <button type="button" onClick={() => setForm(f => ({ ...f, paid: true }))}
-                  className={`h-12 rounded-xl text-sm font-semibold transition-all ${
+                  className={`${FIELD_H} rounded-xl text-sm font-semibold transition-all ${
                     form.paid
                       ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                       : 'bg-transparent text-[#555] border border-white/[0.06] hover:border-white/[0.1] hover:text-[#888]'
@@ -293,7 +296,7 @@ export default function CustomerForm() {
 
               {/* Items stepper */}
               <FieldWrap fieldId="items" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                <div className={`${FIELD} h-[64px]`}>
+                <div className={`${FIELD} ${FIELD_H}`}>
                   <span className="text-[#6B7280] shrink-0">{I.tag}</span>
                   <div className="flex-1 min-w-0">
                     <p className={LABEL}>Number of Items</p>
