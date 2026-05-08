@@ -200,22 +200,26 @@ export default function CustomerForm() {
   return (
     <>
       {/*
-        No justify-center — form sits at the top with padding so that when
-        the keyboard opens on mobile/iPad, the page scrolls naturally and
-        the focused field stays visible. pb-48 gives clearance above keyboard.
+        100dvh = dynamic viewport height — automatically shrinks when the
+        keyboard opens on iOS/Android, then snaps back when it closes.
+        The form card grows/shrinks with the screen so it always fits.
       */}
-      <div ref={containerRef} className="flex flex-col items-center px-4 pt-10 pb-48 md:px-10 md:pt-14">
+      <div
+        ref={containerRef}
+        className="flex flex-col items-center justify-center px-4 py-6 md:px-8"
+        style={{ minHeight: '100dvh' }}
+      >
 
         {/* Header */}
-        <div ref={headerRef} className="mb-6 md:mb-8 w-full max-w-lg md:max-w-xl" style={{ opacity: 0 }}>
+        <div ref={headerRef} className="mb-4 shrink-0 w-full max-w-lg md:max-w-xl" style={{ opacity: 0 }}>
           <h1 className="text-5xl md:text-6xl text-white text-center leading-none" style={{ fontFamily: 'var(--font-dancing)' }}>
             Straus Tailor Shop
           </h1>
         </div>
 
-        {/* Form — wider on tablet, single column throughout */}
-        <form onSubmit={handleSubmit} className="w-full max-w-lg md:max-w-xl">
-          <div className="bg-[#141414] border border-white/[0.06] rounded-2xl p-4 md:p-6 mb-3">
+        {/* Form — fills available vertical space, scrollable when keyboard is up */}
+        <form onSubmit={handleSubmit} className="w-full max-w-lg md:max-w-xl flex flex-col">
+          <div className="bg-[#141414] border border-white/[0.06] rounded-2xl p-4 md:p-6 mb-3 overflow-y-auto">
             <div ref={fieldsRef} className="space-y-2.5">
 
               {/* Full Name */}
