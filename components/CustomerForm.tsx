@@ -87,7 +87,7 @@ const I = {
 /* ── DateField ────────────────────────────────────────────── */
 function DateField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <div className={`${FIELD} ${FIELD_H} cursor-pointer relative`}>
+    <div className={`${FIELD} ${FIELD_H} cursor-pointer relative`} style={{ background: '#1e1e1e' }}>
       <span className="text-[#6B7280] shrink-0 pointer-events-none">{I.cal}</span>
       <div className="flex-1 min-w-0 pointer-events-none">
         <p className={LABEL}>{label}</p>
@@ -95,6 +95,10 @@ function DateField({ label, value, onChange }: { label: string; value: string; o
           {value ? formatDate(value) : 'Select date'}
         </p>
       </div>
+      {/* Subtle chevron indicates the field is tappable */}
+      <svg className="pointer-events-none shrink-0 text-[#4B5563]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 9l6 6 6-6"/>
+      </svg>
       {/* Covers the full field area — opacity:0 keeps it invisible but
           iOS Safari requires it to be in the layout to open the date picker */}
       <input
@@ -271,7 +275,7 @@ export default function CustomerForm() {
                   <div className="flex-1">
                     <p className={LABEL}>Notes (optional)</p>
                     <textarea className="w-full bg-transparent text-[#F9FAFB] text-[18px] md:text-[22px] placeholder-[#374151] outline-none leading-relaxed resize-none"
-                      placeholder="Hem pants, take in waist 1 inch…" rows={4}
+                      placeholder="Any special requests or instructions…" rows={4}
                       value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
                   </div>
                 </label>
@@ -290,9 +294,12 @@ export default function CustomerForm() {
                   <span className="text-[#6B7280] shrink-0">{I.dollar}</span>
                   <div className="flex-1 min-w-0">
                     <p className={LABEL}>Total Amount</p>
-                    <input className={INPUT} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
-                      onChange={e => setForm(f => ({ ...f, totalAmount: e.target.value.replace(/[^0-9.]/g, '') }))}
-                      autoComplete="off" />
+                    <div className="flex items-center">
+                      <span className="text-[#6B7280] text-[18px] md:text-[22px] mr-1 leading-none">$</span>
+                      <input className={INPUT} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
+                        onChange={e => setForm(f => ({ ...f, totalAmount: e.target.value.replace(/[^0-9.]/g, '') }))}
+                        autoComplete="off" />
+                    </div>
                   </div>
                 </label>
               </FieldWrap>
