@@ -325,13 +325,13 @@ export default function CustomerForm() {
                     <p className={LABEL}>Number of Items</p>
                     <span className="text-[17px] md:text-[19px] text-white leading-none">{form.itemCount}</span>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-2 md:gap-3 shrink-0">
                     <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: Math.max(1, f.itemCount - 1) }))}
-                      className="w-8 h-8 rounded-lg bg-[#222] hover:bg-[#2a2a2a] text-[#9CA3AF] hover:text-white text-lg font-medium flex items-center justify-center transition-colors leading-none border border-[#2a2a2a]">
+                      className="w-9 h-9 md:w-12 md:h-12 rounded-lg bg-[#222] hover:bg-[#2a2a2a] text-[#9CA3AF] hover:text-white text-xl md:text-2xl font-medium flex items-center justify-center transition-colors leading-none border border-[#2a2a2a]">
                       −
                     </button>
                     <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: f.itemCount + 1 }))}
-                      className="w-8 h-8 rounded-lg bg-[#222] hover:bg-[#2a2a2a] text-[#9CA3AF] hover:text-white text-lg font-medium flex items-center justify-center transition-colors leading-none border border-[#2a2a2a]">
+                      className="w-9 h-9 md:w-12 md:h-12 rounded-lg bg-[#222] hover:bg-[#2a2a2a] text-[#9CA3AF] hover:text-white text-xl md:text-2xl font-medium flex items-center justify-center transition-colors leading-none border border-[#2a2a2a]">
                       +
                     </button>
                   </div>
@@ -344,7 +344,7 @@ export default function CustomerForm() {
           {error && <p className="text-red-400 text-sm text-center mb-2">{error}</p>}
 
           <button ref={btnRef} type="submit" disabled={loading}
-            className="w-full h-[56px] rounded-xl text-white text-[15px] font-semibold tracking-wide flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] disabled:opacity-50"
+            className="w-full h-[56px] md:h-[64px] rounded-xl text-white text-[15px] md:text-[17px] font-semibold tracking-wide flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] disabled:opacity-50"
             style={{ opacity: 0, background: '#065F46' }}
             onMouseEnter={e => (e.currentTarget.style.background = '#047857')}
             onMouseLeave={e => (e.currentTarget.style.background = '#065F46')}>
