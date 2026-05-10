@@ -78,9 +78,9 @@ const FIELD_FOCUS = 'border-[#8B7355]/50'   // added via focus-within in JSX wra
 
 // Label above each box
 const FL: React.CSSProperties = {
-  display: 'block', fontSize: 12, fontWeight: 700,
-  letterSpacing: '0.16em', textTransform: 'uppercase',
-  color: '#4A443C', marginBottom: 7,
+  display: 'block', fontSize: 14, fontWeight: 700,
+  letterSpacing: '0.14em', textTransform: 'uppercase',
+  color: '#4A443C', marginBottom: 8,
 }
 
 // Input — text color via inline style (safer than Tailwind interpolation)
