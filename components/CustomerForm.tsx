@@ -6,10 +6,7 @@ import { Order } from '@/lib/types'
 import PrintTicket from './PrintTicket'
 import './StarBorder.css'
 
-/* ── Star border field wrapper ────────────────────────────── */
-const STAR_COLOR = 'rgba(255,255,255,0.9)'
-const STAR_SPEED = '3.5s'
-
+/* ── Field wrapper — clean brass focus ring, no animation ─── */
 function FieldWrap({
   fieldId,
   focused,
@@ -26,23 +23,17 @@ function FieldWrap({
   const active = focused === fieldId
   return (
     <div
-      className="relative rounded-xl overflow-hidden"
-      style={{ padding: active ? '1.5px' : '1.5px', background: active ? 'transparent' : 'transparent' }}
+      className="rounded-xl transition-shadow"
+      style={{
+        outline: active ? '2px solid rgba(139,115,85,0.50)' : 'none',
+      outlineOffset: 1,
+      boxShadow: active ? '0 2px 8px rgba(0,0,0,0.06)' : '0 1px 2px rgba(0,0,0,0.04)',
+        transition: 'box-shadow 200ms ease',
+      }}
       onFocus={() => onFocus(fieldId)}
       onBlur={onBlur}
     >
-      {/* Always-present container — active state shows the star, inactive is transparent */}
-      <div
-        className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none"
-        style={{ opacity: active ? 1 : 0, transition: 'opacity 0.25s ease' }}
-      >
-        <div className="star-border-bottom" style={{ background: `radial-gradient(circle, ${STAR_COLOR}, transparent 12%)`, animationDuration: STAR_SPEED }} />
-        <div className="star-border-top"    style={{ background: `radial-gradient(circle, ${STAR_COLOR}, transparent 12%)`, animationDuration: STAR_SPEED }} />
-      </div>
-      {/* Field sits on top with 1.5px inset so the border ring is visible */}
-      <div className="relative rounded-[10px] overflow-hidden" style={{ zIndex: 1 }}>
-        {children}
-      </div>
+      {children}
     </div>
   )
 }
@@ -70,49 +61,66 @@ function formatDate(iso: string) {
 }
 
 /* ── Shared styles ────────────────────────────────────────── */
-const FIELD = 'flex items-center gap-4 px-5 bg-[#1a1a1a] border border-white/[0.06] rounded-xl focus-within:border-white/[0.12] transition-colors group'
-const LABEL = 'text-[13px] md:text-[15px] uppercase tracking-[0.2em] font-medium text-[#A1A1AA] group-focus-within:text-[#D1D5DB] transition-colors leading-none mb-[7px]'
-const INPUT = 'w-full bg-transparent text-[#F9FAFB] text-[18px] md:text-[22px] placeholder-[#3D3D3D] outline-none leading-none'
+// ── Design tokens: warm paper card on deep charcoal ──────────
+const PAGE_BG     = '#17171b'
+const CARD_BG     = '#F6F1E9'       // warm ivory paper
+const INPUT_BG    = '#FDFAF5'       // warm white inputs
+const TEXT_DARK   = '#1C1A18'       // near-black charcoal
+const BRASS       = '#8B7355'       // muted brass accent
+const LABEL_COLOR = '#4A443C'       // dark warm charcoal — high contrast on ivory
+const TAUPE       = '#6B6358'       // warm taupe for $ sign and icons
+const PLACEHOLDER = '#8A847C'       // medium gray — clearly readable
 
-/* ── Icons ────────────────────────────────────────────────── */
-const I = {
-  user: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  phone: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 2H6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z"/></svg>,
-  cal: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
-  dollar: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
-  tag: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>,
-  notes: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+// Tailwind classes — all colors must be literal hex strings (no JS vars),
+// otherwise Tailwind's build-time scanner can't generate the CSS.
+const FIELD = 'flex items-center gap-3 px-4 bg-[#FDFAF5] border border-black/[0.12] rounded-xl transition-colors'
+const FIELD_FOCUS = 'border-[#8B7355]/50'   // added via focus-within in JSX wrapper
+
+// Label above each box
+const FL: React.CSSProperties = {
+  display: 'block', fontSize: 12, fontWeight: 700,
+  letterSpacing: '0.16em', textTransform: 'uppercase',
+  color: '#4A443C', marginBottom: 7,
 }
 
-/* ── DateField ────────────────────────────────────────────── */
+// Input — text color via inline style (safer than Tailwind interpolation)
+const INPUT = 'w-full bg-transparent text-[18px] md:text-[21px] placeholder-[#8A847C] outline-none leading-none'
+const INPUT_STYLE: React.CSSProperties = { color: '#1C1A18', caretColor: '#1C1A18' }
+
+/* ── Icons ────────────────────────────────────────────────── */
+const ICON_CLR = '#7A7268'   // warm medium gray — readable on ivory
+const I = {
+  user:   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={ICON_CLR} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  phone:  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={ICON_CLR} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 2H6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z"/></svg>,
+  cal:    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={ICON_CLR} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  dollar: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={ICON_CLR} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+  tag:    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={ICON_CLR} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>,
+  notes:  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={ICON_CLR} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+}
+
+/* ── DateField — label ABOVE box ──────────────────────────── */
 function DateField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <div className={`${FIELD} ${FIELD_H} cursor-pointer relative`} style={{ background: '#1e1e1e' }}>
-      <span className="text-[#6B7280] shrink-0 pointer-events-none">{I.cal}</span>
-      <div className="flex-1 min-w-0 pointer-events-none">
-        <p className={LABEL}>{label}</p>
-        <p className={`text-[17px] md:text-[19px] leading-none ${value ? 'text-[#F9FAFB]' : 'text-[#374151]'}`}>
+    <div>
+      <span style={FL}>{label}</span>
+      <div className={`${FIELD} ${FIELD_H} cursor-pointer relative`}>
+        <span className="shrink-0 pointer-events-none">{I.cal}</span>
+        <span className="flex-1 pointer-events-none text-[18px] md:text-[21px]"
+          style={{ color: value ? '#1C1A18' : '#8A847C' }}>
           {value ? formatDate(value) : 'Select date'}
-        </p>
+        </span>
+        <svg className="pointer-events-none shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={ICON_CLR} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+        <input type="date" value={value} onChange={e => onChange(e.target.value)}
+          style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
       </div>
-      {/* Subtle chevron indicates the field is tappable */}
-      <svg className="pointer-events-none shrink-0 text-[#4B5563]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 9l6 6 6-6"/>
-      </svg>
-      {/* Covers the full field area — opacity:0 keeps it invisible but
-          iOS Safari requires it to be in the layout to open the date picker */}
-      <input
-        type="date"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
-      />
     </div>
   )
 }
 
-// Taller field height on tablet
-const FIELD_H = 'h-[68px] md:h-[80px]'
+// Field height — slightly reduced now that labels are outside
+const FIELD_H = 'h-[54px] md:h-[64px]'
 
 /* ── Main Component ───────────────────────────────────────── */
 export default function CustomerForm() {
@@ -216,151 +224,191 @@ export default function CustomerForm() {
       <div
         ref={containerRef}
         className="flex flex-col items-center px-4 py-8 md:px-8 md:py-10"
-        style={{ minHeight: '100dvh' }}
+        style={{ minHeight: '100dvh', background: PAGE_BG }}
       >
         <div className="my-auto w-full max-w-xl md:max-w-2xl">
 
-          {/* Header */}
-          <div ref={headerRef} className="mb-5" style={{ opacity: 0 }}>
-            <h1 className="text-5xl md:text-6xl text-white text-center leading-none" style={{ fontFamily: 'var(--font-dancing)' }}>
+          {/* Header — warm cream on dark charcoal */}
+          <div ref={headerRef} className="mb-6" style={{ opacity: 0 }}>
+            <h1 className="text-4xl md:text-5xl text-center leading-none" style={{
+              fontFamily: 'var(--font-dancing)',
+              color: '#E8E0D0',
+              letterSpacing: '0.5px',
+            }}>
               Straus Tailor Shop
             </h1>
           </div>
 
-          {/* Form — natural height, no overflow, no internal scroll */}
+          {/* Form card — warm ivory paper floating on charcoal */}
           <form onSubmit={handleSubmit} className="w-full">
-            <div className="bg-[#141414] border border-white/[0.06] rounded-2xl p-4 md:p-5 mb-3">
+            <div className="rounded-2xl p-5 md:p-7 mb-4" style={{
+              background: CARD_BG,
+              border: '1px solid rgba(0,0,0,0.07)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 16px 48px rgba(0,0,0,0.45), 0 40px 80px rgba(0,0,0,0.35)',
+            }}>
               <div ref={fieldsRef} className="space-y-3">
 
-              {/* Full Name */}
-              <FieldWrap fieldId="name" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                <label className={`${FIELD} h-[68px] md:h-[76px] cursor-text`}>
-                  <span className="text-[#6B7280] shrink-0">{I.user}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className={LABEL}>Full Name</p>
-                    <input className={INPUT} placeholder="Customer name" value={form.customerName}
-                      onChange={e => setForm(f => ({ ...f, customerName: e.target.value }))}
-                      autoComplete="off" autoFocus />
-                  </div>
-                </label>
-              </FieldWrap>
+                {/* Full Name */}
+                <div>
+                  <span style={FL}>Full Name <span style={{ color: '#7A7268', fontWeight: 400 }}>*</span></span>
+                  <FieldWrap fieldId="name" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                    <label className={`${FIELD} ${FIELD_H} cursor-text`}>
+                      <span className="shrink-0">{I.user}</span>
+                      <input className={INPUT} style={INPUT_STYLE} placeholder="Customer name" value={form.customerName}
+                        onChange={e => setForm(f => ({ ...f, customerName: e.target.value }))}
+                        autoComplete="off" autoFocus />
+                    </label>
+                  </FieldWrap>
+                </div>
 
-              {/* Phone */}
-              <FieldWrap fieldId="phone" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                <label className={`${FIELD} h-[68px] md:h-[76px] cursor-text`}>
-                  <span className="text-[#6B7280] shrink-0">{I.phone}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className={LABEL}>Phone Number</p>
-                    <input className={INPUT} placeholder="(555) 000-0000" type="tel" value={form.phone}
-                      onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                      autoComplete="off" />
-                  </div>
-                </label>
-              </FieldWrap>
+                {/* Phone */}
+                <div>
+                  <span style={FL}>Phone Number <span style={{ color: '#7A7268', fontWeight: 400 }}>*</span></span>
+                  <FieldWrap fieldId="phone" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                    <label className={`${FIELD} ${FIELD_H} cursor-text`}>
+                      <span className="shrink-0">{I.phone}</span>
+                      <input className={INPUT} style={INPUT_STYLE} placeholder="(555) 000-0000" type="tel" value={form.phone}
+                        onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                        autoComplete="off" />
+                    </label>
+                  </FieldWrap>
+                </div>
 
-              {/* Dates — side by side */}
-              <div className="grid grid-cols-2 gap-3">
-                <FieldWrap fieldId="dropoff" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                  <DateField label="Drop-off Date" value={form.dropoffDate} onChange={v => setForm(f => ({ ...f, dropoffDate: v }))} />
-                </FieldWrap>
-                <FieldWrap fieldId="due" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                  <DateField label="Due Date" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
-                </FieldWrap>
-              </div>
+                {/* Dates — side by side */}
+                <div className="grid grid-cols-2 gap-3">
+                  <DateField label="Drop-off Date *" value={form.dropoffDate} onChange={v => setForm(f => ({ ...f, dropoffDate: v }))} />
+                  <DateField label="Need By *" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
+                </div>
 
-              {/* Notes */}
-              <FieldWrap fieldId="notes" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                <label className={`${FIELD} items-start py-4 cursor-text h-auto min-h-[90px]`}>
-                  <span className="text-[#6B7280] shrink-0 mt-0.5">{I.notes}</span>
-                  <div className="flex-1">
-                    <p className={LABEL}>Notes (optional)</p>
-                    <textarea className="w-full bg-transparent text-[#F9FAFB] text-[18px] md:text-[22px] placeholder-[#374151] outline-none leading-relaxed resize-none"
-                      placeholder="Any special requests or instructions…" rows={4}
-                      value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-                  </div>
-                </label>
-              </FieldWrap>
+                {/* Notes — slightly shorter */}
+                <div>
+                  <span style={FL}>Notes (optional)</span>
+                  <FieldWrap fieldId="notes" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                    <label className={`${FIELD} items-start py-3 cursor-text`} style={{ minHeight: 80 }}>
+                      <span className="shrink-0 mt-0.5">{I.notes}</span>
+                      <textarea className="flex-1 bg-transparent text-[18px] md:text-[21px] outline-none leading-relaxed resize-none placeholder-[#8A847C]"
+                        style={{ color: '#1C1A18', caretColor: '#1C1A18' }}
+                        placeholder="Any special requests or instructions…" rows={2}
+                        value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+                    </label>
+                  </FieldWrap>
+                </div>
 
-              {/* Staff section divider */}
-              <div className="flex items-center gap-3 py-1">
-                <div className="flex-1 h-px bg-white/50"/>
-                <span className="text-[11px] font-semibold tracking-[0.2em] text-white/70 uppercase">Staff</span>
-                <div className="flex-1 h-px bg-white/50"/>
-              </div>
+                {/* ── Staff section ── */}
+                <div className="flex items-center gap-4 pt-1">
+                  <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }}/>
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.20em', textTransform: 'uppercase', color: '#9A9388' }}>
+                    Staff Use Only
+                  </span>
+                  <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }}/>
+                </div>
 
-              {/* Total Amount */}
-              <FieldWrap fieldId="amount" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                <label className={`${FIELD} ${FIELD_H} cursor-text`}>
-                  <span className="text-[#6B7280] shrink-0">{I.dollar}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className={LABEL}>Total Amount</p>
-                    <div className="flex items-center">
-                      <span className="text-[#6B7280] text-[18px] md:text-[22px] mr-1 leading-none">$</span>
-                      <input className={INPUT} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
+                {/* Total Amount */}
+                <div>
+                  <span style={FL}>Total Amount</span>
+                  <FieldWrap fieldId="amount" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                    <label className={`${FIELD} ${FIELD_H} cursor-text`}>
+                      <span className="shrink-0">{I.dollar}</span>
+                      <span className="text-[18px] md:text-[21px] leading-none mr-0.5" style={{ color: '#7A7268' }}>$</span>
+                      <input className={INPUT} style={INPUT_STYLE} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
                         onChange={e => setForm(f => ({ ...f, totalAmount: e.target.value.replace(/[^0-9.]/g, '') }))}
                         autoComplete="off" />
-                    </div>
-                  </div>
-                </label>
-              </FieldWrap>
+                    </label>
+                  </FieldWrap>
+                </div>
 
-              {/* Paid / Unpaid */}
-              <div className="grid grid-cols-2 gap-3">
-                <button type="button" onClick={() => setForm(f => ({ ...f, paid: false }))}
-                  className={`${FIELD_H} rounded-xl text-base md:text-lg font-semibold transition-all ${
-                    !form.paid
-                      ? 'bg-white/[0.08] text-[#D1D5DB] border border-white/[0.15]'
-                      : 'bg-transparent text-[#555] border border-white/[0.06] hover:border-white/[0.1] hover:text-[#888]'
-                  }`}>
-                  Unpaid
-                </button>
-                <button type="button" onClick={() => setForm(f => ({ ...f, paid: true }))}
-                  className={`${FIELD_H} rounded-xl text-base md:text-lg font-semibold transition-all ${
-                    form.paid
-                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-transparent text-[#555] border border-white/[0.06] hover:border-white/[0.1] hover:text-[#888]'
-                  }`}>
-                  Paid
-                </button>
-              </div>
-
-              {/* Items stepper */}
-              <FieldWrap fieldId="items" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                <div className={`${FIELD} ${FIELD_H}`}>
-                  <span className="text-[#6B7280] shrink-0">{I.tag}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className={LABEL}>Number of Items</p>
-                    <span className="text-[17px] md:text-[19px] text-white leading-none">{form.itemCount}</span>
-                  </div>
-                  <div className="flex items-center gap-2 md:gap-3 shrink-0">
-                    <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: Math.max(1, f.itemCount - 1) }))}
-                      className="w-9 h-9 md:w-12 md:h-12 rounded-lg bg-[#222] hover:bg-[#2a2a2a] text-[#9CA3AF] hover:text-white text-xl md:text-2xl font-medium flex items-center justify-center transition-colors leading-none border border-[#2a2a2a]">
-                      −
+                {/* Payment Status — prominent Paid / Unpaid */}
+                <div>
+                  <span style={FL}>Payment Status</span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button type="button" onClick={() => setForm(f => ({ ...f, paid: false }))}
+                      className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
+                      style={!form.paid
+                        ? { background: '#1C1A18', color: '#F6F1E9', border: '1px solid #1C1A18', boxShadow: '0 3px 10px rgba(0,0,0,0.22)' }
+                        : { background: INPUT_BG, color: PLACEHOLDER, border: '1px solid rgba(0,0,0,0.12)' }
+                      }>
+                      Unpaid
                     </button>
-                    <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: f.itemCount + 1 }))}
-                      className="w-9 h-9 md:w-12 md:h-12 rounded-lg bg-[#222] hover:bg-[#2a2a2a] text-[#9CA3AF] hover:text-white text-xl md:text-2xl font-medium flex items-center justify-center transition-colors leading-none border border-[#2a2a2a]">
-                      +
+                    <button type="button" onClick={() => setForm(f => ({ ...f, paid: true }))}
+                      className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
+                      style={form.paid
+                        ? { background: BRASS, color: '#FFFFFF', border: `1px solid ${BRASS}`, boxShadow: '0 3px 10px rgba(139,115,85,0.30)' }
+                        : { background: INPUT_BG, color: PLACEHOLDER, border: '1px solid rgba(0,0,0,0.12)' }
+                      }>
+                      Paid
                     </button>
                   </div>
                 </div>
-              </FieldWrap>
+
+                {/* Number of Items */}
+                <div>
+                  <span style={FL}>Number of Items</span>
+                  <FieldWrap fieldId="items" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                    <div className={`${FIELD} ${FIELD_H}`}>
+                      <span className="shrink-0">{I.tag}</span>
+                      <span className="flex-1 text-[18px] md:text-[21px]" style={{ color: '#1C1A18' }}>{form.itemCount}</span>
+                      <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                        <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: Math.max(1, f.itemCount - 1) }))}
+                          className="w-9 h-9 md:w-12 md:h-12 rounded-lg text-xl md:text-2xl font-medium flex items-center justify-center transition-colors leading-none"
+                          style={{ background: '#EDE8DF', color: '#5C5248', border: '1px solid rgba(0,0,0,0.12)' }}>
+                          −
+                        </button>
+                        <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: f.itemCount + 1 }))}
+                          className="w-9 h-9 md:w-12 md:h-12 rounded-lg text-xl md:text-2xl font-medium flex items-center justify-center transition-colors leading-none"
+                          style={{ background: '#EDE8DF', color: '#5C5248', border: '1px solid rgba(0,0,0,0.12)' }}>
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </FieldWrap>
+                </div>
 
             </div>
           </div>
 
-          {error && <p className="text-red-400 text-sm text-center mb-2">{error}</p>}
+          {error && <p className="text-sm text-center mb-2" style={{ color: '#8B3A3A' }}>{error}</p>}
 
-          <button ref={btnRef} type="submit" disabled={loading}
-            className="w-full h-[56px] md:h-[64px] rounded-xl text-white text-[15px] md:text-[17px] font-semibold tracking-wide flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] disabled:opacity-50"
-            style={{ opacity: 0, background: '#065F46' }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#047857')}
-            onMouseLeave={e => (e.currentTarget.style.background = '#065F46')}>
-            {loading
-              ? <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-              : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-            }
-            {loading ? 'Saving…' : 'Print Ticket'}
-          </button>
+          {(() => {
+            const isReady = !!(form.customerName.trim() && form.phone.trim() && form.dropoffDate && form.dueDate)
+            return (
+              <>
+                {/* Helper message — visible only when required fields are incomplete */}
+                <p style={{
+                  fontSize: 12, textAlign: 'center', marginBottom: 8,
+                  color: '#9A9388', letterSpacing: '0.01em',
+                  opacity: isReady ? 0 : 1,
+                  transition: 'opacity 300ms ease',
+                  pointerEvents: 'none',
+                }}>
+                  Complete required fields to save and print.
+                </p>
+
+                <button
+                  ref={btnRef}
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-[56px] md:h-[62px] rounded-xl text-[15px] md:text-[17px] font-semibold tracking-wide flex items-center justify-center gap-2.5 transition-all"
+                  style={{
+                    opacity: 0,
+                    letterSpacing: '0.04em',
+                    cursor: isReady ? 'pointer' : 'not-allowed',
+                    transition: 'background 200ms ease, box-shadow 200ms ease, color 200ms ease',
+                    ...(isReady
+                      ? { background: '#2C2118', color: '#F6F1E9', boxShadow: '0 4px 18px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.20)' }
+                      : { background: '#E2DDD8', color: '#7A7268', boxShadow: 'none' }),
+                  }}
+                  onMouseEnter={e => { if (isReady) (e.currentTarget as HTMLButtonElement).style.background = '#3D2E20' }}
+                  onMouseLeave={e => { if (isReady) (e.currentTarget as HTMLButtonElement).style.background = '#2C2118' }}
+                >
+                  {loading
+                    ? <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                    : null
+                  }
+                  {loading ? 'Saving…' : 'Save & Print Ticket'}
+                </button>
+              </>
+            )
+          })()}
         </form>
 
         </div>{/* end my-auto wrapper */}
