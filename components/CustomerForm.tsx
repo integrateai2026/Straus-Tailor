@@ -80,7 +80,7 @@ const FIELD_FOCUS = 'border-[#8B7355]/50'   // added via focus-within in JSX wra
 const FL: React.CSSProperties = {
   display: 'block', fontSize: 14, fontWeight: 700,
   letterSpacing: '0.14em', textTransform: 'uppercase',
-  color: '#4A443C', marginBottom: 8,
+  color: '#4A443C', marginBottom: 5,
 }
 
 // Input — text color via inline style (safer than Tailwind interpolation)
@@ -246,9 +246,15 @@ export default function CustomerForm() {
               border: '1px solid rgba(0,0,0,0.07)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 16px 48px rgba(0,0,0,0.45), 0 40px 80px rgba(0,0,0,0.35)',
             }}>
-              <div ref={fieldsRef} className="space-y-3">
+              {/*
+                Visual grouping rules:
+                — Label → its field: 8px (FL.marginBottom) — stays tight so they read as one unit
+                — Field group → next field group: 20px (space-y-5) — clearly separates groups
+                — Customer section → Staff section: extra top padding on staff block
+              */}
+              <div ref={fieldsRef} className="space-y-5">
 
-                {/* Full Name */}
+                {/* ── Customer information ── */}
                 <div>
                   <span style={FL}>Full Name <span style={{ color: '#7A7268', fontWeight: 400 }}>*</span></span>
                   <FieldWrap fieldId="name" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
@@ -261,7 +267,6 @@ export default function CustomerForm() {
                   </FieldWrap>
                 </div>
 
-                {/* Phone */}
                 <div>
                   <span style={FL}>Phone Number <span style={{ color: '#7A7268', fontWeight: 400 }}>*</span></span>
                   <FieldWrap fieldId="phone" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
@@ -274,13 +279,12 @@ export default function CustomerForm() {
                   </FieldWrap>
                 </div>
 
-                {/* Dates — side by side */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* Dates sit in the same row — each has its own label above */}
+                <div className="grid grid-cols-2 gap-4">
                   <DateField label="Drop-off Date *" value={form.dropoffDate} onChange={v => setForm(f => ({ ...f, dropoffDate: v }))} />
                   <DateField label="Need By *" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
                 </div>
 
-                {/* Notes — slightly shorter */}
                 <div>
                   <span style={FL}>Notes (optional)</span>
                   <FieldWrap fieldId="notes" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
@@ -294,73 +298,79 @@ export default function CustomerForm() {
                   </FieldWrap>
                 </div>
 
-                {/* ── Staff section ── */}
-                <div className="flex items-center gap-4 pt-1">
-                  <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }}/>
-                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.20em', textTransform: 'uppercase', color: '#9A9388' }}>
-                    Staff Use Only
-                  </span>
-                  <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }}/>
-                </div>
+                {/* ── Staff section — visually distinct block ── */}
+                <div className="rounded-xl pt-4 pb-1 px-4 -mx-4" style={{ background: 'rgba(0,0,0,0.035)' }}>
 
-                {/* Total Amount */}
-                <div>
-                  <span style={FL}>Total Amount</span>
-                  <FieldWrap fieldId="amount" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                    <label className={`${FIELD} ${FIELD_H} cursor-text`}>
-                      <span className="shrink-0">{I.dollar}</span>
-                      <span className="text-[18px] md:text-[21px] leading-none mr-0.5" style={{ color: '#7A7268' }}>$</span>
-                      <input className={INPUT} style={INPUT_STYLE} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
-                        onChange={e => setForm(f => ({ ...f, totalAmount: e.target.value.replace(/[^0-9.]/g, '') }))}
-                        autoComplete="off" />
-                    </label>
-                  </FieldWrap>
-                </div>
-
-                {/* Payment Status — prominent Paid / Unpaid */}
-                <div>
-                  <span style={FL}>Payment Status</span>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button type="button" onClick={() => setForm(f => ({ ...f, paid: false }))}
-                      className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
-                      style={!form.paid
-                        ? { background: '#1C1A18', color: '#F6F1E9', border: '1px solid #1C1A18', boxShadow: '0 3px 10px rgba(0,0,0,0.22)' }
-                        : { background: INPUT_BG, color: PLACEHOLDER, border: '1px solid rgba(0,0,0,0.12)' }
-                      }>
-                      Unpaid
-                    </button>
-                    <button type="button" onClick={() => setForm(f => ({ ...f, paid: true }))}
-                      className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
-                      style={form.paid
-                        ? { background: BRASS, color: '#FFFFFF', border: `1px solid ${BRASS}`, boxShadow: '0 3px 10px rgba(139,115,85,0.30)' }
-                        : { background: INPUT_BG, color: PLACEHOLDER, border: '1px solid rgba(0,0,0,0.12)' }
-                      }>
-                      Paid
-                    </button>
+                  {/* Section header */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.10)' }}/>
+                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#9A9388' }}>
+                      Staff Use Only
+                    </span>
+                    <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.10)' }}/>
                   </div>
-                </div>
 
-                {/* Number of Items */}
-                <div>
-                  <span style={FL}>Number of Items</span>
-                  <FieldWrap fieldId="items" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                    <div className={`${FIELD} ${FIELD_H}`}>
-                      <span className="shrink-0">{I.tag}</span>
-                      <span className="flex-1 text-[18px] md:text-[21px]" style={{ color: '#1C1A18' }}>{form.itemCount}</span>
-                      <div className="flex items-center gap-2 md:gap-3 shrink-0">
-                        <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: Math.max(1, f.itemCount - 1) }))}
-                          className="w-9 h-9 md:w-12 md:h-12 rounded-lg text-xl md:text-2xl font-medium flex items-center justify-center transition-colors leading-none"
-                          style={{ background: '#EDE8DF', color: '#5C5248', border: '1px solid rgba(0,0,0,0.12)' }}>
-                          −
+                  <div className="space-y-4">
+
+                    <div>
+                      <span style={FL}>Total Amount</span>
+                      <FieldWrap fieldId="amount" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                        <label className={`${FIELD} ${FIELD_H} cursor-text`}>
+                          <span className="shrink-0">{I.dollar}</span>
+                          <span className="text-[18px] md:text-[21px] leading-none mr-0.5" style={{ color: '#7A7268' }}>$</span>
+                          <input className={INPUT} style={INPUT_STYLE} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
+                            onChange={e => setForm(f => ({ ...f, totalAmount: e.target.value.replace(/[^0-9.]/g, '') }))}
+                            autoComplete="off" />
+                        </label>
+                      </FieldWrap>
+                    </div>
+
+                    <div>
+                      <span style={FL}>Payment Status</span>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button type="button" onClick={() => setForm(f => ({ ...f, paid: false }))}
+                          className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
+                          style={!form.paid
+                            ? { background: '#1C1A18', color: '#F6F1E9', border: '1px solid #1C1A18', boxShadow: '0 3px 10px rgba(0,0,0,0.22)' }
+                            : { background: '#FDFAF5', color: '#A89F94', border: '1px solid rgba(0,0,0,0.12)' }
+                          }>
+                          Unpaid
                         </button>
-                        <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: f.itemCount + 1 }))}
-                          className="w-9 h-9 md:w-12 md:h-12 rounded-lg text-xl md:text-2xl font-medium flex items-center justify-center transition-colors leading-none"
-                          style={{ background: '#EDE8DF', color: '#5C5248', border: '1px solid rgba(0,0,0,0.12)' }}>
-                          +
+                        <button type="button" onClick={() => setForm(f => ({ ...f, paid: true }))}
+                          className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
+                          style={form.paid
+                            ? { background: '#8B7355', color: '#FFFFFF', border: '1px solid #8B7355', boxShadow: '0 3px 10px rgba(139,115,85,0.30)' }
+                            : { background: '#FDFAF5', color: '#A89F94', border: '1px solid rgba(0,0,0,0.12)' }
+                          }>
+                          Paid
                         </button>
                       </div>
                     </div>
-                  </FieldWrap>
+
+                    <div>
+                      <span style={FL}>Number of Items</span>
+                      <FieldWrap fieldId="items" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                        <div className={`${FIELD} ${FIELD_H}`}>
+                          <span className="shrink-0">{I.tag}</span>
+                          <span className="flex-1 text-[18px] md:text-[21px]" style={{ color: '#1C1A18' }}>{form.itemCount}</span>
+                          <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                            <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: Math.max(1, f.itemCount - 1) }))}
+                              className="w-9 h-9 md:w-12 md:h-12 rounded-lg text-xl md:text-2xl font-medium flex items-center justify-center transition-colors leading-none"
+                              style={{ background: '#EDE8DF', color: '#5C5248', border: '1px solid rgba(0,0,0,0.12)' }}>
+                              −
+                            </button>
+                            <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: f.itemCount + 1 }))}
+                              className="w-9 h-9 md:w-12 md:h-12 rounded-lg text-xl md:text-2xl font-medium flex items-center justify-center transition-colors leading-none"
+                              style={{ background: '#EDE8DF', color: '#5C5248', border: '1px solid rgba(0,0,0,0.12)' }}>
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </FieldWrap>
+                    </div>
+
+                  </div>
+                  <div className="h-4" />{/* bottom breathing room inside staff block */}
                 </div>
 
             </div>
