@@ -207,22 +207,27 @@ export default function CustomerForm() {
         keyboard opens on iOS/Android, then snaps back when it closes.
         The form card grows/shrinks with the screen so it always fits.
       */}
+      {/* Outer container fills the screen and centers everything */}
       <div
         ref={containerRef}
-        className="flex flex-col items-center justify-center px-4 py-8 md:px-8 md:py-10"
-        style={{ minHeight: '100dvh' }}
+        className="flex flex-col items-center justify-center px-4 py-6 md:px-8"
+        style={{ height: '100dvh' }}
       >
-
-        {/* Header */}
-        <div ref={headerRef} className="mb-5 shrink-0 w-full max-w-xl md:max-w-2xl" style={{ opacity: 0 }}>
+        {/* Header — fixed size, doesn't grow */}
+        <div ref={headerRef} className="mb-4 shrink-0 w-full max-w-xl md:max-w-2xl" style={{ opacity: 0 }}>
           <h1 className="text-5xl md:text-6xl text-white text-center leading-none" style={{ fontFamily: 'var(--font-dancing)' }}>
             Straus Tailor Shop
           </h1>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="w-full max-w-xl md:max-w-2xl">
-          <div className="bg-[#141414] border border-white/[0.06] rounded-2xl p-4 md:p-6 mb-3">
+        {/* Form — fills 70% of screen height, adapts to every device */}
+        <form
+          onSubmit={handleSubmit}
+          className="w-full max-w-xl md:max-w-2xl flex flex-col"
+          style={{ height: '70dvh' }}
+        >
+          {/* Card — fills available space, fields scroll if they overflow */}
+          <div className="bg-[#141414] border border-white/[0.06] rounded-2xl p-4 md:p-6 mb-3 flex-1 overflow-y-auto">
             <div ref={fieldsRef} className="space-y-3 md:space-y-4">
 
               {/* Full Name */}
