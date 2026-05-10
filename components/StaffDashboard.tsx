@@ -189,7 +189,12 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                   <p className="text-sm text-[#444]">No orders found</p>
                   <p className="text-xs text-[#2a2a2a] mt-1">{search ? 'Try a different search' : 'Orders will appear here'}</p>
                 </div>
-              ) : orders.map((order) => {
+              ) : [...orders].sort((a, b) => {
+                  if (!a.dueDate && !b.dueDate) return 0
+                  if (!a.dueDate) return 1
+                  if (!b.dueDate) return -1
+                  return a.dueDate.localeCompare(b.dueDate)
+                }).map((order) => {
                 const dueRaw = getDueInfo(order.dueDate)
                 // Completed orders are done — never show overdue styling
                 const due = order.status === 'completed'
