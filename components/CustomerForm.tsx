@@ -174,7 +174,7 @@ export default function CustomerForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.customerName.trim() || !form.phone.trim() || !form.dropoffDate || !form.dueDate) {
+    if (!form.customerName.trim() || !form.phone.trim() || !form.dueDate) {
       setError('Please fill in all required fields.')
       gsap.to(containerRef.current, { x: -5, duration: 0.06, yoyo: true, repeat: 5, ease: 'power2.inOut' })
       return
@@ -279,11 +279,8 @@ export default function CustomerForm() {
                   </FieldWrap>
                 </div>
 
-                {/* Dates sit in the same row — each has its own label above */}
-                <div className="grid grid-cols-2 gap-4">
-                  <DateField label="Drop-off Date *" value={form.dropoffDate} onChange={v => setForm(f => ({ ...f, dropoffDate: v }))} />
-                  <DateField label="Need By *" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
-                </div>
+                {/* Drop-off date is always today — hidden from form, still submitted */}
+                <DateField label="Need By *" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
 
                 <div>
                   <span style={FL}>Notes (optional)</span>
@@ -379,7 +376,7 @@ export default function CustomerForm() {
           {error && <p className="text-sm text-center mb-2" style={{ color: '#8B3A3A' }}>{error}</p>}
 
           {(() => {
-            const isReady = !!(form.customerName.trim() && form.phone.trim() && form.dropoffDate && form.dueDate)
+            const isReady = !!(form.customerName.trim() && form.phone.trim() && form.dueDate)
             return (
               <>
                 {/* Helper message — visible only when required fields are incomplete */}
