@@ -190,6 +190,11 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                   <p className="text-xs text-[#2a2a2a] mt-1">{search ? 'Try a different search' : 'Orders will appear here'}</p>
                 </div>
               ) : [...orders].sort((a, b) => {
+                  if (tab === 'all') {
+                    // Most recently created first
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                  }
+                  // All other tabs: soonest due / most overdue first
                   if (!a.dueDate && !b.dueDate) return 0
                   if (!a.dueDate) return 1
                   if (!b.dueDate) return -1
