@@ -77,7 +77,7 @@ const FIELD = 'flex items-center gap-3 px-4 bg-[#FDFAF5] border border-black/[0.
 const FIELD_FOCUS = 'border-[#8B7355]/50'   // added via focus-within in JSX wrapper
 
 // Label above each box — class handles responsive size, style handles color
-const FL_CLASS = 'block text-[13px] md:text-[15px] font-bold tracking-[0.14em] uppercase mb-[5px]'
+const FL_CLASS = 'block text-[13px] md:text-[18px] font-bold tracking-[0.14em] uppercase mb-[5px]'
 const FL_STYLE: React.CSSProperties = { color: '#4A443C' }
 // Keep FL as alias for inline-only use (e.g. dynamic labels)
 const FL = FL_STYLE
@@ -305,7 +305,7 @@ export default function CustomerForm() {
                   </div>
                   {/* Consent text */}
                   <div>
-                    <p className="text-[13px] md:text-[15px]" style={{ fontWeight: 700, color: '#4A443C', marginBottom: 4 }}>Yes, text me about this order</p>
+                    <p className="text-[13px] md:text-[18px]" style={{ fontWeight: 700, color: '#4A443C', marginBottom: 4 }}>Yes, text me about this order</p>
                     <p style={{ fontSize: 11, lineHeight: 1.55, color: '#8A847C' }}>
                       Pickup reminders, order updates, customer service replies, review requests, and shop updates from{' '}
                       <span style={{ fontWeight: 600 }}>Straus Tailor Shop</span>.{' '}
