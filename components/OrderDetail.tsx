@@ -172,6 +172,15 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
                 Picked Up
               </span>
             )}
+            {order.smsConsent ? (
+              <span className="text-xs px-3 py-1 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 font-medium">
+                SMS Consent ✓
+              </span>
+            ) : (
+              <span className="text-xs px-3 py-1 rounded-full bg-white/[0.05] text-[#777] border border-white/[0.09] font-medium">
+                No SMS Consent
+              </span>
+            )}
           </div>
 
           {/* Actions */}

@@ -17,6 +17,7 @@ export interface Order {
   completedAt?: string
   totalAmount?: number
   itemCount?: number
+  smsConsent?: boolean
 }
 
 export interface CreateOrderInput {
@@ -28,6 +29,7 @@ export interface CreateOrderInput {
   totalAmount?: number
   itemCount?: number
   paid?: boolean
+  smsConsent?: boolean
 }
 
 export interface UpdateOrderInput {

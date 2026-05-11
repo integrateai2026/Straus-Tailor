@@ -133,6 +133,7 @@ export default function CustomerForm() {
     totalAmount: '',
     itemCount: 1,
     paid: false,
+    smsConsent: false,
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -166,7 +167,7 @@ export default function CustomerForm() {
     gsap.to(fieldsRef.current!.children, {
       y: -8, opacity: 0, duration: 0.25, stagger: 0.04, ease: 'power2.in',
       onComplete: () => {
-        setForm({ customerName: '', phone: '', dropoffDate: localDate(), dueDate: twoWeeksOut(), notes: '', totalAmount: '', itemCount: 1, paid: false })
+        setForm({ customerName: '', phone: '', dropoffDate: localDate(), dueDate: twoWeeksOut(), notes: '', totalAmount: '', itemCount: 1, paid: false, smsConsent: false })
         setError('')
         setStaffOpen(false)
         gsap.fromTo(fieldsRef.current!.children, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.05, ease: 'power2.out' })
@@ -284,6 +285,35 @@ export default function CustomerForm() {
 
                 {/* Drop-off date is always today — hidden from form, still submitted */}
                 <DateField label="Need By *" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
+
+                {/* ── SMS Consent ── */}
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, smsConsent: !f.smsConsent }))}
+                  className="w-full flex items-start gap-3 text-left"
+                >
+                  {/* Checkbox */}
+                  <div className="shrink-0 mt-[3px] w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all"
+                    style={form.smsConsent
+                      ? { background: '#8B7355', borderColor: '#8B7355' }
+                      : { background: '#FDFAF5', borderColor: 'rgba(0,0,0,0.25)' }
+                    }>
+                    {form.smsConsent && (
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </div>
+                  {/* Consent text */}
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: '#4A443C', marginBottom: 4 }}>Yes, text me about this order</p>
+                    <p style={{ fontSize: 11, lineHeight: 1.55, color: '#8A847C' }}>
+                      Pickup reminders, order updates, customer service replies, review requests, and shop updates from{' '}
+                      <span style={{ fontWeight: 600 }}>Straus Tailor Shop</span>.{' '}
+                      Msg/data rates may apply. Reply <span style={{ fontWeight: 600 }}>STOP</span> to opt out.
+                    </p>
+                  </div>
+                </button>
 
                 {/* ── Staff toggle ── */}
                 <button
