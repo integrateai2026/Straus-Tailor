@@ -97,6 +97,14 @@ const I = {
   notes:  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={ICON_CLR} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
 }
 
+/* ── Phone auto-formatter ────────────────────────────────── */
+function autoFormatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 10)
+  if (digits.length <= 3) return digits.length ? `(${digits}` : ''
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+}
+
 /* ── DateField — label ABOVE box ──────────────────────────── */
 function DateField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
@@ -276,7 +284,7 @@ export default function CustomerForm() {
                     <label className={`${FIELD} ${FIELD_H} cursor-text`}>
                       <span className="shrink-0">{I.phone}</span>
                       <input className={INPUT} style={INPUT_STYLE} placeholder="(555) 000-0000" type="tel" value={form.phone}
-                        onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                        onChange={e => setForm(f => ({ ...f, phone: autoFormatPhone(e.target.value) }))}
                         autoComplete="off" />
                     </label>
                   </FieldWrap>
@@ -321,7 +329,7 @@ export default function CustomerForm() {
                   className="w-full flex items-center gap-3 py-1 transition-opacity hover:opacity-70"
                 >
                   <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.10)' }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#9A9388' }}>
+                  <span className="text-[10px] md:text-[13px]" style={{ fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#9A9388' }}>
                     Staff Details
                   </span>
                   <svg

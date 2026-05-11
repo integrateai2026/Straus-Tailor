@@ -12,6 +12,15 @@ interface Props {
   onClose: () => void
 }
 
+function formatPhone(raw: string): string {
+  const digits = raw.replace(/\D/g, '')
+  if (digits.length === 10)
+    return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`
+  if (digits.length === 11 && digits[0] === '1')
+    return `+1 (${digits.slice(1,4)}) ${digits.slice(4,7)}-${digits.slice(7)}`
+  return raw
+}
+
 function formatDate(iso: string): string {
   if (!iso) return '—'
   return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {
@@ -31,7 +40,7 @@ function ThermalBody({ order }: { order: Order }) {
   }
   const rows = [
     ['Customer', order.customerName],
-    ['Phone',    order.phone],
+    ['Phone',    formatPhone(order.phone)],
     ['Drop-off', formatDate(order.dropoffDate)],
     ['Due Date', formatDate(order.dueDate)],
     ...(order.totalAmount != null ? [['Total',     `$${order.totalAmount.toFixed(2)}`]] : []),
@@ -119,7 +128,7 @@ function TicketBody({ order }: { order: Order }) {
       <div className="px-8 py-4 space-y-3 border-b border-dashed border-gray-200">
         {[
           { icon: <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></>, label: 'Customer', value: order.customerName },
-          { icon: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 2H6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z" />, label: 'Phone', value: order.phone },
+          { icon: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 2H6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z" />, label: 'Phone', value: formatPhone(order.phone) },
           { icon: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>, label: 'Drop-off', value: formatDate(order.dropoffDate) },
           { icon: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>, label: 'Due Date', value: formatDate(order.dueDate) },
           ...(order.totalAmount != null ? [{ icon: <><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></>, label: 'Total', value: `$${order.totalAmount.toFixed(2)}` }] : []),
