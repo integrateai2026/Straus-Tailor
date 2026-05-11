@@ -76,12 +76,11 @@ const PLACEHOLDER = '#8A847C'       // medium gray — clearly readable
 const FIELD = 'flex items-center gap-3 px-4 bg-[#FDFAF5] border border-black/[0.12] rounded-xl transition-colors'
 const FIELD_FOCUS = 'border-[#8B7355]/50'   // added via focus-within in JSX wrapper
 
-// Label above each box
-const FL: React.CSSProperties = {
-  display: 'block', fontSize: 14, fontWeight: 700,
-  letterSpacing: '0.14em', textTransform: 'uppercase',
-  color: '#4A443C', marginBottom: 5,
-}
+// Label above each box — class handles responsive size, style handles color
+const FL_CLASS = 'block text-[13px] md:text-[15px] font-bold tracking-[0.14em] uppercase mb-[5px]'
+const FL_STYLE: React.CSSProperties = { color: '#4A443C' }
+// Keep FL as alias for inline-only use (e.g. dynamic labels)
+const FL = FL_STYLE
 
 // Input — text color via inline style (safer than Tailwind interpolation)
 const INPUT = 'w-full bg-transparent text-[18px] md:text-[21px] placeholder-[#8A847C] outline-none leading-none'
@@ -102,7 +101,7 @@ const I = {
 function DateField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <span style={FL}>{label}</span>
+      <span className={FL_CLASS} style={FL_STYLE}>{label}</span>
       <div className={`${FIELD} ${FIELD_H} cursor-pointer relative`}>
         <span className="shrink-0 pointer-events-none">{I.cal}</span>
         <span className="flex-1 pointer-events-none text-[18px] md:text-[21px]"
@@ -260,7 +259,7 @@ export default function CustomerForm() {
 
                 {/* ── Customer information ── */}
                 <div>
-                  <span style={FL}>Full Name <span style={{ color: '#7A7268', fontWeight: 400 }}>*</span></span>
+                  <span className={FL_CLASS} style={FL_STYLE}>Full Name <span style={{ color: '#7A7268', fontWeight: 400 }}>*</span></span>
                   <FieldWrap fieldId="name" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
                     <label className={`${FIELD} ${FIELD_H} cursor-text`}>
                       <span className="shrink-0">{I.user}</span>
@@ -272,7 +271,7 @@ export default function CustomerForm() {
                 </div>
 
                 <div>
-                  <span style={FL}>Phone Number <span style={{ color: '#7A7268', fontWeight: 400 }}>*</span></span>
+                  <span className={FL_CLASS} style={FL_STYLE}>Phone Number <span style={{ color: '#7A7268', fontWeight: 400 }}>*</span></span>
                   <FieldWrap fieldId="phone" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
                     <label className={`${FIELD} ${FIELD_H} cursor-text`}>
                       <span className="shrink-0">{I.phone}</span>
@@ -306,7 +305,7 @@ export default function CustomerForm() {
                   </div>
                   {/* Consent text */}
                   <div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: '#4A443C', marginBottom: 4 }}>Yes, text me about this order</p>
+                    <p className="text-[13px] md:text-[15px]" style={{ fontWeight: 700, color: '#4A443C', marginBottom: 4 }}>Yes, text me about this order</p>
                     <p style={{ fontSize: 11, lineHeight: 1.55, color: '#8A847C' }}>
                       Pickup reminders, order updates, customer service replies, review requests, and shop updates from{' '}
                       <span style={{ fontWeight: 600 }}>Straus Tailor Shop</span>.{' '}
@@ -348,7 +347,7 @@ export default function CustomerForm() {
                   <div className="space-y-4 pt-1">
 
                     <div>
-                      <span style={FL}>Notes (optional)</span>
+                      <span className={FL_CLASS} style={FL_STYLE}>Notes (optional)</span>
                       <FieldWrap fieldId="notes" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
                         <label className={`${FIELD} items-start py-3 cursor-text`} style={{ minHeight: 80 }}>
                           <span className="shrink-0 mt-0.5">{I.notes}</span>
@@ -361,7 +360,7 @@ export default function CustomerForm() {
                     </div>
 
                     <div>
-                      <span style={FL}>Total Amount</span>
+                      <span className={FL_CLASS} style={FL_STYLE}>Total Amount</span>
                       <FieldWrap fieldId="amount" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
                         <label className={`${FIELD} ${FIELD_H} cursor-text`}>
                           <span className="shrink-0">{I.dollar}</span>
@@ -376,7 +375,7 @@ export default function CustomerForm() {
                     </div>
 
                     <div>
-                      <span style={FL}>Payment Status</span>
+                      <span className={FL_CLASS} style={FL_STYLE}>Payment Status</span>
                       <div className="grid grid-cols-2 gap-3">
                         <button type="button" onClick={() => setForm(f => ({ ...f, paid: false }))}
                           className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
@@ -398,7 +397,7 @@ export default function CustomerForm() {
                     </div>
 
                     <div>
-                      <span style={FL}>Number of Items</span>
+                      <span className={FL_CLASS} style={FL_STYLE}>Number of Items</span>
                       <FieldWrap fieldId="items" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
                         <div className={`${FIELD} ${FIELD_H}`}>
                           <span className="shrink-0">{I.tag}</span>
