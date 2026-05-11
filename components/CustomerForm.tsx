@@ -335,10 +335,12 @@ export default function CustomerForm() {
                       <FieldWrap fieldId="amount" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
                         <label className={`${FIELD} ${FIELD_H} cursor-text`}>
                           <span className="shrink-0">{I.dollar}</span>
-                          <span className="text-[18px] md:text-[21px] leading-none mr-0.5" style={{ color: '#7A7268' }}>$</span>
-                          <input className={INPUT} style={INPUT_STYLE} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
-                            onChange={e => setForm(f => ({ ...f, totalAmount: e.target.value.replace(/[^0-9.]/g, '') }))}
-                            autoComplete="off" />
+                          <div className="flex items-center flex-1">
+                            <span className="text-[18px] md:text-[21px] leading-none" style={{ color: '#7A7268' }}>$</span>
+                            <input className={INPUT} style={INPUT_STYLE} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
+                              onChange={e => setForm(f => ({ ...f, totalAmount: e.target.value.replace(/[^0-9.]/g, '') }))}
+                              autoComplete="off" />
+                          </div>
                         </label>
                       </FieldWrap>
                     </div>
