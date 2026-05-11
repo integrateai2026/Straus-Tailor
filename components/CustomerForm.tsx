@@ -138,6 +138,8 @@ export default function CustomerForm() {
   const [error, setError] = useState('')
   const [order, setOrder] = useState<Order | null>(null)
   const [focused, setFocused] = useState('name')
+  const [staffOpen, setStaffOpen] = useState(false)
+  const staffPanelRef = useRef<HTMLDivElement>(null)
   const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function handleFocus(id: string) {
@@ -166,6 +168,7 @@ export default function CustomerForm() {
       onComplete: () => {
         setForm({ customerName: '', phone: '', dropoffDate: localDate(), dueDate: twoWeeksOut(), notes: '', totalAmount: '', itemCount: 1, paid: false })
         setError('')
+        setStaffOpen(false)
         gsap.fromTo(fieldsRef.current!.children, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.05, ease: 'power2.out' })
         gsap.fromTo(btnRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 })
       },
@@ -282,32 +285,50 @@ export default function CustomerForm() {
                 {/* Drop-off date is always today — hidden from form, still submitted */}
                 <DateField label="Need By *" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
 
-                <div>
-                  <span style={FL}>Notes (optional)</span>
-                  <FieldWrap fieldId="notes" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                    <label className={`${FIELD} items-start py-3 cursor-text`} style={{ minHeight: 80 }}>
-                      <span className="shrink-0 mt-0.5">{I.notes}</span>
-                      <textarea className="flex-1 bg-transparent text-[18px] md:text-[21px] outline-none leading-relaxed resize-none placeholder-[#8A847C]"
-                        style={{ color: '#1C1A18', caretColor: '#1C1A18' }}
-                        placeholder="Any special requests or instructions…" rows={2}
-                        value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-                    </label>
-                  </FieldWrap>
-                </div>
+                {/* ── Staff toggle ── */}
+                <button
+                  type="button"
+                  onClick={() => setStaffOpen(o => !o)}
+                  className="w-full flex items-center gap-3 py-1 transition-opacity hover:opacity-70"
+                >
+                  <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.10)' }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#9A9388' }}>
+                    Staff Details
+                  </span>
+                  <svg
+                    width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9A9388" strokeWidth="2.5"
+                    strokeLinecap="round" strokeLinejoin="round"
+                    style={{ transition: 'transform 250ms ease', transform: staffOpen ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }}
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                  <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.10)' }} />
+                </button>
 
-                {/* ── Staff section — visually distinct block ── */}
-                <div className="rounded-xl pt-4 pb-1 px-4 -mx-4" style={{ background: 'rgba(0,0,0,0.035)' }}>
+                {/* ── Collapsible staff panel ── */}
+                <div
+                  ref={staffPanelRef}
+                  style={{
+                    overflow: 'hidden',
+                    maxHeight: staffOpen ? '600px' : '0px',
+                    opacity: staffOpen ? 1 : 0,
+                    transition: 'max-height 300ms ease, opacity 250ms ease',
+                  }}
+                >
+                  <div className="space-y-4 pt-1">
 
-                  {/* Section header */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.10)' }}/>
-                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#9A9388' }}>
-                      Staff Use Only
-                    </span>
-                    <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.10)' }}/>
-                  </div>
-
-                  <div className="space-y-4">
+                    <div>
+                      <span style={FL}>Notes (optional)</span>
+                      <FieldWrap fieldId="notes" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                        <label className={`${FIELD} items-start py-3 cursor-text`} style={{ minHeight: 80 }}>
+                          <span className="shrink-0 mt-0.5">{I.notes}</span>
+                          <textarea className="flex-1 bg-transparent text-[18px] md:text-[21px] outline-none leading-relaxed resize-none placeholder-[#8A847C]"
+                            style={{ color: '#1C1A18', caretColor: '#1C1A18' }}
+                            placeholder="Any special requests or instructions…" rows={2}
+                            value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+                        </label>
+                      </FieldWrap>
+                    </div>
 
                     <div>
                       <span style={FL}>Total Amount</span>
@@ -367,7 +388,6 @@ export default function CustomerForm() {
                     </div>
 
                   </div>
-                  <div className="h-4" />{/* bottom breathing room inside staff block */}
                 </div>
 
             </div>
