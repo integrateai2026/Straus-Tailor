@@ -38,13 +38,17 @@ function ThermalBody({ order }: { order: Order }) {
     row:     { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px', gap: '6px' } as React.CSSProperties,
     rowVal:  { fontSize: '11px', fontWeight: '600', textAlign: 'right' as const, maxWidth: '45mm', wordBreak: 'break-word' as const },
   }
+  const garmentLines = order.garments
+    ? Object.entries(order.garments).map(([g, qty]) => qty > 1 ? `${g} x${qty}` : g).join(', ')
+    : ''
+  const alterationLines = order.alterations?.join(', ') ?? ''
+
   const rows = [
     ['Customer', order.customerName],
     ['Phone',    formatPhone(order.phone)],
-    ['Drop-off', formatDate(order.dropoffDate)],
     ['Due Date', formatDate(order.dueDate)],
-    ...(order.totalAmount != null ? [['Total',     `$${order.totalAmount.toFixed(2)}`]] : []),
-    ...(order.itemCount   != null ? [['Items',     `${order.itemCount} item${order.itemCount !== 1 ? 's' : ''}`]] : []),
+    ...(order.totalAmount != null ? [['Total', `$${order.totalAmount.toFixed(2)}`]] : []),
+    ['SMS',      order.smsConsent ? 'Yes' : 'No'],
   ]
   return (
     <div style={s.wrap}>
@@ -78,12 +82,22 @@ function ThermalBody({ order }: { order: Order }) {
         ))}
       </div>
 
-      {order.notes && (
+      {garmentLines && (
         <>
           <div style={s.dash} />
           <div>
-            <p style={{ ...s.label, marginBottom: '3px' }}>Notes</p>
-            <p style={{ fontSize: '11px', fontWeight: '700', whiteSpace: 'pre-wrap' }}>{order.notes}</p>
+            <p style={{ ...s.label, marginBottom: '3px' }}>Garments</p>
+            <p style={{ fontSize: '11px', fontWeight: '700', whiteSpace: 'pre-wrap' }}>{garmentLines}</p>
+          </div>
+        </>
+      )}
+
+      {alterationLines && (
+        <>
+          <div style={s.dash} />
+          <div>
+            <p style={{ ...s.label, marginBottom: '3px' }}>Alterations &amp; Repairs</p>
+            <p style={{ fontSize: '11px', fontWeight: '700', whiteSpace: 'pre-wrap' }}>{alterationLines}</p>
           </div>
         </>
       )}
@@ -129,10 +143,9 @@ function TicketBody({ order }: { order: Order }) {
         {[
           { icon: <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></>, label: 'Customer', value: order.customerName },
           { icon: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 2H6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z" />, label: 'Phone', value: formatPhone(order.phone) },
-          { icon: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>, label: 'Drop-off', value: formatDate(order.dropoffDate) },
           { icon: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>, label: 'Due Date', value: formatDate(order.dueDate) },
           ...(order.totalAmount != null ? [{ icon: <><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></>, label: 'Total', value: `$${order.totalAmount.toFixed(2)}` }] : []),
-          ...(order.itemCount   != null ? [{ icon: <><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></>, label: 'Items', value: `${order.itemCount} item${order.itemCount !== 1 ? 's' : ''}` }] : []),
+          { icon: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />, label: 'SMS Consent', value: order.smsConsent ? 'Yes' : 'No' },
         ].map(({ label, value, icon }) => (
           <div key={label} className="flex items-start gap-3">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 mt-0.5 shrink-0">
@@ -145,15 +158,28 @@ function TicketBody({ order }: { order: Order }) {
           </div>
         ))}
 
-        {order.notes && (
+        {order.garments && Object.keys(order.garments).length > 0 && (
           <div className="flex items-start gap-3">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 mt-0.5 shrink-0">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
+              <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
             </svg>
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-gray-400">Notes</p>
-              <p className="text-sm font-semibold text-gray-900 leading-snug whitespace-pre-wrap">{order.notes}</p>
+              <p className="text-[10px] uppercase tracking-widest text-gray-400">Garments</p>
+              <p className="text-sm font-semibold text-gray-900 leading-snug">
+                {Object.entries(order.garments).map(([g, qty]) => qty > 1 ? `${g} x${qty}` : g).join(', ')}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {order.alterations && order.alterations.length > 0 && (
+          <div className="flex items-start gap-3">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 mt-0.5 shrink-0">
+              <path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/>
+            </svg>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-gray-400">Alterations &amp; Repairs</p>
+              <p className="text-sm font-semibold text-gray-900 leading-snug">{order.alterations.join(', ')}</p>
             </div>
           </div>
         )}

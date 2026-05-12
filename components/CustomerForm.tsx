@@ -217,12 +217,19 @@ export default function CustomerForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          totalAmount: form.totalAmount !== '' ? parseFloat(form.totalAmount) : undefined,
-          itemCount: Object.values(garments).reduce((a, b) => a + b, 0) || undefined,
+          totalAmount:  form.totalAmount !== '' ? parseFloat(form.totalAmount) : undefined,
+          itemCount:    Object.values(garments).reduce((a, b) => a + b, 0) || undefined,
+          garments:     Object.keys(garments).length > 0 ? garments : undefined,
+          alterations:  alterations.length > 0 ? alterations : undefined,
         }),
       })
       if (!res.ok) throw new Error('Failed')
-      const created: Order = await res.json()
+      const created: Order = {
+        ...await res.json(),
+        garments:    Object.keys(garments).length > 0 ? garments : undefined,
+        alterations: alterations.length > 0 ? alterations : undefined,
+        smsConsent:  form.smsConsent,
+      }
       gsap.to(btnRef.current, { scale: 1, duration: 0.2, ease: 'back.out(2)' })
 
       // Auto-print one ticket immediately — fire and forget

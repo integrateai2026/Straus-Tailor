@@ -27,8 +27,11 @@ export async function POST(req: NextRequest) {
       dueDate:      String(raw.dueDate      ?? '').trim(),
       notes:        String(raw.notes        ?? '').trim().slice(0, 1000),
       paid:         raw.paid === true,
+      smsConsent:   raw.smsConsent === true,
       ...(isFinite(rawAmount) && rawAmount >= 0 && { totalAmount: Math.round(rawAmount * 100) / 100 }),
       ...(isFinite(rawItems)  && rawItems  >= 1 && { itemCount: rawItems }),
+      ...(raw.garments    && typeof raw.garments === 'object'  && { garments:    raw.garments }),
+      ...(Array.isArray(raw.alterations)                       && { alterations: raw.alterations }),
     }
 
     if (!input.customerName || !input.phone) {

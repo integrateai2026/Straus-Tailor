@@ -18,6 +18,8 @@ export interface Order {
   totalAmount?: number
   itemCount?: number
   smsConsent?: boolean
+  garments?: Record<string, number>
+  alterations?: string[]
 }
 
 export interface CreateOrderInput {
@@ -30,6 +32,8 @@ export interface CreateOrderInput {
   itemCount?: number
   paid?: boolean
   smsConsent?: boolean
+  garments?: Record<string, number>
+  alterations?: string[]
 }
 
 export interface UpdateOrderInput {

@@ -18,8 +18,11 @@ function toOrder(row: Record<string, unknown>): Order {
     ...(row.notified_at  ? { notifiedAt:  row.notified_at  as string[] } : {}),
     ...(row.picked_up_at ? { pickedUpAt:  row.picked_up_at as string   } : {}),
     ...(row.completed_at ? { completedAt: row.completed_at as string   } : {}),
-    ...(row.total_amount != null ? { totalAmount: row.total_amount as number } : {}),
-    ...(row.item_count   != null ? { itemCount:   row.item_count   as number } : {}),
+    ...(row.total_amount != null ? { totalAmount:  row.total_amount  as number } : {}),
+    ...(row.item_count   != null ? { itemCount:    row.item_count    as number } : {}),
+    ...(row.sms_consent  != null ? { smsConsent:   row.sms_consent   as boolean } : {}),
+    ...(row.garments     != null ? { garments:     row.garments      as Record<string, number> } : {}),
+    ...(row.alterations  != null ? { alterations:  row.alterations   as string[] } : {}),
   }
 }
 
@@ -67,8 +70,11 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
       paid:          input.paid ?? false,
       picked_up:     false,
       created_at:    new Date().toISOString(),
-      total_amount:  input.totalAmount ?? null,
-      item_count:    input.itemCount   ?? null,
+      total_amount:  input.totalAmount  ?? null,
+      item_count:    input.itemCount    ?? null,
+      sms_consent:   input.smsConsent   ?? false,
+      garments:      input.garments     ?? null,
+      alterations:   input.alterations  ?? null,
     })
     .select()
     .single()
