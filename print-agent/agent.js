@@ -45,11 +45,41 @@ const field = (label, value) => [
   CMD.feed(1),
 ]
 
+// Wrap long text into lines of max `maxLen` chars
+function wrapText(text, maxLen = 38) {
+  const words = text.split(', ')
+  const lines = []
+  let line = ''
+  for (const word of words) {
+    if (line && line.length + 2 + word.length > maxLen) {
+      lines.push(line)
+      line = word
+    } else {
+      line = line ? line + ', ' + word : word
+    }
+  }
+  if (line) lines.push(line)
+  return lines
+}
+
+// Field with optional multi-line value
+const fieldLines = (label, lines) => {
+  const parts = [
+    CMD.center, CMD.smallOn, t(label.toUpperCase()), CMD.smallOff,
+  ]
+  for (const l of lines) {
+    parts.push(CMD.center, CMD.boldOn, t(l), CMD.boldOff)
+  }
+  parts.push(CMD.feed(1))
+  return parts
+}
+
 function buildReceipt(order) {
   const {
     orderNumber, customerName, phone,
-    dropoffDate, dueDate, notes,
-    totalAmount, itemCount, paid,
+    dropoffDate, dueDate,
+    totalAmount, paid, smsConsent,
+    garments, alterations,
   } = order
 
   const fmt = (d) => {
@@ -65,7 +95,6 @@ function buildReceipt(order) {
     CMD.center,
 
     // ── Header ────────────────────────────────────────────────────────────
-    // Use tallOn (2x height only) so width stays at 42 chars — no overflow
     CMD.boldOn, CMD.tallOn,
     t('Straus Tailor Shop'),
     CMD.tallOff, CMD.boldOff,
@@ -89,16 +118,28 @@ function buildReceipt(order) {
 
     div('='),
 
-    // ── Fields ───────────────────────────────────────────────────────────
+    // ── Core fields ───────────────────────────────────────────────────────
     ...field('Customer', customerName),
   ]
 
-  if (phone)       parts.push(...field('Phone', phone))
-  parts.push(...field('Drop-Off', fmt(dropoffDate)))
-  parts.push(...field('Due Date',  fmt(dueDate)))
-  if (totalAmount) parts.push(...field('Total',   `$${Number(totalAmount).toFixed(2)}`))
-  if (itemCount)   parts.push(...field('Items',   `${itemCount} item${itemCount !== 1 ? 's' : ''}`))
-  if (notes && notes.trim()) parts.push(...field('Notes', notes.trim().slice(0, 80)))
+  if (phone)       parts.push(...field('Phone',    phone))
+  parts.push(       ...field('Drop-Off', fmt(dropoffDate)))
+  parts.push(       ...field('Due Date', fmt(dueDate)))
+  if (totalAmount) parts.push(...field('Total',    `$${Number(totalAmount).toFixed(2)}`))
+  parts.push(       ...field('SMS Consent', smsConsent ? 'Yes' : 'No'))
+
+  // ── Garments ─────────────────────────────────────────────────────────
+  if (garments && Object.keys(garments).length > 0) {
+    const garmentText = Object.entries(garments)
+      .map(([g, qty]) => qty > 1 ? `${g} x${qty}` : g)
+      .join(', ')
+    parts.push(div('-'), ...fieldLines('Garments', wrapText(garmentText)))
+  }
+
+  // ── Alterations ──────────────────────────────────────────────────────
+  if (alterations && alterations.length > 0) {
+    parts.push(div('-'), ...fieldLines('Alterations & Repairs', wrapText(alterations.join(', '))))
+  }
 
   // ── Footer ────────────────────────────────────────────────────────────
   parts.push(
