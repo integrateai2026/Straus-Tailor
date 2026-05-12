@@ -46,7 +46,7 @@ export function buildEPOSXml(order: Order): string {
   const DIV1 = '='.repeat(42) + NL
   const DIV2 = '-'.repeat(42) + NL
 
-  // Detail rows
+  // Core detail rows
   const rows: [string, string][] = [
     ['CUSTOMER:', order.customerName],
     ['PHONE:',    formatPhone(order.phone)],
@@ -54,16 +54,24 @@ export function buildEPOSXml(order: Order): string {
     ['DUE DATE:', formatDate(order.dueDate)],
   ]
   if (order.totalAmount != null) rows.push(['TOTAL:', `$${order.totalAmount.toFixed(2)}`])
-  if (order.itemCount   != null) rows.push(['ITEMS:', `${order.itemCount} item${order.itemCount !== 1 ? 's' : ''}`])
+  rows.push(['SMS:', order.smsConsent ? 'Yes' : 'No'])
 
   const detailLines = rows
     .map(([l, v]) => `      <text>${xmlEsc(padRow(l, v))}${NL}</text>`)
     .join('\n')
 
-  const notesSection = order.notes
+  // Garments section
+  const garmentSection = order.garments && Object.keys(order.garments).length > 0
     ? `      <text>${DIV2}</text>
-      <text em="true">NOTES:${NL}</text>
-      <text>${xmlEsc(order.notes)}${NL}</text>`
+      <text em="true">GARMENTS:${NL}</text>
+      <text>${xmlEsc(Object.entries(order.garments).map(([g, qty]) => qty > 1 ? `${g} x${qty}` : g).join(', '))}${NL}</text>`
+    : ''
+
+  // Alterations section
+  const alterationSection = order.alterations && order.alterations.length > 0
+    ? `      <text>${DIV2}</text>
+      <text em="true">ALTERATIONS &amp; REPAIRS:${NL}</text>
+      <text>${xmlEsc(order.alterations.join(', '))}${NL}</text>`
     : ''
 
   return `<?xml version="1.0" encoding="utf-8"?>
@@ -82,7 +90,8 @@ export function buildEPOSXml(order: Order): string {
       <text align="center" em="true">${order.paid ? '*** PAID ***' : '--- UNPAID ---'}${NL}</text>
       <text align="left">${DIV2}</text>
 ${detailLines}
-${notesSection}
+${garmentSection}
+${alterationSection}
       <text>${DIV1}</text>
       <text align="center">Thank you for your business!${NL}</text>
       <feed line="3"/>
