@@ -129,6 +129,19 @@ function DateField({ label, value, onChange }: { label: string; value: string; o
 // Field height — slightly reduced now that labels are outside
 const FIELD_H = 'h-[54px] md:h-[64px]'
 
+/* ── Garments & Alterations options ──────────────────────── */
+const GARMENTS = [
+  'Dress / Gown', 'Wedding Dress', 'Suit', 'Jacket / Coat',
+  'Shirt / Blouse', 'Pants', 'Jeans', 'Skirt',
+  'Uniform', 'Sweater / Hoodie', 'Curtains', 'Other',
+]
+const ALTERATIONS = [
+  'Hem', 'Sleeve Adjustment', 'Strap Adjustment', 'Waist Adjustment',
+  'Take In', 'Let Out', 'Taper', 'Zipper',
+  'Buttons', 'Patch / Hole Repair', 'Seam Repair', 'Lining',
+  'Elastic', 'Bustle', 'Custom / Other',
+]
+
 /* ── Main Component ───────────────────────────────────────── */
 export default function CustomerForm() {
   const [form, setForm] = useState({
@@ -138,7 +151,6 @@ export default function CustomerForm() {
     dueDate: twoWeeksOut(),
     notes: '',
     totalAmount: '',
-    itemCount: 1,
     paid: false,
     smsConsent: false,
   })
@@ -147,6 +159,10 @@ export default function CustomerForm() {
   const [order, setOrder] = useState<Order | null>(null)
   const [focused, setFocused] = useState('name')
   const [staffOpen, setStaffOpen] = useState(false)
+  const [garments, setGarments] = useState<Record<string, number>>({})
+  const [alterations, setAlterations] = useState<string[]>([])
+  const [garmentsOpen, setGarmentsOpen] = useState(false)
+  const [alterationsOpen, setAlterationsOpen] = useState(false)
   const staffPanelRef = useRef<HTMLDivElement>(null)
   const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -174,9 +190,11 @@ export default function CustomerForm() {
     gsap.to(fieldsRef.current!.children, {
       y: -8, opacity: 0, duration: 0.25, stagger: 0.04, ease: 'power2.in',
       onComplete: () => {
-        setForm({ customerName: '', phone: '', dropoffDate: localDate(), dueDate: twoWeeksOut(), notes: '', totalAmount: '', itemCount: 1, paid: false, smsConsent: false })
+        setForm({ customerName: '', phone: '', dropoffDate: localDate(), dueDate: twoWeeksOut(), notes: '', totalAmount: '', paid: false, smsConsent: false })
         setError('')
         setStaffOpen(false)
+        setGarments({})
+        setAlterations([])
         gsap.fromTo(fieldsRef.current!.children, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.05, ease: 'power2.out' })
         gsap.fromTo(btnRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 })
       },
@@ -200,7 +218,7 @@ export default function CustomerForm() {
         body: JSON.stringify({
           ...form,
           totalAmount: form.totalAmount !== '' ? parseFloat(form.totalAmount) : undefined,
-          itemCount: form.itemCount > 0 ? form.itemCount : undefined,
+          itemCount: Object.values(garments).reduce((a, b) => a + b, 0) || undefined,
         }),
       })
       if (!res.ok) throw new Error('Failed')
@@ -347,25 +365,125 @@ export default function CustomerForm() {
                   ref={staffPanelRef}
                   style={{
                     overflow: 'hidden',
-                    maxHeight: staffOpen ? '600px' : '0px',
+                    maxHeight: staffOpen ? '2400px' : '0px',
                     opacity: staffOpen ? 1 : 0,
                     transition: 'max-height 300ms ease, opacity 250ms ease',
                   }}
                 >
                   <div className="space-y-4 pt-1">
 
-                    <div>
-                      <span className={FL_CLASS} style={FL_STYLE}>Notes (optional)</span>
-                      <FieldWrap fieldId="notes" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                        <label className={`${FIELD} items-start py-3 cursor-text`} style={{ minHeight: 80 }}>
-                          <span className="shrink-0 mt-0.5">{I.notes}</span>
-                          <textarea className="flex-1 bg-transparent text-[18px] md:text-[21px] outline-none leading-relaxed resize-none placeholder-[#8A847C]"
-                            style={{ color: '#1C1A18', caretColor: '#1C1A18' }}
-                            placeholder="Any special requests or instructions…" rows={2}
-                            value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-                        </label>
-                      </FieldWrap>
+                    {/* ── Garments + Alterations side by side, each expands in its own column ── */}
+                    <div className="grid grid-cols-2 gap-2 items-start">
+
+                      {/* Left column: Garments */}
+                      <div className="space-y-1.5">
+                        <button type="button" onClick={() => setGarmentsOpen(o => !o)}
+                          className="w-full flex items-center justify-between px-3 rounded-xl transition-colors"
+                          style={{ height: 54, background: '#FDFAF5', border: `1px solid ${garmentsOpen ? 'rgba(139,115,85,0.50)' : 'rgba(0,0,0,0.12)'}` }}>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7A7268" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                              <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+                            </svg>
+                            <span className="text-[13px] md:text-[15px] font-semibold" style={{ color: '#1C1A18' }}>Garments</span>
+                            {Object.keys(garments).length > 0 && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0" style={{ background: '#8B7355', color: '#fff' }}>
+                                {Object.values(garments).reduce((a, b) => a + b, 0)}
+                              </span>
+                            )}
+                          </div>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9A9388" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"
+                            style={{ transition: 'transform 250ms ease', transform: garmentsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                            <path d="M6 9l6 6 6-6"/>
+                          </svg>
+                        </button>
+                        {garmentsOpen && GARMENTS.map(g => {
+                          const qty = garments[g] || 0
+                          return (
+                            <div key={g} className="flex items-center justify-between px-3 py-2 rounded-xl"
+                              style={{ background: qty > 0 ? '#F0E8DC' : '#FDFAF5', border: `1px solid ${qty > 0 ? 'rgba(139,115,85,0.35)' : 'rgba(0,0,0,0.10)'}` }}>
+                              <span className="text-[12px] md:text-[13px] font-medium truncate pr-1" style={{ color: qty > 0 ? '#4A3020' : '#6B6358' }}>{g}</span>
+                              <div className="flex items-center gap-1 shrink-0">
+                                {qty > 0 && (
+                                  <>
+                                    <button type="button"
+                                      onClick={() => setGarments(prev => { const n = { ...prev }; if (n[g] <= 1) delete n[g]; else n[g]--; return n })}
+                                      className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold"
+                                      style={{ background: '#E2D8CC', color: '#5C4A32' }}>−</button>
+                                    <span className="text-[12px] font-bold w-3.5 text-center" style={{ color: '#4A3020' }}>{qty}</span>
+                                  </>
+                                )}
+                                <button type="button"
+                                  onClick={() => setGarments(prev => ({ ...prev, [g]: (prev[g] || 0) + 1 }))}
+                                  className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold"
+                                  style={{ background: qty > 0 ? '#8B7355' : '#EDE8DF', color: qty > 0 ? '#fff' : '#5C5248' }}>+</button>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+
+                      {/* Right column: Alterations */}
+                      <div className="space-y-1.5">
+                        <button type="button" onClick={() => setAlterationsOpen(o => !o)}
+                          className="w-full flex items-center justify-between px-3 rounded-xl transition-colors"
+                          style={{ height: 54, background: '#FDFAF5', border: `1px solid ${alterationsOpen ? 'rgba(74,124,139,0.50)' : 'rgba(0,0,0,0.12)'}` }}>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7A7268" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                              <path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/>
+                            </svg>
+                            <span className="text-[13px] md:text-[15px] font-semibold" style={{ color: '#1C1A18' }}>Alterations</span>
+                            {alterations.length > 0 && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0" style={{ background: '#4A7C8B', color: '#fff' }}>
+                                {alterations.length}
+                              </span>
+                            )}
+                          </div>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9A9388" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"
+                            style={{ transition: 'transform 250ms ease', transform: alterationsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                            <path d="M6 9l6 6 6-6"/>
+                          </svg>
+                        </button>
+                        {alterationsOpen && ALTERATIONS.map(a => {
+                          const sel = alterations.includes(a)
+                          return (
+                            <button key={a} type="button"
+                              onClick={() => setAlterations(prev => sel ? prev.filter(x => x !== a) : [...prev, a])}
+                              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all"
+                              style={{ background: sel ? '#DDE8F0' : '#FDFAF5', border: `1px solid ${sel ? 'rgba(74,124,139,0.40)' : 'rgba(0,0,0,0.10)'}` }}>
+                              <span className="text-[12px] md:text-[13px] font-medium" style={{ color: sel ? '#1A4A5C' : '#6B6358' }}>{a}</span>
+                              {sel && (
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A7C8B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                                  <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+
                     </div>
+
+                    {/* ── Selection chips ── */}
+                    {(Object.keys(garments).length > 0 || alterations.length > 0) && (
+                      <div className="flex flex-wrap gap-2 px-1">
+                        {Object.entries(garments).map(([g, qty]) => (
+                          <span key={g} className="flex items-center gap-1.5 text-[12px] md:text-[13px] font-semibold px-3 py-1.5 rounded-full"
+                            style={{ background: '#F0E8DC', color: '#4A3020', border: '1px solid rgba(139,115,85,0.30)' }}>
+                            {g}{qty > 1 ? ` × ${qty}` : ''}
+                            <button type="button" onClick={() => setGarments(prev => { const n = { ...prev }; delete n[g]; return n })}
+                              className="opacity-50 hover:opacity-100 leading-none">×</button>
+                          </span>
+                        ))}
+                        {alterations.map(a => (
+                          <span key={a} className="flex items-center gap-1.5 text-[12px] md:text-[13px] font-semibold px-3 py-1.5 rounded-full"
+                            style={{ background: '#DDE8F0', color: '#1A4A5C', border: '1px solid rgba(74,124,139,0.30)' }}>
+                            {a}
+                            <button type="button" onClick={() => setAlterations(prev => prev.filter(x => x !== a))}
+                              className="opacity-50 hover:opacity-100 leading-none">×</button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
 
                     <div>
                       <span className={FL_CLASS} style={FL_STYLE}>Total Amount</span>
@@ -404,27 +522,6 @@ export default function CustomerForm() {
                       </div>
                     </div>
 
-                    <div>
-                      <span className={FL_CLASS} style={FL_STYLE}>Number of Items</span>
-                      <FieldWrap fieldId="items" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                        <div className={`${FIELD} ${FIELD_H}`}>
-                          <span className="shrink-0">{I.tag}</span>
-                          <span className="flex-1 text-[18px] md:text-[21px]" style={{ color: '#1C1A18' }}>{form.itemCount}</span>
-                          <div className="flex items-center gap-2 md:gap-3 shrink-0">
-                            <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: Math.max(1, f.itemCount - 1) }))}
-                              className="w-9 h-9 md:w-12 md:h-12 rounded-lg text-xl md:text-2xl font-medium flex items-center justify-center transition-colors leading-none"
-                              style={{ background: '#EDE8DF', color: '#5C5248', border: '1px solid rgba(0,0,0,0.12)' }}>
-                              −
-                            </button>
-                            <button type="button" onClick={() => setForm(f => ({ ...f, itemCount: f.itemCount + 1 }))}
-                              className="w-9 h-9 md:w-12 md:h-12 rounded-lg text-xl md:text-2xl font-medium flex items-center justify-center transition-colors leading-none"
-                              style={{ background: '#EDE8DF', color: '#5C5248', border: '1px solid rgba(0,0,0,0.12)' }}>
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      </FieldWrap>
-                    </div>
 
                   </div>
                 </div>
