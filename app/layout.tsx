@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     description: 'Expert tailoring, alterations & repairs in Fargo, ND. Suits, dresses, hems, zippers, and more. Walk-ins welcome — no appointment needed.',
     images: [
       {
-        url: '/og-image.jpg',
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
         alt: 'Straus Tailor Shop — Fargo, ND',
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Straus Tailor Shop — Tailoring & Alterations in Fargo, ND',
     description: 'Expert tailoring, alterations & repairs in Fargo, ND. Walk-ins welcome. (701) 929-8262.',
-    images: ['/og-image.jpg'],
+    images: ['/opengraph-image'],
   },
   alternates: {
     canonical: 'https://straustailor.com',
