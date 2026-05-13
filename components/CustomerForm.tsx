@@ -328,12 +328,12 @@ export default function CustomerForm() {
                     {
                       key: 'smsTransactional' as const,
                       bold: 'Yes, text me about my order.',
-                      body: 'Transactional/service messages — order updates, pickup reminders, customer service replies, and review requests. Msg/data rates may apply. Reply HELP or STOP.',
+                      body: 'Transactional/service messages from Straus Tailor Shop may include order updates, pickup reminders, customer service replies, and review requests. Msg/data rates may apply. Reply HELP for help or STOP to opt out.',
                     },
                     {
                       key: 'smsMarketing' as const,
                       bold: 'Yes, send me shop updates and offers.',
-                      body: 'Promotional messages — shop updates, seasonal updates, and occasional offers. Msg/data rates may apply. Reply HELP or STOP.',
+                      body: 'Promotional/marketing messages from Straus Tailor Shop may include shop updates, seasonal updates, and occasional offers. Msg/data rates may apply. Reply HELP for help or STOP to opt out.',
                     },
                   ].map(({ key, bold, body }) => (
                     <button key={key} type="button"
