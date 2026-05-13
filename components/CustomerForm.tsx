@@ -152,7 +152,9 @@ export default function CustomerForm() {
     notes: '',
     totalAmount: '',
     paid: false,
-    smsConsent: false,
+    smsTransactional: false,
+    smsMarketing: false,
+    termsAccepted: false,
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -190,7 +192,7 @@ export default function CustomerForm() {
     gsap.to(fieldsRef.current!.children, {
       y: -8, opacity: 0, duration: 0.25, stagger: 0.04, ease: 'power2.in',
       onComplete: () => {
-        setForm({ customerName: '', phone: '', dropoffDate: localDate(), dueDate: twoWeeksOut(), notes: '', totalAmount: '', paid: false, smsConsent: false })
+        setForm({ customerName: '', phone: '', dropoffDate: localDate(), dueDate: twoWeeksOut(), notes: '', totalAmount: '', paid: false, smsTransactional: false, smsMarketing: false, termsAccepted: false })
         setError('')
         setStaffOpen(false)
         setGarments({})
@@ -226,9 +228,11 @@ export default function CustomerForm() {
       if (!res.ok) throw new Error('Failed')
       const created: Order = {
         ...await res.json(),
-        garments:    Object.keys(garments).length > 0 ? garments : undefined,
-        alterations: alterations.length > 0 ? alterations : undefined,
-        smsConsent:  form.smsConsent,
+        garments:         Object.keys(garments).length > 0 ? garments : undefined,
+        alterations:      alterations.length > 0 ? alterations : undefined,
+        smsConsent:       form.smsTransactional || form.smsMarketing,
+        smsTransactional: form.smsTransactional,
+        smsMarketing:     form.smsMarketing,
       }
       gsap.to(btnRef.current, { scale: 1, duration: 0.2, ease: 'back.out(2)' })
 
@@ -318,43 +322,67 @@ export default function CustomerForm() {
                 {/* Drop-off date is always today — hidden from form, still submitted */}
                 <DateField label="Need By *" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
 
-                {/* ── SMS Consent ── */}
-                <button
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, smsConsent: !f.smsConsent }))}
-                  className="w-full flex items-start gap-3 text-left"
-                >
-                  {/* Checkbox */}
-                  <div className="shrink-0 mt-[3px] w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all"
-                    style={form.smsConsent
-                      ? { background: '#8B7355', borderColor: '#8B7355' }
-                      : { background: '#FDFAF5', borderColor: 'rgba(0,0,0,0.25)' }
-                    }>
-                    {form.smsConsent && (
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
-                  </div>
-                  {/* Consent text */}
-                  <div>
-                    <p className="text-[13px] md:text-[18px]" style={{ fontWeight: 700, color: '#4A443C', marginBottom: 4 }}>Yes, text me about this order and shop updates.</p>
-                    <p style={{ fontSize: 11, lineHeight: 1.55, color: '#8A847C' }}>
-                      Pickup reminders, order updates, customer service replies, review requests, occasional promotional offers, seasonal updates, and shop updates from{' '}
-                      <span style={{ fontWeight: 600 }}>Straus Tailor Shop</span>.{' '}
-                      Msg/data rates may apply. Reply <span style={{ fontWeight: 600 }}>STOP</span> to opt out.
-                    </p>
-                    <p style={{ fontSize: 11, marginTop: 5, color: '#8A847C' }}>
+                {/* ── Consent checkboxes ── */}
+                <div className="space-y-3">
+                  {/* Transactional SMS */}
+                  {[
+                    {
+                      key: 'smsTransactional' as const,
+                      bold: 'Yes, text me about my order.',
+                      body: 'By checking this box, I agree to receive transactional/service text messages from Straus Tailor Shop about my order, pickup reminders, customer service replies, and review requests. Msg/data rates may apply. Reply HELP for help or STOP to opt out.',
+                    },
+                    {
+                      key: 'smsMarketing' as const,
+                      bold: 'Yes, send me shop updates and offers.',
+                      body: 'By checking this box, I agree to receive promotional/marketing text messages from Straus Tailor Shop about shop updates, seasonal updates, and occasional offers. Msg/data rates may apply. Reply HELP for help or STOP to opt out.',
+                    },
+                  ].map(({ key, bold, body }) => (
+                    <button key={key} type="button"
+                      onClick={() => setForm(f => ({ ...f, [key]: !f[key] }))}
+                      className="w-full flex items-start gap-3 text-left">
+                      <div className="shrink-0 mt-[3px] w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all"
+                        style={form[key]
+                          ? { background: '#8B7355', borderColor: '#8B7355' }
+                          : { background: '#FDFAF5', borderColor: 'rgba(0,0,0,0.25)' }}>
+                        {form[key] && (
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-[13px] md:text-[15px]" style={{ fontWeight: 700, color: '#4A443C', marginBottom: 3 }}>{bold}</p>
+                        <p style={{ fontSize: 11, lineHeight: 1.55, color: '#8A847C' }}>{body}</p>
+                      </div>
+                    </button>
+                  ))}
+
+                  {/* Terms acceptance */}
+                  <button type="button"
+                    onClick={() => setForm(f => ({ ...f, termsAccepted: !f.termsAccepted }))}
+                    className="w-full flex items-start gap-3 text-left">
+                    <div className="shrink-0 mt-[3px] w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all"
+                      style={form.termsAccepted
+                        ? { background: '#8B7355', borderColor: '#8B7355' }
+                        : { background: '#FDFAF5', borderColor: 'rgba(0,0,0,0.25)' }}>
+                      {form.termsAccepted && (
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </div>
+                    <p className="text-[13px] md:text-[15px]" style={{ fontWeight: 600, color: '#4A443C', marginTop: 2 }}>
+                      I accept the{' '}
                       <a href="/privacy" target="_blank" rel="noopener noreferrer"
-                        style={{ color: '#8B7355', fontWeight: 600, textDecoration: 'underline' }}
+                        style={{ color: '#8B7355', textDecoration: 'underline' }}
                         onClick={e => e.stopPropagation()}>Privacy Policy</a>
-                      {' '}&nbsp;|&nbsp;{' '}
+                      {' '}and{' '}
                       <a href="/terms" target="_blank" rel="noopener noreferrer"
-                        style={{ color: '#8B7355', fontWeight: 600, textDecoration: 'underline' }}
-                        onClick={e => e.stopPropagation()}>Terms &amp; Conditions</a>
+                        style={{ color: '#8B7355', textDecoration: 'underline' }}
+                        onClick={e => e.stopPropagation()}>Terms &amp; Conditions</a>.
                     </p>
-                  </div>
-                </button>
+                  </button>
+                </div>
 
                 {/* ── Staff toggle ── */}
                 <button
