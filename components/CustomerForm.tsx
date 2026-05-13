@@ -323,55 +323,56 @@ export default function CustomerForm() {
                 <DateField label="Need By *" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
 
                 {/* ── Consent checkboxes ── */}
-                <div className="space-y-3">
-                  {/* Transactional SMS */}
+                <div className="space-y-2 rounded-xl px-3 py-2.5" style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.07)' }}>
                   {[
                     {
                       key: 'smsTransactional' as const,
                       bold: 'Yes, text me about my order.',
-                      body: 'By checking this box, I agree to receive transactional/service text messages from Straus Tailor Shop about my order, pickup reminders, customer service replies, and review requests. Msg/data rates may apply. Reply HELP for help or STOP to opt out.',
+                      body: 'Transactional/service messages — order updates, pickup reminders, customer service replies, and review requests. Msg/data rates may apply. Reply HELP or STOP.',
                     },
                     {
                       key: 'smsMarketing' as const,
                       bold: 'Yes, send me shop updates and offers.',
-                      body: 'By checking this box, I agree to receive promotional/marketing text messages from Straus Tailor Shop about shop updates, seasonal updates, and occasional offers. Msg/data rates may apply. Reply HELP for help or STOP to opt out.',
+                      body: 'Promotional messages — shop updates, seasonal updates, and occasional offers. Msg/data rates may apply. Reply HELP or STOP.',
                     },
                   ].map(({ key, bold, body }) => (
                     <button key={key} type="button"
                       onClick={() => setForm(f => ({ ...f, [key]: !f[key] }))}
-                      className="w-full flex items-start gap-3 text-left">
-                      <div className="shrink-0 mt-[3px] w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all"
+                      className="w-full flex items-start gap-2 text-left py-1">
+                      <div className="shrink-0 mt-[2px] w-4 h-4 rounded border-2 flex items-center justify-center transition-all"
                         style={form[key]
                           ? { background: '#8B7355', borderColor: '#8B7355' }
                           : { background: '#FDFAF5', borderColor: 'rgba(0,0,0,0.25)' }}>
                         {form[key] && (
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="20 6 9 17 4 12" />
                           </svg>
                         )}
                       </div>
                       <div>
-                        <p className="text-[13px] md:text-[15px]" style={{ fontWeight: 700, color: '#4A443C', marginBottom: 3 }}>{bold}</p>
-                        <p style={{ fontSize: 11, lineHeight: 1.55, color: '#8A847C' }}>{body}</p>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: '#4A443C' }}>{bold} </span>
+                        <span style={{ fontSize: 11, lineHeight: 1.4, color: '#9A9388' }}>{body}</span>
                       </div>
                     </button>
                   ))}
 
-                  {/* Terms acceptance */}
+                  <div className="h-px" style={{ background: 'rgba(0,0,0,0.08)' }} />
+
+                  {/* Terms */}
                   <button type="button"
                     onClick={() => setForm(f => ({ ...f, termsAccepted: !f.termsAccepted }))}
-                    className="w-full flex items-start gap-3 text-left">
-                    <div className="shrink-0 mt-[3px] w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all"
+                    className="w-full flex items-center gap-2 text-left py-1">
+                    <div className="shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-all"
                       style={form.termsAccepted
                         ? { background: '#8B7355', borderColor: '#8B7355' }
                         : { background: '#FDFAF5', borderColor: 'rgba(0,0,0,0.25)' }}>
                       {form.termsAccepted && (
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
                     </div>
-                    <p className="text-[13px] md:text-[15px]" style={{ fontWeight: 600, color: '#4A443C', marginTop: 2 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: '#4A443C' }}>
                       I accept the{' '}
                       <a href="/privacy" target="_blank" rel="noopener noreferrer"
                         style={{ color: '#8B7355', textDecoration: 'underline' }}
