@@ -338,11 +338,20 @@ export default function CustomerForm() {
                   </div>
                   {/* Consent text */}
                   <div>
-                    <p className="text-[13px] md:text-[18px]" style={{ fontWeight: 700, color: '#4A443C', marginBottom: 4 }}>Yes, text me about this order</p>
+                    <p className="text-[13px] md:text-[18px]" style={{ fontWeight: 700, color: '#4A443C', marginBottom: 4 }}>Yes, text me about this order and shop updates.</p>
                     <p style={{ fontSize: 11, lineHeight: 1.55, color: '#8A847C' }}>
-                      Pickup reminders, order updates, customer service replies, review requests, and shop updates from{' '}
+                      Pickup reminders, order updates, customer service replies, review requests, occasional promotional offers, seasonal updates, and shop updates from{' '}
                       <span style={{ fontWeight: 600 }}>Straus Tailor Shop</span>.{' '}
                       Msg/data rates may apply. Reply <span style={{ fontWeight: 600 }}>STOP</span> to opt out.
+                    </p>
+                    <p style={{ fontSize: 11, marginTop: 5, color: '#8A847C' }}>
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer"
+                        style={{ color: '#8B7355', fontWeight: 600, textDecoration: 'underline' }}
+                        onClick={e => e.stopPropagation()}>Privacy Policy</a>
+                      {' '}&nbsp;|&nbsp;{' '}
+                      <a href="/terms" target="_blank" rel="noopener noreferrer"
+                        style={{ color: '#8B7355', fontWeight: 600, textDecoration: 'underline' }}
+                        onClick={e => e.stopPropagation()}>Terms &amp; Conditions</a>
                     </p>
                   </div>
                 </button>
