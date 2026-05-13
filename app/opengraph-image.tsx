@@ -6,9 +6,12 @@ export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default async function Image() {
-  const font = await fetch(
-    'https://fonts.gstatic.com/s/dancingscript/v25/If2cXTr6YS-zF4S-kcSWSVi_sxjsohD9F50Ruu7BMSo3Sup5.woff'
-  ).then(res => res.arrayBuffer())
+  const css = await fetch(
+    'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap',
+    { headers: { 'User-Agent': 'Mozilla/5.0' } }
+  ).then(r => r.text())
+  const fontUrl = css.match(/src: url\((.+?)\) format/)?.[1]
+  const font = fontUrl ? await fetch(fontUrl).then(r => r.arrayBuffer()) : null
 
   return new ImageResponse(
     (
@@ -37,7 +40,7 @@ export default async function Image() {
         {/* Logo */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
           <span style={{
-            fontFamily: 'Dancing Script',
+            fontFamily: font ? 'Dancing Script' : 'Georgia, serif',
             fontSize: 148,
             color: '#6B1A2C',
             lineHeight: 1,
@@ -46,7 +49,7 @@ export default async function Image() {
             Straus
           </span>
           <span style={{
-            fontFamily: 'Dancing Script',
+            fontFamily: font ? 'Dancing Script' : 'Georgia, serif',
             fontSize: 72,
             color: '#E8E0D0',
             lineHeight: 1,
@@ -85,7 +88,7 @@ export default async function Image() {
     ),
     {
       ...size,
-      fonts: [{ name: 'Dancing Script', data: font, style: 'normal' }],
+      fonts: font ? [{ name: 'Dancing Script', data: font, style: 'normal', weight: 700 }] : [],
     }
   )
 }
