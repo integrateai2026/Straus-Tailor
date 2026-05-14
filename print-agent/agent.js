@@ -47,8 +47,8 @@ const leftRow = (label, value) => {
   const l = label.toUpperCase() + ':'
   const v = String(value)
   const gapLen = Math.max(4, WIDTH - l.length - v.length)
-  // Spaced dashes: one dash every 4 chars e.g. "   -   -   -"
-  const fill = Array(gapLen).fill(' ').map((_, i) => (i % 4 === 2 ? '-' : ' ')).join('')
+  // Dot leader with small space at each end e.g. " ........... "
+  const fill = ' ' + '.'.repeat(Math.max(1, gapLen - 2)) + ' '
   return [
     CMD.left, CMD.boldOn, CMD.doubleOn, CMD.tallOn,
     t(l + fill + v),
