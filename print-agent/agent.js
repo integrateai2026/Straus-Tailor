@@ -26,11 +26,12 @@ const CMD = {
   init:    Buffer.from([ESC, 0x40]),
   cut:     Buffer.from([GS,  0x56, 0x42, 0x05]),
   center:  Buffer.from([ESC, 0x61, 0x01]),
+  left:    Buffer.from([ESC, 0x61, 0x00]),
   boldOn:  Buffer.from([ESC, 0x45, 0x01]),
   boldOff: Buffer.from([ESC, 0x45, 0x00]),
-  tallOn:  Buffer.from([GS,  0x21, 0x01]),   // 2x height ONLY (no width change = no overflow)
+  tallOn:  Buffer.from([GS,  0x21, 0x01]),
   tallOff: Buffer.from([GS,  0x21, 0x00]),
-  smallOn: Buffer.from([ESC, 0x4D, 0x01]),   // condensed font
+  smallOn: Buffer.from([ESC, 0x4D, 0x01]),
   smallOff:Buffer.from([ESC, 0x4D, 0x00]),
   feed:    (n) => Buffer.from([ESC, 0x64, n]),
 }
@@ -38,46 +39,14 @@ const CMD = {
 const t   = (str) => Buffer.from(str + '\n', 'utf8')
 const div = (char = '-') => t(char.repeat(WIDTH))
 
-// Field: small label then normal bold value
-const field = (label, value) => [
-  CMD.center, CMD.smallOn,  t(label.toUpperCase()), CMD.smallOff,
-  CMD.center, CMD.boldOn,   t(String(value)),        CMD.boldOff,
-  CMD.feed(1),
-]
-
-// Big field: small label + 2x-height bold value, no extra feed — same total length as field()
-const bigField = (label, value) => [
-  CMD.center, CMD.smallOn, t(label.toUpperCase()), CMD.smallOff,
-  CMD.center, CMD.boldOn, CMD.tallOn, t(String(value)), CMD.tallOff, CMD.boldOff,
-]
-
-// Wrap long text into lines of max `maxLen` chars
-function wrapText(text, maxLen = 38) {
-  const words = text.split(', ')
-  const lines = []
-  let line = ''
-  for (const word of words) {
-    if (line && line.length + 2 + word.length > maxLen) {
-      lines.push(line)
-      line = word
-    } else {
-      line = line ? line + ', ' + word : word
-    }
-  }
-  if (line) lines.push(line)
-  return lines
-}
-
-// Field with optional multi-line value
-const fieldLines = (label, lines) => {
-  const parts = [
-    CMD.center, CMD.smallOn, t(label.toUpperCase()), CMD.smallOff,
+// Left-aligned row: LABEL:    value (right-aligned, padded to WIDTH)
+const leftRow = (label, value) => {
+  const l = label.toUpperCase() + ':'
+  const v = String(value)
+  const pad = Math.max(1, WIDTH - l.length - v.length)
+  return [
+    CMD.left, CMD.boldOn, t(l + ' '.repeat(pad) + v), CMD.boldOff,
   ]
-  for (const l of lines) {
-    parts.push(CMD.center, CMD.boldOn, t(l), CMD.boldOff)
-  }
-  parts.push(CMD.feed(1))
-  return parts
 }
 
 function buildReceipt(order) {
@@ -118,24 +87,23 @@ function buildReceipt(order) {
 
     div('='),
 
-    // ── Core fields ───────────────────────────────────────────────────────
-    ...bigField('Customer', customerName),
+    // ── Detail fields — left-aligned label: value ─────────────────────────
+    ...leftRow('Customer', customerName),
   ]
 
-  if (phone)  parts.push(...bigField('Phone',    phone))
-  parts.push(  ...bigField('Drop-Off', fmt(dropoffDate)))
-  parts.push(  ...bigField('Due Date', fmt(dueDate)))
+  if (phone)  parts.push(...leftRow('Phone',    phone))
+  parts.push(  ...leftRow('Drop-Off', fmt(dropoffDate)))
+  parts.push(  ...leftRow('Due Date', fmt(dueDate)))
   const totalStr = totalAmount
     ? `$${Number(totalAmount).toFixed(2)} (${paid ? 'Paid' : 'Unpaid'})`
     : (paid ? 'Paid' : 'Unpaid')
-  parts.push(...bigField('Total', totalStr))
-  parts.push(...field('SMS Consent', smsConsent ? 'Yes' : 'No'))
+  parts.push(...leftRow('Total', totalStr))
+  parts.push(...leftRow('SMS', smsConsent ? 'Yes' : 'No'))
 
   // ── Footer ────────────────────────────────────────────────────────────
   parts.push(
     div('='),
-    CMD.center, CMD.boldOn,
-    t('Thank you for your business!'),
+    CMD.center, CMD.boldOn, t('Thank you for your business!'),
     CMD.boldOff,
     CMD.feed(3),
     CMD.cut,
