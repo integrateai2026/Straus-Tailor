@@ -345,189 +345,40 @@ export default function CustomerForm() {
                   </button>
                 </div>
 
-                {/* ── Staff toggle ── */}
-                <button
-                  type="button"
-                  onClick={() => setStaffOpen(o => !o)}
-                  className="w-full flex items-center gap-3 py-1 transition-opacity hover:opacity-70"
-                >
-                  <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.10)' }} />
-                  <span className="text-[10px] md:text-[13px]" style={{ fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#9A9388' }}>
-                    Staff Details
-                  </span>
-                  <svg
-                    width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9A9388" strokeWidth="2.5"
-                    strokeLinecap="round" strokeLinejoin="round"
-                    style={{ transition: 'transform 250ms ease', transform: staffOpen ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }}
-                  >
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                  <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.10)' }} />
-                </button>
-
-                {/* ── Collapsible staff panel ── */}
-                <div
-                  ref={staffPanelRef}
-                  style={{
-                    overflow: 'hidden',
-                    maxHeight: staffOpen ? '2400px' : '0px',
-                    opacity: staffOpen ? 1 : 0,
-                    transition: 'max-height 300ms ease, opacity 250ms ease',
-                  }}
-                >
-                  <div className="space-y-4 pt-1">
-
-                    {/* ── Garments + Alterations side by side, each expands in its own column ── */}
-                    <div className="grid grid-cols-2 gap-2 items-start">
-
-                      {/* Left column: Garments */}
-                      <div className="space-y-1.5">
-                        <button type="button" onClick={() => setGarmentsOpen(o => !o)}
-                          className="w-full flex items-center justify-between px-3 rounded-xl transition-colors"
-                          style={{ height: 54, background: '#FDFAF5', border: `1px solid ${garmentsOpen ? 'rgba(139,115,85,0.50)' : 'rgba(0,0,0,0.12)'}` }}>
-                          <div className="flex items-center gap-2 min-w-0">
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7A7268" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                              <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
-                            </svg>
-                            <span className="text-[13px] md:text-[15px] font-semibold" style={{ color: '#1C1A18' }}>Garments</span>
-                            {Object.keys(garments).length > 0 && (
-                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0" style={{ background: '#8B7355', color: '#fff' }}>
-                                {Object.values(garments).reduce((a, b) => a + b, 0)}
-                              </span>
-                            )}
-                          </div>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9A9388" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"
-                            style={{ transition: 'transform 250ms ease', transform: garmentsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                            <path d="M6 9l6 6 6-6"/>
-                          </svg>
-                        </button>
-                        {garmentsOpen && GARMENTS.map(g => {
-                          const qty = garments[g] || 0
-                          return (
-                            <div key={g} className="flex items-center justify-between px-3 py-2 rounded-xl"
-                              style={{ background: qty > 0 ? '#F0E8DC' : '#FDFAF5', border: `1px solid ${qty > 0 ? 'rgba(139,115,85,0.35)' : 'rgba(0,0,0,0.10)'}` }}>
-                              <span className="text-[12px] md:text-[13px] font-medium truncate pr-1" style={{ color: qty > 0 ? '#4A3020' : '#6B6358' }}>{g}</span>
-                              <div className="flex items-center gap-1 shrink-0">
-                                {qty > 0 && (
-                                  <>
-                                    <button type="button"
-                                      onClick={() => setGarments(prev => { const n = { ...prev }; if (n[g] <= 1) delete n[g]; else n[g]--; return n })}
-                                      className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold"
-                                      style={{ background: '#E2D8CC', color: '#5C4A32' }}>−</button>
-                                    <span className="text-[12px] font-bold w-3.5 text-center" style={{ color: '#4A3020' }}>{qty}</span>
-                                  </>
-                                )}
-                                <button type="button"
-                                  onClick={() => setGarments(prev => ({ ...prev, [g]: (prev[g] || 0) + 1 }))}
-                                  className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold"
-                                  style={{ background: qty > 0 ? '#8B7355' : '#EDE8DF', color: qty > 0 ? '#fff' : '#5C5248' }}>+</button>
-                              </div>
-                            </div>
-                          )
-                        })}
+                <div>
+                  <span className={FL_CLASS} style={FL_STYLE}>Total Amount</span>
+                  <FieldWrap fieldId="amount" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                    <label className={`${FIELD} ${FIELD_H} cursor-text`}>
+                      <span className="shrink-0">{I.dollar}</span>
+                      <div className="flex items-center flex-1">
+                        <span className="text-[18px] md:text-[21px] leading-none" style={{ color: '#7A7268' }}>$</span>
+                        <input className={INPUT} style={INPUT_STYLE} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
+                          onChange={e => setForm(f => ({ ...f, totalAmount: e.target.value.replace(/[^0-9.]/g, '') }))}
+                          autoComplete="off" />
                       </div>
+                    </label>
+                  </FieldWrap>
+                </div>
 
-                      {/* Right column: Alterations */}
-                      <div className="space-y-1.5">
-                        <button type="button" onClick={() => setAlterationsOpen(o => !o)}
-                          className="w-full flex items-center justify-between px-3 rounded-xl transition-colors"
-                          style={{ height: 54, background: '#FDFAF5', border: `1px solid ${alterationsOpen ? 'rgba(74,124,139,0.50)' : 'rgba(0,0,0,0.12)'}` }}>
-                          <div className="flex items-center gap-2 min-w-0">
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7A7268" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                              <path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/>
-                            </svg>
-                            <span className="text-[13px] md:text-[15px] font-semibold" style={{ color: '#1C1A18' }}>Alterations</span>
-                            {alterations.length > 0 && (
-                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0" style={{ background: '#4A7C8B', color: '#fff' }}>
-                                {alterations.length}
-                              </span>
-                            )}
-                          </div>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9A9388" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"
-                            style={{ transition: 'transform 250ms ease', transform: alterationsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                            <path d="M6 9l6 6 6-6"/>
-                          </svg>
-                        </button>
-                        {alterationsOpen && ALTERATIONS.map(a => {
-                          const sel = alterations.includes(a)
-                          return (
-                            <button key={a} type="button"
-                              onClick={() => setAlterations(prev => sel ? prev.filter(x => x !== a) : [...prev, a])}
-                              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all"
-                              style={{ background: sel ? '#DDE8F0' : '#FDFAF5', border: `1px solid ${sel ? 'rgba(74,124,139,0.40)' : 'rgba(0,0,0,0.10)'}` }}>
-                              <span className="text-[12px] md:text-[13px] font-medium" style={{ color: sel ? '#1A4A5C' : '#6B6358' }}>{a}</span>
-                              {sel && (
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A7C8B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                                  <polyline points="20 6 9 17 4 12"/>
-                                </svg>
-                              )}
-                            </button>
-                          )
-                        })}
-                      </div>
-
-                    </div>
-
-                    {/* ── Selection chips ── */}
-                    {(Object.keys(garments).length > 0 || alterations.length > 0) && (
-                      <div className="flex flex-wrap gap-2 px-1">
-                        {Object.entries(garments).map(([g, qty]) => (
-                          <span key={g} className="flex items-center gap-1.5 text-[12px] md:text-[13px] font-semibold px-3 py-1.5 rounded-full"
-                            style={{ background: '#F0E8DC', color: '#4A3020', border: '1px solid rgba(139,115,85,0.30)' }}>
-                            {g}{qty > 1 ? ` × ${qty}` : ''}
-                            <button type="button" onClick={() => setGarments(prev => { const n = { ...prev }; delete n[g]; return n })}
-                              className="opacity-50 hover:opacity-100 leading-none">×</button>
-                          </span>
-                        ))}
-                        {alterations.map(a => (
-                          <span key={a} className="flex items-center gap-1.5 text-[12px] md:text-[13px] font-semibold px-3 py-1.5 rounded-full"
-                            style={{ background: '#DDE8F0', color: '#1A4A5C', border: '1px solid rgba(74,124,139,0.30)' }}>
-                            {a}
-                            <button type="button" onClick={() => setAlterations(prev => prev.filter(x => x !== a))}
-                              className="opacity-50 hover:opacity-100 leading-none">×</button>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    <div>
-                      <span className={FL_CLASS} style={FL_STYLE}>Total Amount</span>
-                      <FieldWrap fieldId="amount" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                        <label className={`${FIELD} ${FIELD_H} cursor-text`}>
-                          <span className="shrink-0">{I.dollar}</span>
-                          <div className="flex items-center flex-1">
-                            <span className="text-[18px] md:text-[21px] leading-none" style={{ color: '#7A7268' }}>$</span>
-                            <input className={INPUT} style={INPUT_STYLE} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
-                              onChange={e => setForm(f => ({ ...f, totalAmount: e.target.value.replace(/[^0-9.]/g, '') }))}
-                              autoComplete="off" />
-                          </div>
-                        </label>
-                      </FieldWrap>
-                    </div>
-
-                    <div>
-                      <span className={FL_CLASS} style={FL_STYLE}>Payment Status</span>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button type="button" onClick={() => setForm(f => ({ ...f, paid: false }))}
-                          className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
-                          style={!form.paid
-                            ? { background: '#1C1A18', color: '#F6F1E9', border: '1px solid #1C1A18', boxShadow: '0 3px 10px rgba(0,0,0,0.22)' }
-                            : { background: '#FDFAF5', color: '#A89F94', border: '1px solid rgba(0,0,0,0.12)' }
-                          }>
-                          Unpaid
-                        </button>
-                        <button type="button" onClick={() => setForm(f => ({ ...f, paid: true }))}
-                          className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
-                          style={form.paid
-                            ? { background: '#8B7355', color: '#FFFFFF', border: '1px solid #8B7355', boxShadow: '0 3px 10px rgba(139,115,85,0.30)' }
-                            : { background: '#FDFAF5', color: '#A89F94', border: '1px solid rgba(0,0,0,0.12)' }
-                          }>
-                          Paid
-                        </button>
-                      </div>
-                    </div>
-
-
+                <div>
+                  <span className={FL_CLASS} style={FL_STYLE}>Payment Status</span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button type="button" onClick={() => setForm(f => ({ ...f, paid: false }))}
+                      className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
+                      style={!form.paid
+                        ? { background: '#1C1A18', color: '#F6F1E9', border: '1px solid #1C1A18', boxShadow: '0 3px 10px rgba(0,0,0,0.22)' }
+                        : { background: '#FDFAF5', color: '#A89F94', border: '1px solid rgba(0,0,0,0.12)' }
+                      }>
+                      Unpaid
+                    </button>
+                    <button type="button" onClick={() => setForm(f => ({ ...f, paid: true }))}
+                      className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
+                      style={form.paid
+                        ? { background: '#8B7355', color: '#FFFFFF', border: '1px solid #8B7355', boxShadow: '0 3px 10px rgba(139,115,85,0.30)' }
+                        : { background: '#FDFAF5', color: '#A89F94', border: '1px solid rgba(0,0,0,0.12)' }
+                      }>
+                      Paid
+                    </button>
                   </div>
                 </div>
 
