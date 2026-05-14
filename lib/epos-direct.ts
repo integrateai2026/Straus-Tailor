@@ -53,7 +53,10 @@ export function buildEPOSXml(order: Order): string {
     ['DROP-OFF:', formatDate(order.dropoffDate)],
     ['DUE DATE:', formatDate(order.dueDate)],
   ]
-  if (order.totalAmount != null) rows.push(['TOTAL:', `$${order.totalAmount.toFixed(2)}`])
+  const totalStr = order.totalAmount != null
+    ? `$${order.totalAmount.toFixed(2)} (${order.paid ? 'Paid' : 'Unpaid'})`
+    : (order.paid ? 'Paid' : 'Unpaid')
+  rows.push(['TOTAL:', totalStr])
   rows.push(['SMS:', order.smsConsent ? 'Yes' : 'No'])
 
   const detailLines = rows
@@ -87,7 +90,6 @@ export function buildEPOSXml(order: Order): string {
       <text align="center">ORDER ID${NL}</text>
       <text align="center" dh="true" dw="true">${xmlEsc(order.id)}${NL}</text>
       <text dh="false" dw="false"/>
-      <text align="center" em="true">${order.paid ? '*** PAID ***' : '--- UNPAID ---'}${NL}</text>
       <text align="left">${DIV2}</text>
 ${detailLines}
 ${garmentSection}

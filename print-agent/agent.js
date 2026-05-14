@@ -111,22 +111,20 @@ function buildReceipt(order) {
     t(`#${orderNumber}`),
     CMD.tallOff, CMD.boldOff,
 
-    // ── Paid status ───────────────────────────────────────────────────────
-    CMD.center, CMD.boldOn,
-    t(paid ? '*** PAID ***' : '*** BALANCE DUE ***'),
-    CMD.boldOff,
-
     div('='),
 
     // ── Core fields ───────────────────────────────────────────────────────
     ...field('Customer', customerName),
   ]
 
-  if (phone)       parts.push(...field('Phone',    phone))
-  parts.push(       ...field('Drop-Off', fmt(dropoffDate)))
-  parts.push(       ...field('Due Date', fmt(dueDate)))
-  if (totalAmount) parts.push(...field('Total',    `$${Number(totalAmount).toFixed(2)}`))
-  parts.push(       ...field('SMS Consent', smsConsent ? 'Yes' : 'No'))
+  if (phone)     parts.push(...field('Phone',    phone))
+  parts.push(     ...field('Drop-Off', fmt(dropoffDate)))
+  parts.push(     ...field('Due Date', fmt(dueDate)))
+  const totalStr = totalAmount
+    ? `$${Number(totalAmount).toFixed(2)} (${paid ? 'Paid' : 'Unpaid'})`
+    : (paid ? 'Paid' : 'Unpaid')
+  parts.push(...field('Total', totalStr))
+  parts.push(...field('SMS Consent', smsConsent ? 'Yes' : 'No'))
 
   // ── Garments ─────────────────────────────────────────────────────────
   if (garments && Object.keys(garments).length > 0) {
