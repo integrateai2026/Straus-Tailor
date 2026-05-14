@@ -39,13 +39,15 @@ const CMD = {
 const t   = (str) => Buffer.from(str + '\n', 'utf8')
 const div = (char = '-') => t(char.repeat(WIDTH))
 
-// Left-aligned row: LABEL:    value (right-aligned, padded to WIDTH)
+// Left-aligned row: LABEL:    value — 2x height, both label and value
 const leftRow = (label, value) => {
   const l = label.toUpperCase() + ':'
   const v = String(value)
   const pad = Math.max(1, WIDTH - l.length - v.length)
   return [
-    CMD.left, CMD.boldOn, t(l + ' '.repeat(pad) + v), CMD.boldOff,
+    CMD.left, CMD.boldOn, CMD.tallOn,
+    t(l + ' '.repeat(pad) + v),
+    CMD.tallOff, CMD.boldOff,
   ]
 }
 
