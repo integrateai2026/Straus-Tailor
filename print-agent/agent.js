@@ -39,15 +39,17 @@ const CMD = {
 const t   = (str) => Buffer.from(str + '\n', 'utf8')
 const div = (char = '-') => t(char.repeat(WIDTH))
 
-// Left-aligned row: LABEL:    value — 2x height, both label and value
+// Left-aligned row: LABEL: - - - value — 2x height, light dash leader, space after
 const leftRow = (label, value) => {
   const l = label.toUpperCase() + ':'
   const v = String(value)
-  const pad = Math.max(1, WIDTH - l.length - v.length)
+  const gapLen = Math.max(2, WIDTH - l.length - v.length)
+  const fill = ('- ').repeat(Math.ceil(gapLen / 2)).slice(0, gapLen)
   return [
     CMD.left, CMD.boldOn, CMD.tallOn,
-    t(l + ' '.repeat(pad) + v),
+    t(l + fill + v),
     CMD.tallOff, CMD.boldOff,
+    CMD.feed(1),
   ]
 }
 
