@@ -38,6 +38,14 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
   const [showSMS, setShowSMS] = useState(false)
   const [showPrint, setShowPrint] = useState(false)
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [editForm, setEditForm] = useState({
+    customerName: initialOrder.customerName,
+    phone:        initialOrder.phone,
+    dropoffDate:  initialOrder.dropoffDate,
+    dueDate:      initialOrder.dueDate,
+    totalAmount:  initialOrder.totalAmount != null ? String(initialOrder.totalAmount) : '',
+  })
 
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -50,6 +58,30 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
       x: 20, opacity: 0, duration: 0.2, ease: 'power2.in',
       onComplete: onBack,
     })
+  }
+
+  async function saveEdits() {
+    setLoadingAction('edit')
+    try {
+      const res = await fetch(`/api/orders/${encodeURIComponent(order.id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: editForm.customerName.trim(),
+          phone:        editForm.phone.trim(),
+          dropoffDate:  editForm.dropoffDate,
+          dueDate:      editForm.dueDate,
+          totalAmount:  editForm.totalAmount !== '' ? parseFloat(editForm.totalAmount) : null,
+        }),
+      })
+      if (!res.ok) return
+      const updated: Order = await res.json()
+      setOrder(updated)
+      onUpdate(updated)
+      setEditing(false)
+    } finally {
+      setLoadingAction(null)
+    }
   }
 
   async function patchOrder(payload: Record<string, unknown>, actionKey: string) {
@@ -126,33 +158,72 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
             <span className={`text-[11px] px-2.5 py-[3px] rounded-full border font-semibold ${STATUS_CONFIG[order.status]?.badge}`}>
               {STATUS_CONFIG[order.status]?.label}
             </span>
+            <button
+              onClick={() => {
+                if (editing) { setEditing(false) }
+                else { setEditForm({ customerName: order.customerName, phone: order.phone, dropoffDate: order.dropoffDate, dueDate: order.dueDate, totalAmount: order.totalAmount != null ? String(order.totalAmount) : '' }); setEditing(true) }
+              }}
+              className="text-[11px] px-2.5 py-[3px] rounded-full border font-semibold transition-all"
+              style={editing
+                ? { background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.2)', color: '#fff' }
+                : { background: 'transparent', borderColor: 'rgba(255,255,255,0.12)', color: '#888' }
+              }
+            >
+              {editing ? 'Cancel' : 'Edit'}
+            </button>
           </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
           {/* Details */}
-          <div className="space-y-3">
-            {[
-              { label: 'Customer', value: order.customerName },
-              { label: 'Phone', value: formatPhone(order.phone) },
-              { label: 'Drop-off Date', value: formatDate(order.dropoffDate) },
-              { label: 'Due Date', value: formatDate(order.dueDate) },
-              ...(order.totalAmount != null ? [{ label: 'Total Amount', value: `$${order.totalAmount.toFixed(2)}` }] : []),
-              ...(order.itemCount    != null ? [{ label: 'Items', value: `${order.itemCount} item${order.itemCount !== 1 ? 's' : ''}` }] : []),
-            ].map(({ label, value }) => (
-              <div key={label} className="flex justify-between items-center py-2 border-b border-white/[0.05] last:border-0">
-                <span className="text-sm text-[#888]">{label}</span>
-                <span className="text-sm text-white font-semibold">{value}</span>
+          <div className="space-y-0">
+            {editing ? (
+              <div className="space-y-3">
+                {[
+                  { label: 'Customer',     key: 'customerName', type: 'text'   },
+                  { label: 'Phone',        key: 'phone',        type: 'tel'    },
+                  { label: 'Drop-off Date',key: 'dropoffDate',  type: 'date'   },
+                  { label: 'Due Date',     key: 'dueDate',      type: 'date'   },
+                  { label: 'Total Amount', key: 'totalAmount',  type: 'number' },
+                ].map(({ label, key, type }) => (
+                  <div key={key}>
+                    <p className="text-[10px] text-[#555] uppercase tracking-widest mb-1">{label}</p>
+                    <input
+                      type={type}
+                      value={editForm[key as keyof typeof editForm]}
+                      onChange={e => setEditForm(f => ({ ...f, [key]: e.target.value }))}
+                      className="w-full bg-white/[0.06] border border-white/[0.12] rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-white/[0.3] transition-colors"
+                      step={type === 'number' ? '0.01' : undefined}
+                    />
+                  </div>
+                ))}
+                <button
+                  onClick={saveEdits}
+                  disabled={loadingAction === 'edit'}
+                  className="w-full h-11 rounded-xl bg-white text-black text-sm font-semibold mt-1 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {loadingAction === 'edit'
+                    ? <svg className="animate-spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                    : null}
+                  {loadingAction === 'edit' ? 'Saving…' : 'Save Changes'}
+                </button>
               </div>
-            ))}
-            {order.notes && (
-              <div>
-                <span className="text-[11px] uppercase tracking-[0.18em] font-medium text-[#555] block mb-1.5">Notes</span>
-                <p className="text-sm text-white bg-white/[0.04] border border-white/[0.07] rounded-xl px-4 py-3 leading-relaxed">
-                  {order.notes}
-                </p>
-              </div>
+            ) : (
+              <>
+                {[
+                  { label: 'Customer',     value: order.customerName },
+                  { label: 'Phone',        value: formatPhone(order.phone) },
+                  { label: 'Drop-off Date',value: formatDate(order.dropoffDate) },
+                  { label: 'Due Date',     value: formatDate(order.dueDate) },
+                  ...(order.totalAmount != null ? [{ label: 'Total Amount', value: `$${order.totalAmount.toFixed(2)}` }] : []),
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex justify-between items-center py-2.5 border-b border-white/[0.05] last:border-0">
+                    <span className="text-sm text-[#888]">{label}</span>
+                    <span className="text-sm text-white font-semibold">{value}</span>
+                  </div>
+                ))}
+              </>
             )}
           </div>
 

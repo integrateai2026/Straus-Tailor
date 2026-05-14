@@ -93,8 +93,12 @@ export async function updateOrder(
   if (input.pickedUpAt  !== undefined) patch.picked_up_at = input.pickedUpAt
   if (input.notifiedAt  !== undefined) patch.notified_at  = input.notifiedAt
   if (input.completedAt !== undefined) patch.completed_at = input.completedAt
-  if (input.totalAmount !== undefined) patch.total_amount = input.totalAmount
-  if (input.itemCount   !== undefined) patch.item_count   = input.itemCount
+  if (input.totalAmount  !== undefined) patch.total_amount  = input.totalAmount
+  if (input.itemCount    !== undefined) patch.item_count    = input.itemCount
+  if (input.customerName !== undefined) patch.customer_name = input.customerName
+  if (input.phone        !== undefined) patch.phone         = input.phone
+  if (input.dropoffDate  !== undefined) patch.dropoff_date  = input.dropoffDate
+  if (input.dueDate      !== undefined) patch.due_date      = input.dueDate
 
   const { data, error } = await supabase
     .from('orders').update(patch).eq('id', id).select().single()

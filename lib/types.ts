@@ -47,6 +47,10 @@ export interface UpdateOrderInput {
   pickedUpAt?: string
   notifiedAt?: string[]
   completedAt?: string
-  totalAmount?: number
+  totalAmount?: number | null
   itemCount?: number
+  customerName?: string
+  phone?: string
+  dropoffDate?: string
+  dueDate?: string
 }
