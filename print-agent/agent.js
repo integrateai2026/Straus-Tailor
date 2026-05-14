@@ -24,6 +24,7 @@ const WIDTH = 42
 
 const CMD = {
   init:    Buffer.from([ESC, 0x40]),
+  darkest: Buffer.from([GS, 0x7C, 0x08]),   // max print density (Epson TM series)
   cut:     Buffer.from([GS,  0x56, 0x42, 0x05]),
   center:  Buffer.from([ESC, 0x61, 0x01]),
   left:    Buffer.from([ESC, 0x61, 0x00]),
@@ -45,8 +46,9 @@ const div = (char = '-') => t(char.repeat(WIDTH))
 const leftRow = (label, value) => {
   const l = label.toUpperCase() + ':'
   const v = String(value)
-  const gapLen = Math.max(2, WIDTH - l.length - v.length)
-  const fill = ('- ').repeat(Math.ceil(gapLen / 2)).slice(0, gapLen)
+  const gapLen = Math.max(4, WIDTH - l.length - v.length)
+  // Spaced dashes: one dash every 4 chars e.g. "   -   -   -"
+  const fill = Array(gapLen).fill(' ').map((_, i) => (i % 4 === 2 ? '-' : ' ')).join('')
   return [
     CMD.left, CMD.boldOn, CMD.doubleOn, CMD.tallOn,
     t(l + fill + v),
@@ -72,6 +74,7 @@ function buildReceipt(order) {
 
   const parts = [
     CMD.init,
+    CMD.darkest,
     CMD.center,
 
     // ── Header ────────────────────────────────────────────────────────────
