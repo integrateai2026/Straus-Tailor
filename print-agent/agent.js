@@ -45,6 +45,12 @@ const field = (label, value) => [
   CMD.feed(1),
 ]
 
+// Big field: small label + 2x-height bold value, no extra feed — same total length as field()
+const bigField = (label, value) => [
+  CMD.center, CMD.smallOn, t(label.toUpperCase()), CMD.smallOff,
+  CMD.center, CMD.boldOn, CMD.tallOn, t(String(value)), CMD.tallOff, CMD.boldOff,
+]
+
 // Wrap long text into lines of max `maxLen` chars
 function wrapText(text, maxLen = 38) {
   const words = text.split(', ')
@@ -113,16 +119,16 @@ function buildReceipt(order) {
     div('='),
 
     // ── Core fields ───────────────────────────────────────────────────────
-    ...field('Customer', customerName),
+    ...bigField('Customer', customerName),
   ]
 
-  if (phone)  parts.push(...field('Phone',    phone))
-  parts.push(  ...field('Drop-Off', fmt(dropoffDate)))
-  parts.push(  ...field('Due Date', fmt(dueDate)))
+  if (phone)  parts.push(...bigField('Phone',    phone))
+  parts.push(  ...bigField('Drop-Off', fmt(dropoffDate)))
+  parts.push(  ...bigField('Due Date', fmt(dueDate)))
   const totalStr = totalAmount
     ? `$${Number(totalAmount).toFixed(2)} (${paid ? 'Paid' : 'Unpaid'})`
     : (paid ? 'Paid' : 'Unpaid')
-  parts.push(...field('Total', totalStr))
+  parts.push(...bigField('Total', totalStr))
   parts.push(...field('SMS Consent', smsConsent ? 'Yes' : 'No'))
 
   // ── Footer ────────────────────────────────────────────────────────────
