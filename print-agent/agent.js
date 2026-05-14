@@ -38,7 +38,7 @@ const CMD = {
 const t   = (str) => Buffer.from(str + '\n', 'utf8')
 const div = (char = '-') => t(char.repeat(WIDTH))
 
-// Field: small label line then bold value line — both centered by printer
+// Field: small label then normal bold value
 const field = (label, value) => [
   CMD.center, CMD.smallOn,  t(label.toUpperCase()), CMD.smallOff,
   CMD.center, CMD.boldOn,   t(String(value)),        CMD.boldOff,
@@ -79,7 +79,6 @@ function buildReceipt(order) {
     orderNumber, customerName, phone,
     dropoffDate, dueDate,
     totalAmount, paid, smsConsent,
-    garments, alterations,
   } = order
 
   const fmt = (d) => {
@@ -117,27 +116,14 @@ function buildReceipt(order) {
     ...field('Customer', customerName),
   ]
 
-  if (phone)     parts.push(...field('Phone',    phone))
-  parts.push(     ...field('Drop-Off', fmt(dropoffDate)))
-  parts.push(     ...field('Due Date', fmt(dueDate)))
+  if (phone)  parts.push(...field('Phone',    phone))
+  parts.push(  ...field('Drop-Off', fmt(dropoffDate)))
+  parts.push(  ...field('Due Date', fmt(dueDate)))
   const totalStr = totalAmount
     ? `$${Number(totalAmount).toFixed(2)} (${paid ? 'Paid' : 'Unpaid'})`
     : (paid ? 'Paid' : 'Unpaid')
   parts.push(...field('Total', totalStr))
   parts.push(...field('SMS Consent', smsConsent ? 'Yes' : 'No'))
-
-  // ── Garments ─────────────────────────────────────────────────────────
-  if (garments && Object.keys(garments).length > 0) {
-    const garmentText = Object.entries(garments)
-      .map(([g, qty]) => qty > 1 ? `${g} x${qty}` : g)
-      .join(', ')
-    parts.push(div('-'), ...fieldLines('Garments', wrapText(garmentText)))
-  }
-
-  // ── Alterations ──────────────────────────────────────────────────────
-  if (alterations && alterations.length > 0) {
-    parts.push(div('-'), ...fieldLines('Alterations & Repairs', wrapText(alterations.join(', '))))
-  }
 
   // ── Footer ────────────────────────────────────────────────────────────
   parts.push(

@@ -63,19 +63,6 @@ export function buildEPOSXml(order: Order): string {
     .map(([l, v]) => `      <text>${xmlEsc(padRow(l, v))}${NL}</text>`)
     .join('\n')
 
-  // Garments section
-  const garmentSection = order.garments && Object.keys(order.garments).length > 0
-    ? `      <text>${DIV2}</text>
-      <text em="true">GARMENTS:${NL}</text>
-      <text>${xmlEsc(Object.entries(order.garments).map(([g, qty]) => qty > 1 ? `${g} x${qty}` : g).join(', '))}${NL}</text>`
-    : ''
-
-  // Alterations section
-  const alterationSection = order.alterations && order.alterations.length > 0
-    ? `      <text>${DIV2}</text>
-      <text em="true">ALTERATIONS &amp; REPAIRS:${NL}</text>
-      <text>${xmlEsc(order.alterations.join(', '))}${NL}</text>`
-    : ''
 
   return `<?xml version="1.0" encoding="utf-8"?>
 <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
@@ -92,8 +79,6 @@ export function buildEPOSXml(order: Order): string {
       <text dh="false" dw="false"/>
       <text align="left">${DIV2}</text>
 ${detailLines}
-${garmentSection}
-${alterationSection}
       <text>${DIV1}</text>
       <text align="center">Thank you for your business!${NL}</text>
       <feed line="3"/>
