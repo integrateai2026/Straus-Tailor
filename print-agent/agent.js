@@ -27,8 +27,10 @@ const CMD = {
   cut:     Buffer.from([GS,  0x56, 0x42, 0x05]),
   center:  Buffer.from([ESC, 0x61, 0x01]),
   left:    Buffer.from([ESC, 0x61, 0x00]),
-  boldOn:  Buffer.from([ESC, 0x45, 0x01]),
-  boldOff: Buffer.from([ESC, 0x45, 0x00]),
+  boldOn:       Buffer.from([ESC, 0x45, 0x01]),
+  boldOff:      Buffer.from([ESC, 0x45, 0x00]),
+  doubleOn:     Buffer.from([ESC, 0x47, 0x01]),   // double-strike = extra dark
+  doubleOff:    Buffer.from([ESC, 0x47, 0x00]),
   tallOn:  Buffer.from([GS,  0x21, 0x01]),
   tallOff: Buffer.from([GS,  0x21, 0x00]),
   smallOn: Buffer.from([ESC, 0x4D, 0x01]),
@@ -46,9 +48,9 @@ const leftRow = (label, value) => {
   const gapLen = Math.max(2, WIDTH - l.length - v.length)
   const fill = ('- ').repeat(Math.ceil(gapLen / 2)).slice(0, gapLen)
   return [
-    CMD.left, CMD.boldOn, CMD.tallOn,
+    CMD.left, CMD.boldOn, CMD.doubleOn, CMD.tallOn,
     t(l + fill + v),
-    CMD.tallOff, CMD.boldOff,
+    CMD.tallOff, CMD.doubleOff, CMD.boldOff,
     CMD.feed(1),
   ]
 }
