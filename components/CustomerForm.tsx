@@ -324,64 +324,24 @@ export default function CustomerForm() {
 
                 {/* ── Consent checkboxes ── */}
                 <div className="space-y-2 rounded-xl px-3 py-2.5" style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.07)' }}>
-                  {[
-                    {
-                      key: 'smsTransactional' as const,
-                      bold: 'Yes, text me about my order.',
-                      body: 'Transactional/service messages from Straus Tailor Shop may include order updates, pickup reminders, customer service replies, and review requests. Msg/data rates may apply. Reply HELP for help or STOP to opt out.',
-                    },
-                    {
-                      key: 'smsMarketing' as const,
-                      bold: 'Yes, send me shop updates and offers.',
-                      body: 'Promotional/marketing messages from Straus Tailor Shop may include shop updates, seasonal updates, and occasional offers. Msg/data rates may apply. Reply HELP for help or STOP to opt out.',
-                    },
-                  ].map(({ key, bold, body }) => (
-                    <button key={key} type="button"
-                      onClick={() => setForm(f => ({ ...f, [key]: !f[key] }))}
-                      className="w-full flex items-start gap-2 text-left py-1">
-                      <div className="shrink-0 mt-[2px] w-4 h-4 rounded border-2 flex items-center justify-center transition-all"
-                        style={form[key]
-                          ? { background: '#8B7355', borderColor: '#8B7355' }
-                          : { background: '#FDFAF5', borderColor: 'rgba(0,0,0,0.25)' }}>
-                        {form[key] && (
-                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </div>
-                      <div>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: '#4A443C' }}>{bold} </span>
-                        <span style={{ fontSize: 11, lineHeight: 1.4, color: '#9A9388' }}>{body}</span>
-                      </div>
-                    </button>
-                  ))}
-
-                  <div className="h-px" style={{ background: 'rgba(0,0,0,0.08)' }} />
-
-                  {/* Terms */}
+                  {/* Transactional SMS only — marketing and terms hidden for now */}
                   <button type="button"
-                    onClick={() => setForm(f => ({ ...f, termsAccepted: !f.termsAccepted }))}
-                    className="w-full flex items-center gap-2 text-left py-1">
-                    <div className="shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-all"
-                      style={form.termsAccepted
+                    onClick={() => setForm(f => ({ ...f, smsTransactional: !f.smsTransactional }))}
+                    className="w-full flex items-start gap-2 text-left py-1">
+                    <div className="shrink-0 mt-[2px] w-4 h-4 rounded border-2 flex items-center justify-center transition-all"
+                      style={form.smsTransactional
                         ? { background: '#8B7355', borderColor: '#8B7355' }
                         : { background: '#FDFAF5', borderColor: 'rgba(0,0,0,0.25)' }}>
-                      {form.termsAccepted && (
+                      {form.smsTransactional && (
                         <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
                     </div>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: '#4A443C' }}>
-                      I accept the{' '}
-                      <a href="/privacy" target="_blank" rel="noopener noreferrer"
-                        style={{ color: '#8B7355', textDecoration: 'underline' }}
-                        onClick={e => e.stopPropagation()}>Privacy Policy</a>
-                      {' '}and{' '}
-                      <a href="/terms" target="_blank" rel="noopener noreferrer"
-                        style={{ color: '#8B7355', textDecoration: 'underline' }}
-                        onClick={e => e.stopPropagation()}>Terms &amp; Conditions</a>.
-                    </p>
+                    <div>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#4A443C' }}>Yes, text me about my order. </span>
+                      <span style={{ fontSize: 11, lineHeight: 1.4, color: '#9A9388' }}>Transactional/service messages from Straus Tailor Shop may include order updates, pickup reminders, customer service replies, and review requests. Msg/data rates may apply. Reply HELP for help or STOP to opt out.</span>
+                    </div>
                   </button>
                 </div>
 
