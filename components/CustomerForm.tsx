@@ -296,7 +296,7 @@ export default function CustomerForm() {
 
                 {/* ── Customer information ── */}
                 <div>
-                  <span className={FL_CLASS} style={FL_STYLE}>Full Name <span style={{ color: '#7A7268', fontWeight: 400 }}>*</span></span>
+                  <span className={FL_CLASS} style={FL_STYLE}>Full Name *</span>
                   <FieldWrap fieldId="name" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
                     <label className={`${FIELD} ${FIELD_H} cursor-text`}>
                       <span className="shrink-0">{I.user}</span>
@@ -308,7 +308,7 @@ export default function CustomerForm() {
                 </div>
 
                 <div>
-                  <span className={FL_CLASS} style={FL_STYLE}>Phone Number <span style={{ color: '#7A7268', fontWeight: 400 }}>*</span></span>
+                  <span className={FL_CLASS} style={FL_STYLE}>Phone Number *</span>
                   <FieldWrap fieldId="phone" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
                     <label className={`${FIELD} ${FIELD_H} cursor-text`}>
                       <span className="shrink-0">{I.phone}</span>
