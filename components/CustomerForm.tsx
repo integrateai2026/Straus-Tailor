@@ -281,10 +281,12 @@ export default function CustomerForm() {
 
           {/* Form card — warm ivory paper floating on charcoal */}
           <form onSubmit={handleSubmit} className="w-full">
-            <div className="rounded-2xl p-5 md:p-7 mb-4" style={{
+            <div className="rounded-2xl mb-4" style={{
               background: CARD_BG,
               border: '1px solid rgba(0,0,0,0.07)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 16px 48px rgba(0,0,0,0.45), 0 40px 80px rgba(0,0,0,0.35)',
+              padding: staffOpen ? '28px 28px 28px 28px' : '20px 20px 10px 20px',
+              transition: 'padding 300ms ease',
             }}>
               {/*
                 Visual grouping rules:
