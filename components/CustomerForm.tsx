@@ -319,65 +319,101 @@ export default function CustomerForm() {
                   </FieldWrap>
                 </div>
 
-                {/* Drop-off date is always today — hidden from form, still submitted */}
-                <DateField label="Need By *" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
-
-                {/* ── Consent checkboxes ── */}
-                <div className="space-y-2 rounded-xl px-3 py-2.5" style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.07)' }}>
-                  {/* Transactional SMS only — marketing and terms hidden for now */}
-                  <button type="button"
-                    onClick={() => setForm(f => ({ ...f, smsTransactional: !f.smsTransactional }))}
-                    className="w-full flex items-start gap-2 text-left py-1">
-                    <div className="shrink-0 mt-[2px] w-4 h-4 rounded border-2 flex items-center justify-center transition-all"
-                      style={form.smsTransactional
-                        ? { background: '#8B7355', borderColor: '#8B7355' }
-                        : { background: '#FDFAF5', borderColor: 'rgba(0,0,0,0.25)' }}>
-                      {form.smsTransactional && (
-                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      )}
-                    </div>
-                    <div>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#4A443C' }}>Yes, text me about my order. </span>
-                      <span style={{ fontSize: 11, lineHeight: 1.4, color: '#9A9388' }}>Transactional/service messages from Straus Tailor Shop may include order updates, pickup reminders, customer service replies, and review requests. Msg frequency varies, usually a few messages per order. Msg/data rates may apply. Reply HELP for help or STOP to opt out.</span>
-                    </div>
-                  </button>
-                </div>
-
-                <div>
-                  <span className={FL_CLASS} style={FL_STYLE}>Total Amount</span>
-                  <FieldWrap fieldId="amount" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                    <label className={`${FIELD} ${FIELD_H} cursor-text`}>
-                      <div className="flex items-center flex-1">
-                        <span className="shrink-0 mr-1">{I.dollar}</span>
-                        <input className={INPUT} style={INPUT_STYLE} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
-                          onChange={e => setForm(f => ({ ...f, totalAmount: e.target.value.replace(/[^0-9.]/g, '') }))}
-                          autoComplete="off" />
+                {/* ── SMS Consent — appears once a valid phone number is entered ── */}
+                <div style={{
+                  overflow: 'hidden',
+                  maxHeight: form.phone.replace(/\D/g, '').length === 10 ? '200px' : '0px',
+                  opacity: form.phone.replace(/\D/g, '').length === 10 ? 1 : 0,
+                  transition: 'max-height 350ms ease, opacity 300ms ease',
+                  marginTop: form.phone.replace(/\D/g, '').length === 10 ? undefined : '0',
+                }}>
+                  <div className="space-y-2 rounded-xl px-3 py-2.5" style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.07)' }}>
+                    <button type="button"
+                      onClick={() => setForm(f => ({ ...f, smsTransactional: !f.smsTransactional }))}
+                      className="w-full flex items-start gap-2 text-left py-1">
+                      <div className="shrink-0 mt-[2px] w-4 h-4 rounded border-2 flex items-center justify-center transition-all"
+                        style={form.smsTransactional
+                          ? { background: '#8B7355', borderColor: '#8B7355' }
+                          : { background: '#FDFAF5', borderColor: 'rgba(0,0,0,0.25)' }}>
+                        {form.smsTransactional && (
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
                       </div>
-                    </label>
-                  </FieldWrap>
+                      <div>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: '#4A443C' }}>Yes, text me about my order. </span>
+                        <span style={{ fontSize: 11, lineHeight: 1.4, color: '#9A9388' }}>Transactional/service messages from Straus Tailor Shop may include order updates, pickup reminders, customer service replies, and review requests. Msg frequency varies, usually a few messages per order. Msg/data rates may apply. Reply HELP for help or STOP to opt out.</span>
+                      </div>
+                    </button>
+                  </div>
                 </div>
 
-                <div>
-                  <span className={FL_CLASS} style={FL_STYLE}>Payment Status</span>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button type="button" onClick={() => setForm(f => ({ ...f, paid: false }))}
-                      className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
-                      style={!form.paid
-                        ? { background: '#1C1A18', color: '#F6F1E9', border: '1px solid #1C1A18', boxShadow: '0 3px 10px rgba(0,0,0,0.22)' }
-                        : { background: '#FDFAF5', color: '#A89F94', border: '1px solid rgba(0,0,0,0.12)' }
-                      }>
-                      Unpaid
-                    </button>
-                    <button type="button" onClick={() => setForm(f => ({ ...f, paid: true }))}
-                      className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
-                      style={form.paid
-                        ? { background: '#8B7355', color: '#FFFFFF', border: '1px solid #8B7355', boxShadow: '0 3px 10px rgba(139,115,85,0.30)' }
-                        : { background: '#FDFAF5', color: '#A89F94', border: '1px solid rgba(0,0,0,0.12)' }
-                      }>
-                      Paid
-                    </button>
+                {/* ── Staff Details toggle ── */}
+                <button
+                  type="button"
+                  onClick={() => setStaffOpen(o => !o)}
+                  className="w-full flex items-center gap-3 py-1 transition-opacity hover:opacity-70"
+                >
+                  <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.10)' }} />
+                  <span className="text-[10px] md:text-[13px]" style={{ fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#9A9388' }}>
+                    Staff Details
+                  </span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9A9388" strokeWidth="2.5"
+                    strokeLinecap="round" strokeLinejoin="round"
+                    style={{ transition: 'transform 250ms ease', transform: staffOpen ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }}>
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                  <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.10)' }} />
+                </button>
+
+                {/* ── Collapsible staff panel ── */}
+                <div ref={staffPanelRef} style={{
+                  overflow: 'hidden',
+                  maxHeight: staffOpen ? '600px' : '0px',
+                  opacity: staffOpen ? 1 : 0,
+                  transition: 'max-height 300ms ease, opacity 250ms ease',
+                }}>
+                  <div className="space-y-3 pt-1 pb-1">
+
+                    <DateField label="Need By *" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
+
+                    <div>
+                      <span className={FL_CLASS} style={FL_STYLE}>Total Amount</span>
+                      <FieldWrap fieldId="amount" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                        <label className={`${FIELD} ${FIELD_H} cursor-text`}>
+                          <div className="flex items-center flex-1">
+                            <span className="shrink-0 mr-1">{I.dollar}</span>
+                            <input className={INPUT} style={INPUT_STYLE} placeholder="0.00" inputMode="decimal" value={form.totalAmount}
+                              onChange={e => setForm(f => ({ ...f, totalAmount: e.target.value.replace(/[^0-9.]/g, '') }))}
+                              autoComplete="off" />
+                          </div>
+                        </label>
+                      </FieldWrap>
+                    </div>
+
+                    <div>
+                      <span className={FL_CLASS} style={FL_STYLE}>Payment Status</span>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button type="button" onClick={() => setForm(f => ({ ...f, paid: false }))}
+                          className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
+                          style={!form.paid
+                            ? { background: '#1C1A18', color: '#F6F1E9', border: '1px solid #1C1A18', boxShadow: '0 3px 10px rgba(0,0,0,0.22)' }
+                            : { background: '#FDFAF5', color: '#A89F94', border: '1px solid rgba(0,0,0,0.12)' }
+                          }>
+                          Unpaid
+                        </button>
+                        <button type="button" onClick={() => setForm(f => ({ ...f, paid: true }))}
+                          className={`${FIELD_H} rounded-xl text-[16px] md:text-[18px] font-semibold transition-all`}
+                          style={form.paid
+                            ? { background: '#8B7355', color: '#FFFFFF', border: '1px solid #8B7355', boxShadow: '0 3px 10px rgba(139,115,85,0.30)' }
+                            : { background: '#FDFAF5', color: '#A89F94', border: '1px solid rgba(0,0,0,0.12)' }
+                          }>
+                          Paid
+                        </button>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
 
@@ -387,7 +423,7 @@ export default function CustomerForm() {
           {error && <p className="text-sm text-center mb-2" style={{ color: '#8B3A3A' }}>{error}</p>}
 
           {(() => {
-            const isReady = !!(form.customerName.trim() && form.phone.trim() && form.dueDate)
+            const isReady = !!(form.customerName.trim() && form.phone.trim())
             return (
               <>
                 {/* Helper message — visible only when required fields are incomplete */}
