@@ -11,7 +11,18 @@ interface Props {
 }
 
 export default function SMSModal({ order, onClose, onSent }: Props) {
-  const defaultMsg = `Hi ${order.customerName.split(' ')[0]}, your order ${order.id} is ready for pickup. Thank you!\n— Straus Tailor Shop`
+  const firstName = order.customerName.split(' ')[0]
+  const defaultMsg = [
+    `Straus Tailor Shop`,
+    ``,
+    `Hi ${firstName} — your order is ready for pickup!`,
+    ``,
+    `Order: ${order.id}`,
+    ``,
+    `We're open Mon–Fri 9am–6pm, Sat 10am–4pm.`,
+    `Questions? 701-715-5944`,
+    `Reply STOP to opt out.`,
+  ].join('\n')
   const [message, setMessage] = useState(defaultMsg)
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
