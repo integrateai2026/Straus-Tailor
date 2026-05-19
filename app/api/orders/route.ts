@@ -51,14 +51,17 @@ export async function POST(req: NextRequest) {
       })
       const firstName = input.customerName.split(' ')[0]
       const totalLine = input.totalAmount != null ? `\nTotal: $${input.totalAmount.toFixed(2)}` : ''
+      const paidLine = `\nPayment: ${input.paid ? 'Paid' : 'Balance Due'}`
       const msg = [
-        `Hi ${firstName}! Your order has been received at Straus Tailor Shop.`,
+        `𝓢𝓽𝓻𝓪𝓾𝓼 𝓣𝓪𝓲𝓵𝓸𝓻 𝓢𝓱𝓸𝓹`,
         ``,
-        `Order ID: ${order.id}`,
-        `Due: ${due}${totalLine}`,
+        `Hi ${firstName}! Your order has been received.`,
+        ``,
+        `Order: ${order.id}`,
+        `Due: ${due}${totalLine}${paidLine}`,
         ``,
         `We'll text you when it's ready for pickup.`,
-        `Questions? Call (701) 929-8262`,
+        `Questions? Call 701-715-5944`,
         `Reply STOP to opt out.`,
       ].join('\n')
       console.log(`[SMS] Sending confirmation to ${input.phone} for order ${order.id}`)
