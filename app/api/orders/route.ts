@@ -50,18 +50,25 @@ export async function POST(req: NextRequest) {
         weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
       })
       const firstName = input.customerName.split(' ')[0]
-      const totalLine = input.totalAmount != null ? `\nTotal: $${input.totalAmount.toFixed(2)}` : ''
-      const paidLine = `\nPayment: ${input.paid ? 'Paid' : 'Balance Due'}`
+      const dueShort = new Date(input.dueDate + 'T00:00:00').toLocaleDateString('en-US', {
+        weekday: 'long', month: 'long', day: 'numeric',
+      })
+      const paymentLine = input.paid
+        ? `Payment received — thank you.`
+        : input.totalAmount != null
+          ? `Remaining balance: $${input.totalAmount.toFixed(2)}`
+          : null
       const msg = [
-        `𝓢𝓽𝓻𝓪𝓾𝓼 𝓣𝓪𝓲𝓵𝓸𝓻 𝓢𝓱𝓸𝓹`,
+        `Straus Tailor Shop`,
         ``,
-        `Hi ${firstName}! Your order has been received.`,
+        `Hi ${firstName} — thank you for visiting us today.`,
         ``,
-        `Order: ${order.id}`,
-        `Due: ${due}${totalLine}${paidLine}`,
+        `Your order will be ready for pickup by ${dueShort}.`,
         ``,
-        `We'll text you when it's ready for pickup.`,
-        `Questions? Call 701-715-5944`,
+        ...(paymentLine ? [paymentLine, ``] : []),
+        `We'll send you a text as soon as it's ready.`,
+        ``,
+        `Questions? 701-715-5944`,
         `Reply STOP to opt out.`,
       ].join('\n')
       console.log(`[SMS] Sending confirmation to ${input.phone} for order ${order.id}`)
