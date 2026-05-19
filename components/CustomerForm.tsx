@@ -263,13 +263,13 @@ export default function CustomerForm() {
       */}
       <div
         ref={containerRef}
-        className="flex flex-col items-center px-4 py-8 md:px-8 md:py-10"
+        className="flex flex-col items-center px-4 py-5 md:px-8 md:py-10"
         style={{ minHeight: '100dvh', background: PAGE_BG }}
       >
-        <div className="mt-12 mb-auto w-full max-w-xl md:max-w-2xl">
+        <div className="mt-2 md:mt-8 mb-auto w-full max-w-xl md:max-w-2xl">
 
           {/* Header — warm cream on dark charcoal */}
-          <div ref={headerRef} className="mb-6" style={{ opacity: 0 }}>
+          <div ref={headerRef} className="mb-4 md:mb-6" style={{ opacity: 0 }}>
             <h1 className="text-4xl md:text-5xl text-center leading-none" style={{
               fontFamily: 'var(--font-dancing)',
               color: '#E8E0D0',
@@ -281,12 +281,12 @@ export default function CustomerForm() {
 
           {/* Form card — warm ivory paper floating on charcoal */}
           <form onSubmit={handleSubmit} className="w-full">
-            <div className="rounded-2xl mb-4" style={{
+            <div className="rounded-2xl mb-4 px-4 pt-5 md:px-7 md:pt-7" style={{
               background: CARD_BG,
               border: '1px solid rgba(0,0,0,0.07)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 16px 48px rgba(0,0,0,0.45), 0 40px 80px rgba(0,0,0,0.35)',
-              padding: staffOpen ? '28px 28px 28px 28px' : '20px 20px 10px 20px',
-              transition: 'padding 300ms ease',
+              paddingBottom: staffOpen ? '20px' : '10px',
+              transition: 'padding-bottom 300ms ease',
             }}>
               {/*
                 Visual grouping rules:
