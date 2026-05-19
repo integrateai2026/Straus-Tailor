@@ -21,6 +21,7 @@ export default function SMSModal({ order, onClose, onSent }: Props) {
     `Questions? 701-715-5944`,
     `Reply STOP to opt out.`,
     ``,
+    `Thank you,`,
     `— Straus Tailor Shop`,
   ].join('\n')
   const [message, setMessage] = useState(defaultMsg)
