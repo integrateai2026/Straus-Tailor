@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAllOrders, createOrder } from '@/lib/store'
 import { CreateOrderInput } from '@/lib/types'
+import { sendSMS } from '@/lib/twilio'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -42,6 +43,27 @@ export async function POST(req: NextRequest) {
     }
 
     const order = await createOrder(input)
+
+    // Send customer confirmation SMS if they opted in
+    if (raw.smsTransactional === true && input.phone) {
+      const due = new Date(input.dueDate + 'T00:00:00').toLocaleDateString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+      })
+      const firstName = input.customerName.split(' ')[0]
+      const totalLine = input.totalAmount != null ? `\nTotal: $${input.totalAmount.toFixed(2)}` : ''
+      const msg = [
+        `Hi ${firstName}! Your order has been received at Straus Tailor Shop.`,
+        ``,
+        `Order ID: ${order.id}`,
+        `Due: ${due}${totalLine}`,
+        ``,
+        `We'll text you when it's ready for pickup.`,
+        `Questions? Call (701) 929-8262`,
+        `Reply STOP to opt out.`,
+      ].join('\n')
+      sendSMS(input.phone, msg).catch(console.error) // fire and forget
+    }
+
     return NextResponse.json(order, { status: 201 })
   } catch (err) {
     console.error(err)

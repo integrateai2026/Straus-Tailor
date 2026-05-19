@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getOrderById, updateOrder } from '@/lib/store'
+import { sendSMS } from '@/lib/twilio'
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,24 +10,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
     }
 
-    const accountSid  = process.env.TWILIO_ACCOUNT_SID
-    const authToken   = process.env.TWILIO_AUTH_TOKEN
-    const fromNumber  = process.env.TWILIO_FROM_NUMBER
-
-    if (accountSid && authToken && fromNumber) {
-      const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString('base64')}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({ To: phone, From: fromNumber, Body: message }),
-      })
-      if (!response.ok) {
-        const err = await response.json()
-        return NextResponse.json({ error: err.message || 'SMS failed' }, { status: 500 })
-      }
+    const result = await sendSMS(phone, message)
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error || 'SMS failed' }, { status: 500 })
     }
 
     // Append this send time to the notifiedAt history
