@@ -324,8 +324,8 @@ export default function CustomerForm() {
                   overflow: 'hidden',
                   maxHeight: form.phone.replace(/\D/g, '').length === 10 ? '200px' : '0px',
                   opacity: form.phone.replace(/\D/g, '').length === 10 ? 1 : 0,
-                  transition: 'max-height 350ms ease, opacity 300ms ease',
-                  marginTop: form.phone.replace(/\D/g, '').length === 10 ? undefined : '0',
+                  marginTop: form.phone.replace(/\D/g, '').length === 10 ? undefined : 0,
+                  transition: 'max-height 350ms ease, opacity 300ms ease, margin-top 300ms ease',
                 }}>
                   <div className="space-y-2 rounded-xl px-3 py-2.5" style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.07)' }}>
                     <button type="button"
@@ -370,9 +370,10 @@ export default function CustomerForm() {
                 {/* ── Collapsible staff panel ── */}
                 <div ref={staffPanelRef} style={{
                   overflow: 'hidden',
-                  maxHeight: staffOpen ? '600px' : '0px',
+                  maxHeight: staffOpen ? '900px' : '0px',
                   opacity: staffOpen ? 1 : 0,
-                  transition: 'max-height 300ms ease, opacity 250ms ease',
+                  marginTop: staffOpen ? undefined : 0,
+                  transition: 'max-height 350ms ease, opacity 250ms ease, margin-top 300ms ease',
                 }}>
                   <div className="space-y-3 pt-1 pb-1">
 
@@ -414,56 +415,55 @@ export default function CustomerForm() {
                       </div>
                     </div>
 
+                    {error && <p className="text-sm text-center mt-1" style={{ color: '#8B3A3A' }}>{error}</p>}
+
+                    {(() => {
+                      const isReady = !!(form.customerName.trim() && form.phone.trim())
+                      return (
+                        <>
+                          <p style={{
+                            fontSize: 12, textAlign: 'center', marginTop: 8, marginBottom: 4,
+                            color: '#9A9388', letterSpacing: '0.01em',
+                            opacity: isReady ? 0 : 1,
+                            transition: 'opacity 300ms ease',
+                            pointerEvents: 'none',
+                          }}>
+                            Complete required fields to save and print.
+                          </p>
+
+                          <button
+                            ref={btnRef}
+                            type="submit"
+                            disabled={loading}
+                            className="w-full h-[56px] md:h-[62px] rounded-xl text-[15px] md:text-[17px] font-semibold tracking-wide flex items-center justify-center gap-2.5 transition-all"
+                            style={{
+                              opacity: 0,
+                              letterSpacing: '0.04em',
+                              cursor: isReady ? 'pointer' : 'not-allowed',
+                              transition: 'background 200ms ease, box-shadow 200ms ease, color 200ms ease',
+                              ...(isReady
+                                ? { background: '#2C2118', color: '#F6F1E9', boxShadow: '0 4px 18px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.20)' }
+                                : { background: '#E2DDD8', color: '#7A7268', boxShadow: 'none' }),
+                            }}
+                            onMouseEnter={e => { if (isReady) (e.currentTarget as HTMLButtonElement).style.background = '#3D2E20' }}
+                            onMouseLeave={e => { if (isReady) (e.currentTarget as HTMLButtonElement).style.background = '#2C2118' }}
+                          >
+                            {loading
+                              ? <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                              : null
+                            }
+                            {loading ? 'Saving…' : 'Save & Print Ticket'}
+                          </button>
+                        </>
+                      )
+                    })()}
+
                   </div>
                 </div>
 
+              </div>
             </div>
-          </div>
-
-          {error && <p className="text-sm text-center mb-2" style={{ color: '#8B3A3A' }}>{error}</p>}
-
-          {(() => {
-            const isReady = !!(form.customerName.trim() && form.phone.trim())
-            return (
-              <>
-                {/* Helper message — visible only when required fields are incomplete */}
-                <p style={{
-                  fontSize: 12, textAlign: 'center', marginBottom: 8,
-                  color: '#9A9388', letterSpacing: '0.01em',
-                  opacity: isReady ? 0 : 1,
-                  transition: 'opacity 300ms ease',
-                  pointerEvents: 'none',
-                }}>
-                  Complete required fields to save and print.
-                </p>
-
-                <button
-                  ref={btnRef}
-                  type="submit"
-                  disabled={loading}
-                  className="w-full h-[56px] md:h-[62px] rounded-xl text-[15px] md:text-[17px] font-semibold tracking-wide flex items-center justify-center gap-2.5 transition-all"
-                  style={{
-                    opacity: 0,
-                    letterSpacing: '0.04em',
-                    cursor: isReady ? 'pointer' : 'not-allowed',
-                    transition: 'background 200ms ease, box-shadow 200ms ease, color 200ms ease',
-                    ...(isReady
-                      ? { background: '#2C2118', color: '#F6F1E9', boxShadow: '0 4px 18px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.20)' }
-                      : { background: '#E2DDD8', color: '#7A7268', boxShadow: 'none' }),
-                  }}
-                  onMouseEnter={e => { if (isReady) (e.currentTarget as HTMLButtonElement).style.background = '#3D2E20' }}
-                  onMouseLeave={e => { if (isReady) (e.currentTarget as HTMLButtonElement).style.background = '#2C2118' }}
-                >
-                  {loading
-                    ? <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                    : null
-                  }
-                  {loading ? 'Saving…' : 'Save & Print Ticket'}
-                </button>
-              </>
-            )
-          })()}
-        </form>
+          </form>
 
         </div>{/* end my-auto wrapper */}
       </div>
