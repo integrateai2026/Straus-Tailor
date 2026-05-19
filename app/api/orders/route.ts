@@ -61,7 +61,14 @@ export async function POST(req: NextRequest) {
         `Questions? Call (701) 929-8262`,
         `Reply STOP to opt out.`,
       ].join('\n')
-      sendSMS(input.phone, msg).catch(console.error) // fire and forget
+      console.log(`[SMS] Sending confirmation to ${input.phone} for order ${order.id}`)
+      sendSMS(input.phone, msg).then(result => {
+        if (result.ok) {
+          console.log(`[SMS] Confirmation sent successfully to ${input.phone}`)
+        } else {
+          console.error(`[SMS] Failed to send to ${input.phone}:`, result.error)
+        }
+      }).catch(err => console.error('[SMS] Unexpected error:', err))
     }
 
     return NextResponse.json(order, { status: 201 })
