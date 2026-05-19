@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       notifiedAt: [...existing, new Date().toISOString()],
     })
 
-    return NextResponse.json({ success: true, demo: !accountSid, order: updated })
+    return NextResponse.json({ success: true, order: updated })
   } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
