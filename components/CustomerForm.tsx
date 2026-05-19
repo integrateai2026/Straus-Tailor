@@ -266,7 +266,7 @@ export default function CustomerForm() {
         className="flex flex-col items-center px-4 py-8 md:px-8 md:py-10"
         style={{ minHeight: '100dvh', background: PAGE_BG }}
       >
-        <div className="my-auto w-full max-w-xl md:max-w-2xl">
+        <div className="mt-12 mb-auto w-full max-w-xl md:max-w-2xl">
 
           {/* Header — warm cream on dark charcoal */}
           <div ref={headerRef} className="mb-6" style={{ opacity: 0 }}>
