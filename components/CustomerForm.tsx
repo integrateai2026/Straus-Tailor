@@ -263,10 +263,10 @@ export default function CustomerForm() {
       */}
       <div
         ref={containerRef}
-        className="flex flex-col items-center px-4 py-5 md:px-8 md:py-10"
+        className="flex flex-col items-center px-4 py-4 md:px-8 md:py-6"
         style={{ minHeight: '100dvh', background: PAGE_BG }}
       >
-        <div className="mt-2 md:mt-8 mb-auto w-full max-w-xl md:max-w-2xl">
+        <div className="mb-auto w-full max-w-xl md:max-w-2xl" style={{ marginTop: '12vh' }}>
 
           {/* Header — warm cream on dark charcoal */}
           <div ref={headerRef} className="mb-4 md:mb-6" style={{ opacity: 0 }}>
