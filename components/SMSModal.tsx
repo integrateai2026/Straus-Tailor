@@ -13,7 +13,7 @@ interface Props {
 export default function SMSModal({ order, onClose, onSent }: Props) {
   const firstName = order.customerName.split(' ')[0]
   const defaultMsg = [
-    `Hi ${firstName} — your order is ready for pickup!`,
+    `Hi ${firstName} — your clothes are ready for pickup!`,
     ``,
     `Order: ${order.id}`,
     ``,
