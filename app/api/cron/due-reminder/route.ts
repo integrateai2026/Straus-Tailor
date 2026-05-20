@@ -7,6 +7,15 @@ export const runtime = 'nodejs'
 // Called daily by Vercel Cron at 9am CT (also 8am CDT in summer)
 // Sends a staff alert for every active order due tomorrow with no SMS sent yet
 export async function GET(req: NextRequest) {
+  // Temporary version probe — remove after debugging
+  if (req.nextUrl.searchParams.get('ping') === '1') {
+    return NextResponse.json({
+      version: 'debug-v3',
+      secretSet: !!process.env.CRON_SECRET,
+      secretLength: process.env.CRON_SECRET?.length ?? 0,
+    })
+  }
+
   // Fail closed — reject if CRON_SECRET not configured or header doesn't match
   const secret = process.env.CRON_SECRET
   const authHeader = req.headers.get('authorization')
