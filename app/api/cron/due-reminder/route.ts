@@ -8,8 +8,8 @@ export const runtime = 'nodejs'
 // Sends a staff alert for every active order due tomorrow with no SMS sent yet
 export async function GET(req: NextRequest) {
   // Fail closed — reject if CRON_SECRET not configured or header doesn't match
-  const secret = process.env.CRON_SECRET
-  const authHeader = req.headers.get('authorization')
+  const secret = process.env.CRON_SECRET?.trim()
+  const authHeader = req.headers.get('authorization')?.trim()
   if (!secret || authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
