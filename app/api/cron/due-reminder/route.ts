@@ -4,7 +4,7 @@ import { sendSMS } from '@/lib/twilio'
 
 export const runtime = 'nodejs'
 
-// Called daily by Vercel Cron at 9am CT
+// Called daily by Vercel Cron at 9am CT (also 8am CDT in summer)
 // Sends a staff alert for every active order due tomorrow with no SMS sent yet
 export async function GET(req: NextRequest) {
   // Fail closed — reject if CRON_SECRET not configured or header doesn't match
