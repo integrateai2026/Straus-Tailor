@@ -11,7 +11,15 @@ export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET?.trim()
   const authHeader = req.headers.get('authorization')?.trim()
   if (!secret || authHeader !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({
+      error: 'Unauthorized',
+      debug: {
+        secretSet: !!secret,
+        secretLen: secret?.length ?? 0,
+        headerSet: !!authHeader,
+        headerLen: authHeader?.length ?? 0,
+      }
+    }, { status: 401 })
   }
 
   const staffNumber = process.env.TWILIO_STAFF_ALERT_NUMBER
