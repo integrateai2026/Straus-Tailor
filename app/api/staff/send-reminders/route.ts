@@ -5,11 +5,10 @@ import { sendSMS } from '@/lib/twilio'
 export const runtime = 'nodejs'
 
 // Manual trigger for staff due-reminder SMS — same logic as the cron.
-// Protected by CRON_SECRET but not registered as a cron, so Vercel's
-// cron middleware doesn't block external calls.
+// Protected by STAFF_ALERT_KEY (not CRON_SECRET, which Vercel intercepts).
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET
-  const authHeader = req.headers.get('authorization')
+  const secret = process.env.STAFF_ALERT_KEY?.trim()
+  const authHeader = req.headers.get('authorization')?.trim()
   if (!secret || authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
