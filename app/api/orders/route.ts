@@ -58,9 +58,11 @@ export async function POST(req: NextRequest) {
         weekday: 'long', month: 'long', day: 'numeric',
       })
       const paymentLine = input.paid
-        ? `Payment received — thank you.`
+        ? input.totalAmount != null
+          ? `Amount paid: $${input.totalAmount.toFixed(2)}`
+          : `Payment received — thank you.`
         : input.totalAmount != null
-          ? `Remaining balance: $${input.totalAmount.toFixed(2)}`
+          ? `Balance due: $${input.totalAmount.toFixed(2)}`
           : null
       const msg = [
         `Straus Tailor Shop`,
