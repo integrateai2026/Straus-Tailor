@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAllOrders, createOrder } from '@/lib/store'
 import { CreateOrderInput } from '@/lib/types'
 import { sendSMS } from '@/lib/twilio'
+import { requireAuth } from '@/lib/session'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export async function GET(req: NextRequest) {
+  if (!(await requireAuth(req))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status') ?? undefined
   const query  = searchParams.get('q')      ?? undefined

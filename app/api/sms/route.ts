@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getOrderById, updateOrder } from '@/lib/store'
 import { sendSMS } from '@/lib/twilio'
+import { requireAuth } from '@/lib/session'
 
 export async function POST(req: NextRequest) {
+  if (!(await requireAuth(req))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
   try {
     const { orderId, phone, message } = await req.json()
 

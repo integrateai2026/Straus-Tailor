@@ -1,3 +1,4 @@
+import { NextRequest } from 'next/server'
 import { SignJWT, jwtVerify } from 'jose'
 
 export const COOKIE_NAME = 'straus_session'
@@ -24,4 +25,14 @@ export async function verifyToken(token: string): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+/**
+ * Call at the top of any staff-only API route.
+ * Returns true if the request carries a valid session cookie.
+ */
+export async function requireAuth(req: NextRequest): Promise<boolean> {
+  const token = req.cookies.get(COOKIE_NAME)?.value
+  if (!token) return false
+  return verifyToken(token)
 }
