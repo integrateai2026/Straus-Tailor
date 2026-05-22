@@ -52,6 +52,28 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
   const [search, setSearch]   = useState('')
   const [selected, setSelected] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
+  const [reminderState, setReminderState] = useState<'idle' | 'sending' | 'sent' | 'error' | 'none'>('idle')
+  const [reminderMsg, setReminderMsg] = useState('')
+
+  async function sendReminders() {
+    setReminderState('sending')
+    try {
+      const res = await fetch('/api/staff/send-reminders')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed')
+      if (data.sent === 0) {
+        setReminderState('none')
+        setReminderMsg('No orders due today or tomorrow')
+      } else {
+        setReminderState('sent')
+        setReminderMsg(`Sent for ${data.sent} order${data.sent > 1 ? 's' : ''}`)
+      }
+    } catch {
+      setReminderState('error')
+      setReminderMsg('Failed to send')
+    }
+    setTimeout(() => { setReminderState('idle'); setReminderMsg('') }, 4000)
+  }
 
   const headerRef = useRef<HTMLDivElement>(null)
   const tabsRef   = useRef<HTMLDivElement>(null)
@@ -108,14 +130,46 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
             <p className="text-sm font-semibold text-white tracking-wide">Staff Dashboard</p>
             <p className="text-[11px] text-[#555] mt-0.5">Straus Tailor Shop</p>
           </div>
-          <button onClick={onCustomerForm}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-[#9CA3AF] hover:text-white transition-all border border-white/[0.08] hover:border-white/[0.16] hover:bg-white/[0.04]">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-            Customer Form
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Send Reminders button */}
+            <button
+              onClick={sendReminders}
+              disabled={reminderState === 'sending'}
+              title="Send SMS reminders for orders due today or tomorrow"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all border"
+              style={
+                reminderState === 'sent'    ? { color: '#4ade80', borderColor: 'rgba(74,222,128,0.25)', background: 'rgba(74,222,128,0.08)' } :
+                reminderState === 'error'   ? { color: '#f87171', borderColor: 'rgba(248,113,113,0.25)', background: 'rgba(248,113,113,0.08)' } :
+                reminderState === 'none'    ? { color: '#888',    borderColor: 'rgba(255,255,255,0.08)', background: 'transparent' } :
+                reminderState === 'sending' ? { color: '#888',    borderColor: 'rgba(255,255,255,0.08)', background: 'transparent' } :
+                                              { color: '#9CA3AF', borderColor: 'rgba(255,255,255,0.08)', background: 'transparent' }
+              }
+            >
+              {reminderState === 'sending' ? (
+                <svg className="animate-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+              ) : reminderState === 'sent' ? (
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              ) : reminderState === 'error' ? (
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              ) : (
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              )}
+              {reminderState === 'sending' ? 'Sending…' :
+               reminderState === 'sent'    ? reminderMsg :
+               reminderState === 'error'   ? reminderMsg :
+               reminderState === 'none'    ? reminderMsg :
+               'Reminders'}
+            </button>
+
+            <button onClick={onCustomerForm}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-[#9CA3AF] hover:text-white transition-all border border-white/[0.08] hover:border-white/[0.16] hover:bg-white/[0.04]">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Customer Form
+            </button>
+          </div>
         </div>
       </div>
 
