@@ -95,7 +95,7 @@ function Nav() {
           </svg>
           <span className="nav-staff-text">Staff</span>
         </button>
-        <a href="tel:+17019298262" className="nav-phone-pad" style={{
+        <a href="tel:+17017155944" className="nav-phone-pad" style={{
           background: B, color: '#fff', borderRadius: 32,
           fontSize: 13, fontWeight: 500, textDecoration: 'none',
           fontFamily: BODY, display: 'inline-flex', alignItems: 'center', gap: 7,
@@ -107,7 +107,7 @@ function Nav() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 2H6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z"/>
           </svg>
-          <span className="nav-phone-text">(701) 929-8262</span>
+          <span className="nav-phone-text">(701) 715-5944</span>
         </a>
       </div>
     </nav>
@@ -290,7 +290,7 @@ function Hero() {
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 2H6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z"/>
             </svg>
           </div>
-          <div style={{ fontFamily: BODY, fontSize: 22, fontWeight: 500, color: B, marginBottom: 6 }}>(701) 929-8262</div>
+          <div style={{ fontFamily: BODY, fontSize: 22, fontWeight: 500, color: B, marginBottom: 6 }}>(701) 715-5944</div>
           <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase', color: '#75758a' }}>Walk-ins · No appointment</div>
         </div>
       </div>
@@ -475,7 +475,7 @@ function Services() {
           <p style={{ fontFamily: BODY, fontSize: 16, color: '#3b3b40', marginBottom: 20 }}>
             Don't see what you need? We've probably done it before.
           </p>
-          <a href="tel:+17019298262" style={{
+          <a href="tel:+17017155944" style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             background: NK, color: '#fff', borderRadius: 32,
             padding: '14px 28px', fontSize: 15, fontWeight: 500, textDecoration: 'none',
@@ -903,7 +903,7 @@ function Contact() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             {[
               { label: 'Visit',  value: '1326 25th St S, Suite B\nFargo, ND 58103' },
-              { label: 'Call',   value: '(701) 929-8262' },
+              { label: 'Call',   value: '(701) 715-5944' },
               { label: 'Email',  value: 'Straustailorshop@gmail.com' },
               { label: 'Hours',  value: 'Mon – Fri · 9 am – 5 pm\nSaturday & Sunday · Closed' },
             ].map(row => (
@@ -978,7 +978,7 @@ function Footer() {
             <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase', marginBottom: 16 }}>Visit</div>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14, color: '#93939f', lineHeight: 1.5 }}>
               <li>1326 25th St S</li><li>Suite B</li><li>Fargo, ND 58103</li>
-              <li style={{ paddingTop: 4 }}><a href="tel:+17019298262" style={{ color: '#93939f', textDecoration: 'none' }}>(701) 929-8262</a></li>
+              <li style={{ paddingTop: 4 }}><a href="tel:+17017155944" style={{ color: '#93939f', textDecoration: 'none' }}>(701) 715-5944</a></li>
             </ul>
           </div>
           <div className="footer-col">
