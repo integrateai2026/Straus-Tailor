@@ -292,7 +292,6 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate }: P
                     </svg>
                   }
                   onClick={() => {
-                    window.open(`tel:${order.phone.replace(/\D/g, '')}`)
                     patchOrder({ status: 'notified', notifiedAt: [new Date().toISOString()] }, 'called')
                   }}
                 />
