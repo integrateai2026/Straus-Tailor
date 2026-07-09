@@ -37,16 +37,25 @@ async function uniqueOrderNumber(): Promise<number> {
 }
 
 export async function getAllOrders(status?: string, query?: string): Promise<Order[]> {
-  let q = supabase.from('orders').select('*').order('created_at', { ascending: false })
-  if (status && status !== 'all') q = q.eq('status', status)
-  if (query) {
-    q = q.or(
-      `customer_name.ilike.%${query}%,phone.ilike.%${query}%,id.ilike.%${query}%`
-    )
+  // Supabase caps a single response at 1000 rows — page through so no order is ever silently dropped
+  const PAGE = 1000
+  const rows: Record<string, unknown>[] = []
+  for (let from = 0; ; from += PAGE) {
+    let q = supabase.from('orders').select('*')
+      .order('created_at', { ascending: false })
+      .range(from, from + PAGE - 1)
+    if (status && status !== 'all') q = q.eq('status', status)
+    if (query) {
+      q = q.or(
+        `customer_name.ilike.%${query}%,phone.ilike.%${query}%,id.ilike.%${query}%`
+      )
+    }
+    const { data, error } = await q
+    if (error) throw new Error(error.message)
+    rows.push(...(data ?? []))
+    if (!data || data.length < PAGE) break
   }
-  const { data, error } = await q
-  if (error) throw new Error(error.message)
-  return (data ?? []).map(toOrder)
+  return rows.map(toOrder)
 }
 
 export async function getOrderById(id: string): Promise<Order | undefined> {

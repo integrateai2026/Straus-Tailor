@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { Order, OrderStatus } from '@/lib/types'
 import OrderDetail from './OrderDetail'
@@ -69,7 +69,7 @@ interface Props { onCustomerForm?: () => void }
 
 export default function StaffDashboard({ onCustomerForm }: Props) {
   const [tab, setTab]         = useState<Tab>('all')
-  const [orders, setOrders]   = useState<Order[]>([])
+  const [allOrders, setAllOrders] = useState<Order[]>([])
   const [search, setSearch]   = useState('')
   const [selected, setSelected] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
@@ -115,21 +115,70 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
   const headerRef = useRef<HTMLDivElement>(null)
   const tabsRef   = useRef<HTMLDivElement>(null)
   const listRef   = useRef<HTMLDivElement>(null)
+  const lastDataRef    = useRef('')      // fingerprint of last fetched data — skip re-renders when nothing changed
+  const animateRowsRef = useRef(true)    // only animate rows on real navigation, never on background refreshes
+  const fetchSeqRef    = useRef(0)       // ignore out-of-order responses from overlapping fetches
 
+  // Fetch everything once; tabs and search filter instantly on-device.
   const fetchOrders = useCallback(async () => {
-    const params = new URLSearchParams()
-    if (tab !== 'all') params.set('status', tab)
-    if (search) params.set('q', search)
-    const res = await fetch(`/api/orders?${params}`)
-    setOrders(await res.json())
-    setLoading(false)
-  }, [tab, search])
+    if (document.hidden) return // don't poll while the tab is in the background
+    const seq = ++fetchSeqRef.current
+    try {
+      const res = await fetch('/api/orders')
+      if (seq !== fetchSeqRef.current) return // superseded by a newer fetch
+      if (res.status === 401) { window.location.reload(); return } // session expired — back to login
+      if (!res.ok) return
+      const data = await res.json()
+      if (seq !== fetchSeqRef.current) return
+      if (!Array.isArray(data)) return
+      const fingerprint = JSON.stringify(data)
+      if (fingerprint !== lastDataRef.current) {
+        lastDataRef.current = fingerprint
+        setAllOrders(data)
+      }
+      setLoading(false) // only clear the spinner once real data has arrived
+    } catch {
+      // network hiccup — keep showing current data; next poll retries
+    }
+  }, [])
 
   useEffect(() => {
     fetchOrders()
     const interval = setInterval(fetchOrders, 15000)
-    return () => clearInterval(interval)
+    const onVisible = () => { if (!document.hidden) fetchOrders() }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [fetchOrders])
+
+  // Client-side filter + sort — instant tab switching and search, no network round-trip
+  const orders = useMemo(() => {
+    const digitsOf = (s: string) => s.replace(/\D/g, '')
+    let list = tab === 'all' ? allOrders : allOrders.filter(o => o.status === tab)
+    const q = search.trim().toLowerCase()
+    if (q) {
+      const qDigits = digitsOf(q)
+      list = list.filter(o =>
+        o.customerName.toLowerCase().includes(q) ||
+        o.id.toLowerCase().includes(q) ||
+        o.phone.toLowerCase().includes(q) ||
+        (qDigits.length > 0 && digitsOf(o.phone).includes(qDigits))
+      )
+    }
+    return [...list].sort((a, b) => {
+      if (tab === 'all') {
+        // Most recently created first
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      }
+      // All other tabs: soonest due / most overdue first
+      if (!a.dueDate && !b.dueDate) return 0
+      if (!a.dueDate) return 1
+      if (!b.dueDate) return -1
+      return a.dueDate.localeCompare(b.dueDate)
+    })
+  }, [allOrders, tab, search])
 
   useEffect(() => {
     const tl = gsap.timeline()
@@ -137,25 +186,25 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
     if (tabsRef.current)   tl.fromTo(tabsRef.current,   { y: -8,  opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' }, '-=0.2')
   }, [])
 
-  useEffect(() => {
-    if (!loading && listRef.current) {
-      const rows = listRef.current.querySelectorAll('.order-row')
-      if (rows.length) gsap.fromTo(rows,
-        { y: 10, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.3, stagger: 0.04, ease: 'power2.out' }
-      )
-    }
-  }, [orders, loading, tab])
+  // Row entry animation — runs before paint (no flash) and only when flagged by navigation.
+  // Only the first screenful animates; rows below the fold render instantly.
+  useLayoutEffect(() => {
+    if (loading || !listRef.current || !animateRowsRef.current) return
+    animateRowsRef.current = false
+    const rows = Array.from(listRef.current.querySelectorAll('.order-row')).slice(0, 15)
+    if (rows.length) gsap.fromTo(rows,
+      { y: 10, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.3, stagger: 0.04, ease: 'power2.out' }
+    )
+  }, [orders, loading, tab, selected])
 
+  // Instant tab switching — every tap commits immediately; the staggered
+  // row entry provides the transition polish. No tween chain = no dropped taps.
   function switchTab(t: Tab) {
     if (t === tab) return
-    gsap.to(listRef.current, {
-      opacity: 0, y: 6, duration: 0.12, ease: 'power2.in',
-      onComplete: () => {
-        setTab(t); setSelected(null)
-        gsap.to(listRef.current, { opacity: 1, y: 0, duration: 0.18, ease: 'power2.out' })
-      },
-    })
+    animateRowsRef.current = true
+    setTab(t)
+    if (selected) setSelected(null)
   }
 
   // Header button colors per theme (inline styles for the reminder button states)
@@ -274,8 +323,8 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
             <OrderDetail
               order={selected}
               theme={theme}
-              onBack={() => { setSelected(null); fetchOrders() }}
-              onUpdate={(u) => { setOrders(p => p.map(o => o.id === u.id ? u : o)); setSelected(u) }}
+              onBack={() => { animateRowsRef.current = true; setSelected(null); fetchOrders() }}
+              onUpdate={(u) => { setAllOrders(p => p.map(o => o.id === u.id ? u : o)); setSelected(u) }}
             />
           </div>
         ) : (
@@ -325,17 +374,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                   <p className={`text-sm ${light ? 'text-[#8A847C]' : 'text-[#444]'}`}>No orders found</p>
                   <p className={`text-xs mt-1 ${light ? 'text-[#C9C2B6]' : 'text-[#2a2a2a]'}`}>{search ? 'Try a different search' : 'Orders will appear here'}</p>
                 </div>
-              ) : [...orders].sort((a, b) => {
-                  if (tab === 'all') {
-                    // Most recently created first
-                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-                  }
-                  // All other tabs: soonest due / most overdue first
-                  if (!a.dueDate && !b.dueDate) return 0
-                  if (!a.dueDate) return 1
-                  if (!b.dueDate) return -1
-                  return a.dueDate.localeCompare(b.dueDate)
-                }).map((order) => {
+              ) : orders.map((order) => {
                 const dueRaw = getDueInfo(order.dueDate, theme)
                 // Completed orders are done — never show overdue styling
                 const due = order.status === 'completed'
@@ -354,7 +393,6 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                             ? 'bg-[#FDFAF5] border-black/[0.08] hover:border-black/[0.16] hover:bg-[#FFFDF9]'
                             : 'bg-[#111] border-white/[0.06] hover:border-white/[0.12] hover:bg-[#151515]')
                     }`}
-                    style={{ opacity: 0 }}
                   >
                     <div className="flex items-center gap-4">
                       {/* Urgency badge */}

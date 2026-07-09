@@ -78,7 +78,10 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
   const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    gsap.fromTo(panelRef.current, { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, ease: 'power3.out' })
+    const el = panelRef.current
+    gsap.fromTo(el, { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, ease: 'power3.out' })
+    // Kill any in-flight tween on unmount so a detached goBack callback can't fire afterwards
+    return () => { if (el) gsap.killTweensOf(el) }
   }, [])
 
   function goBack() {
