@@ -76,6 +76,12 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
   const [reminderState, setReminderState] = useState<'idle' | 'sending' | 'sent' | 'error' | 'none'>('idle')
   const [reminderMsg, setReminderMsg] = useState('')
   const [theme, setTheme] = useState<Theme>('dark')
+  // Cap how many rows are in the DOM at once — search still covers ALL orders,
+  // this only limits what's painted. Keeps tab switching fast forever.
+  const PAGE_SIZE = 100
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+
+  useEffect(() => { setVisibleCount(PAGE_SIZE) }, [tab, search])
 
   // Load saved theme (per-device)
   useEffect(() => {
@@ -121,24 +127,28 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
 
   // Fetch everything once; tabs and search filter instantly on-device.
   const fetchOrders = useCallback(async () => {
-    if (document.hidden) return // don't poll while the tab is in the background
+    // Skip background polls while hidden — but never block the FIRST load,
+    // some webviews misreport visibility and would strand the spinner
+    if (document.hidden && lastDataRef.current) return
     const seq = ++fetchSeqRef.current
     try {
       const res = await fetch('/api/orders')
       if (seq !== fetchSeqRef.current) return // superseded by a newer fetch
       if (res.status === 401) { window.location.reload(); return } // session expired — back to login
       if (!res.ok) return
-      const data = await res.json()
+      // Compare the raw response text — skips JSON parsing entirely when nothing changed,
+      // so background polls cost almost nothing on the tablet
+      const text = await res.text()
       if (seq !== fetchSeqRef.current) return
-      if (!Array.isArray(data)) return
-      const fingerprint = JSON.stringify(data)
-      if (fingerprint !== lastDataRef.current) {
-        lastDataRef.current = fingerprint
+      if (text !== lastDataRef.current) {
+        const data = JSON.parse(text)
+        if (!Array.isArray(data)) return
+        lastDataRef.current = text
         setAllOrders(data)
       }
       setLoading(false) // only clear the spinner once real data has arrived
     } catch {
-      // network hiccup — keep showing current data; next poll retries
+      // network hiccup or malformed response — keep showing current data; next poll retries
     }
   }, [])
 
@@ -374,7 +384,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                   <p className={`text-sm ${light ? 'text-[#8A847C]' : 'text-[#444]'}`}>No orders found</p>
                   <p className={`text-xs mt-1 ${light ? 'text-[#C9C2B6]' : 'text-[#2a2a2a]'}`}>{search ? 'Try a different search' : 'Orders will appear here'}</p>
                 </div>
-              ) : orders.map((order) => {
+              ) : orders.slice(0, visibleCount).map((order) => {
                 const dueRaw = getDueInfo(order.dueDate, theme)
                 // Completed orders are done — never show overdue styling
                 const due = order.status === 'completed'
@@ -440,6 +450,20 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                   </button>
                 )
               })}
+
+              {/* Show more — only the first page is painted; search always covers everything */}
+              {!loading && orders.length > visibleCount && (
+                <button
+                  onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+                  className={`w-full h-11 rounded-2xl text-xs font-semibold border transition-all ${
+                    light
+                      ? 'bg-[#FDFAF5] border-black/[0.08] text-[#6B6358] hover:border-black/[0.16] hover:text-[#4A443C]'
+                      : 'bg-[#111] border-white/[0.06] text-[#777] hover:border-white/[0.12] hover:text-[#aaa]'
+                  }`}
+                >
+                  Show more — {Math.min(visibleCount, orders.length)} of {orders.length} shown
+                </button>
+              )}
             </div>
           </div>
         )}
