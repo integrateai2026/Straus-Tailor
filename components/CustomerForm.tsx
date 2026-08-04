@@ -182,11 +182,23 @@ export default function CustomerForm() {
   // the most recent name on record fills in (still fully editable).
   function handlePhoneChange(value: string) {
     const formatted = autoFormatPhone(value)
-    setForm(f => ({ ...f, phone: formatted }))
     const digits = formatted.replace(/\D/g, '')
-    if (digits.length === 10 && digits !== lastLookupRef.current) {
-      lastLookupRef.current = digits
-      lookupCustomer(digits)
+    setForm(f => {
+      const next = { ...f, phone: formatted }
+      // Number no longer complete — retire the auto-filled name (hand-typed names stay)
+      if (digits.length < 10 && f.autoFilledName && f.customerName === f.autoFilledName) {
+        next.customerName = ''
+        next.autoFilledName = ''
+      }
+      return next
+    })
+    if (digits.length === 10) {
+      if (digits !== lastLookupRef.current) {
+        lastLookupRef.current = digits
+        lookupCustomer(digits)
+      }
+    } else {
+      lastLookupRef.current = '' // re-lookup if the same number is completed again
     }
   }
 
