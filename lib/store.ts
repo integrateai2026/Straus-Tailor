@@ -63,6 +63,26 @@ export async function getOrderById(id: string): Promise<Order | undefined> {
   return data ? toOrder(data) : undefined
 }
 
+// Most recent customer name on record for a phone number (digits-only compare,
+// so "(701) 799-1495", "701-799-1495", and "+17017991495" all match).
+export async function findCustomerNameByPhone(digits: string): Promise<string | null> {
+  const PAGE = 1000
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('customer_name, phone')
+      .order('created_at', { ascending: false })
+      .range(from, from + PAGE - 1)
+    if (error) throw new Error(error.message)
+    for (const row of data ?? []) {
+      const d = String(row.phone ?? '').replace(/\D/g, '')
+      const normalized = d.length === 11 && d.startsWith('1') ? d.slice(1) : d
+      if (normalized === digits) return (row.customer_name as string) || null
+    }
+    if (!data || data.length < PAGE) return null
+  }
+}
+
 export async function createOrder(input: CreateOrderInput): Promise<Order> {
   const orderNumber = await uniqueOrderNumber()
   const { data, error } = await supabase

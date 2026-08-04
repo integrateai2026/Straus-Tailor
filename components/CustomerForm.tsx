@@ -155,11 +155,13 @@ export default function CustomerForm() {
     smsTransactional: false,
     smsMarketing: false,
     termsAccepted: false,
+    autoFilledName: '', // UI-only: which name (if any) came from the returning-customer lookup
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [order, setOrder] = useState<Order | null>(null)
-  const [focused, setFocused] = useState('name')
+  const [focused, setFocused] = useState('phone')
+  const lastLookupRef = useRef('')   // last 10-digit number looked up — avoid duplicate requests
   const [staffOpen, setStaffOpen] = useState(false)
   const [garments, setGarments] = useState<Record<string, number>>({})
   const [alterations, setAlterations] = useState<string[]>([])
@@ -174,6 +176,44 @@ export default function CustomerForm() {
   }
   function handleBlur() {
     blurTimer.current = setTimeout(() => setFocused(''), 80)
+  }
+
+  // Returning-customer auto-fill: when a complete number matches a past order,
+  // the most recent name on record fills in (still fully editable).
+  function handlePhoneChange(value: string) {
+    const formatted = autoFormatPhone(value)
+    setForm(f => ({ ...f, phone: formatted }))
+    const digits = formatted.replace(/\D/g, '')
+    if (digits.length === 10 && digits !== lastLookupRef.current) {
+      lastLookupRef.current = digits
+      lookupCustomer(digits)
+    }
+  }
+
+  async function lookupCustomer(digits: string) {
+    try {
+      const res = await fetch(`/api/customers/lookup?phone=${digits}`)
+      if (!res.ok) return
+      const data = await res.json()
+      if (data.found && data.customerName) {
+        // Fill only if this response still matches the number on screen, and the
+        // name is empty or holds a previous auto-fill — never overwrite hand-typed input
+        setForm(f =>
+          f.phone.replace(/\D/g, '') !== digits ||
+          (f.customerName.trim() && f.customerName !== f.autoFilledName)
+            ? f
+            : { ...f, customerName: data.customerName, autoFilledName: data.customerName }
+        )
+      } else {
+        // Unknown number: clear a lingering auto-fill (hand-typed names always stay)
+        setForm(f =>
+          f.phone.replace(/\D/g, '') !== digits ||
+          !f.autoFilledName || f.customerName !== f.autoFilledName
+            ? f
+            : { ...f, customerName: '', autoFilledName: '' }
+        )
+      }
+    } catch { /* lookup is best-effort — the form works fine without it */ }
   }
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -192,11 +232,12 @@ export default function CustomerForm() {
     gsap.to(fieldsRef.current!.children, {
       y: -8, opacity: 0, duration: 0.25, stagger: 0.04, ease: 'power2.in',
       onComplete: () => {
-        setForm({ customerName: '', phone: '', dropoffDate: localDate(), dueDate: twoWeeksOut(), notes: '', totalAmount: '', paid: false, smsTransactional: false, smsMarketing: false, termsAccepted: false })
+        setForm({ customerName: '', phone: '', dropoffDate: localDate(), dueDate: twoWeeksOut(), notes: '', totalAmount: '', paid: false, smsTransactional: false, smsMarketing: false, termsAccepted: false, autoFilledName: '' })
         setError('')
         setStaffOpen(false)
         setGarments({})
         setAlterations([])
+        lastLookupRef.current = ''
         gsap.fromTo(fieldsRef.current!.children, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.05, ease: 'power2.out' })
         gsap.fromTo(btnRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 })
       },
@@ -219,6 +260,7 @@ export default function CustomerForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          autoFilledName: undefined, // UI-only field — not part of the order
           totalAmount:  form.totalAmount !== '' ? parseFloat(form.totalAmount) : undefined,
           itemCount:    Object.values(garments).reduce((a, b) => a + b, 0) || undefined,
           garments:     Object.keys(garments).length > 0 ? garments : undefined,
@@ -296,7 +338,19 @@ export default function CustomerForm() {
               */}
               <div ref={fieldsRef} className="space-y-5">
 
-                {/* ── Customer information ── */}
+                {/* ── Customer information — phone first so returning customers auto-fill ── */}
+                <div>
+                  <span className={FL_CLASS} style={FL_STYLE}>Phone Number *</span>
+                  <FieldWrap fieldId="phone" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                    <label className={`${FIELD} ${FIELD_H} cursor-text`}>
+                      <span className="shrink-0">{I.phone}</span>
+                      <input className={INPUT} style={INPUT_STYLE} placeholder="(555) 000-0000" type="tel" value={form.phone}
+                        onChange={e => handlePhoneChange(e.target.value)}
+                        autoComplete="off" autoFocus />
+                    </label>
+                  </FieldWrap>
+                </div>
+
                 <div>
                   <span className={FL_CLASS} style={FL_STYLE}>Full Name *</span>
                   <FieldWrap fieldId="name" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
@@ -304,21 +358,14 @@ export default function CustomerForm() {
                       <span className="shrink-0">{I.user}</span>
                       <input className={INPUT} style={INPUT_STYLE} placeholder="Customer name" value={form.customerName}
                         onChange={e => setForm(f => ({ ...f, customerName: e.target.value }))}
-                        autoComplete="off" autoFocus />
-                    </label>
-                  </FieldWrap>
-                </div>
-
-                <div>
-                  <span className={FL_CLASS} style={FL_STYLE}>Phone Number *</span>
-                  <FieldWrap fieldId="phone" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
-                    <label className={`${FIELD} ${FIELD_H} cursor-text`}>
-                      <span className="shrink-0">{I.phone}</span>
-                      <input className={INPUT} style={INPUT_STYLE} placeholder="(555) 000-0000" type="tel" value={form.phone}
-                        onChange={e => setForm(f => ({ ...f, phone: autoFormatPhone(e.target.value) }))}
                         autoComplete="off" />
                     </label>
                   </FieldWrap>
+                  {form.autoFilledName && form.customerName === form.autoFilledName && (
+                    <p style={{ fontSize: 12, marginTop: 6, fontWeight: 600, color: '#8B7355' }}>
+                      ↩ Returning customer — name filled automatically
+                    </p>
+                  )}
                 </div>
 
                 {/* ── SMS Consent — appears once a valid phone number is entered ── */}
