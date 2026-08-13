@@ -245,7 +245,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
             <button
               onClick={toggleTheme}
               title={light ? 'Switch to dark mode' : 'Switch to light mode'}
-              className="flex items-center justify-center w-9 h-9 rounded-xl border transition-all"
+              className="flex items-center justify-center w-10 h-10 rounded-xl border transition-all"
               style={btnIdle}
             >
               {light ? (
@@ -270,7 +270,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
               onClick={sendReminders}
               disabled={reminderState === 'sending'}
               title="Send SMS reminders for orders due today or tomorrow"
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all border"
+              className="flex items-center gap-2 px-3.5 h-10 rounded-xl text-xs font-medium transition-all border"
               style={
                 reminderState === 'sent'    ? btnSent :
                 reminderState === 'error'   ? btnError :
@@ -296,7 +296,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
             </button>
 
             <button onClick={onCustomerForm}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all border ${
+              className={`flex items-center gap-2 px-4 h-10 rounded-xl text-xs font-medium transition-all border ${
                 light
                   ? 'text-[#6B6358] hover:text-[#1C1A18] border-black/[0.12] hover:border-black/[0.25] hover:bg-black/[0.04]'
                   : 'text-[#9CA3AF] hover:text-white border-white/[0.08] hover:border-white/[0.16] hover:bg-white/[0.04]'
@@ -317,7 +317,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
           <div className={`flex gap-1 border rounded-xl p-1 ${light ? 'bg-[#FDFAF5] border-black/[0.08]' : 'bg-[#111] border-white/[0.06]'}`}>
             {TABS.map(({ key, label }) => (
               <button key={key} onClick={() => switchTab(key)}
-                className={`flex-1 h-9 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex-1 h-11 rounded-lg text-xs font-semibold transition-all ${
                   tab === key
                     ? (light ? 'bg-[#1C1A18] text-[#F6F1E9]' : 'bg-white text-black')
                     : (light ? 'text-[#8A847C] hover:text-[#4A443C]' : 'text-[#666] hover:text-[#aaa]')
@@ -348,8 +348,10 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                 placeholder="Search by name, phone, or order ID…"
                 className={`flex-1 bg-transparent text-sm outline-none ${light ? 'text-[#1C1A18] placeholder-[#A89F94]' : 'text-white placeholder-[#444]'}`}/>
               {search && (
-                <button onClick={() => setSearch('')} className={`transition-colors ${light ? 'text-[#A89F94] hover:text-[#6B6358]' : 'text-[#444] hover:text-[#888]'}`}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <button onClick={() => setSearch('')}
+                  aria-label="Clear search"
+                  className={`w-11 h-11 -mr-4 shrink-0 flex items-center justify-center transition-colors ${light ? 'text-[#A89F94] hover:text-[#6B6358]' : 'text-[#444] hover:text-[#888]'}`}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                   </svg>
                 </button>
@@ -362,8 +364,8 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                 {orders.length} {orders.length === 1 ? 'order' : 'orders'}
               </p>
               <button onClick={fetchOrders}
-                className={`text-[10px] transition-colors flex items-center gap-1 ${light ? 'text-[#A89F94] hover:text-[#4A443C]' : 'text-[#444] hover:text-[#888]'}`}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                className={`text-[11px] py-2.5 px-2.5 -my-2.5 -mx-2.5 transition-colors flex items-center gap-1.5 ${light ? 'text-[#A89F94] hover:text-[#4A443C]' : 'text-[#444] hover:text-[#888]'}`}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="23 4 23 10 17 10"/>
                   <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
                 </svg>

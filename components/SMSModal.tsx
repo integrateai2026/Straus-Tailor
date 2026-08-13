@@ -91,8 +91,8 @@ export default function SMSModal({ order, onClose, onSent }: Props) {
               <p className="text-[11px] text-[#555]">Notify customer</p>
             </div>
           </div>
-          <button onClick={close} className="w-7 h-7 rounded-full bg-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-white transition-colors">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <button onClick={close} aria-label="Close" className="w-10 h-10 rounded-full bg-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-white transition-colors">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>

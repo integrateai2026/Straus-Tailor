@@ -181,7 +181,11 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
         <div className={`flex items-center justify-between px-6 py-5 border-b ${light ? 'border-black/[0.08]' : 'border-white/[0.06]'}`}>
           <button
             onClick={goBack}
-            className={`flex items-center gap-2 transition-colors text-sm ${light ? 'text-[#6B6358] hover:text-[#1C1A18]' : 'text-[#666] hover:text-white'}`}
+            className={`flex items-center gap-1.5 text-sm font-medium h-10 px-3.5 rounded-xl border transition-all ${
+              light
+                ? 'text-[#4A443C] bg-[#FDFAF5] border-black/[0.15] hover:border-black/[0.30] hover:text-[#1C1A18]'
+                : 'text-[#bbb] bg-white/[0.03] border-white/[0.12] hover:border-white/[0.25] hover:text-white'
+            }`}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
@@ -198,7 +202,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
                 if (editing) { setEditing(false) }
                 else { setEditForm({ customerName: order.customerName, phone: order.phone, dropoffDate: order.dropoffDate, dueDate: order.dueDate, totalAmount: order.totalAmount != null ? String(order.totalAmount) : '' }); setEditing(true) }
               }}
-              className="text-[11px] px-2.5 py-[3px] rounded-full border font-semibold transition-all"
+              className="text-xs px-3.5 py-1.5 rounded-full border font-semibold transition-all"
               style={editing
                 ? (light
                     ? { background: 'rgba(0,0,0,0.08)',      borderColor: 'rgba(0,0,0,0.25)',      color: '#1C1A18' }

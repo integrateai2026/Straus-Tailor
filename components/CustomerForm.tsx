@@ -392,12 +392,12 @@ export default function CustomerForm() {
                     <button type="button"
                       onClick={() => setForm(f => ({ ...f, smsTransactional: !f.smsTransactional }))}
                       className="w-full flex items-start gap-2 text-left py-1">
-                      <div className="shrink-0 mt-[2px] w-4 h-4 rounded border-2 flex items-center justify-center transition-all"
+                      <div className="shrink-0 mt-[1px] w-5 h-5 rounded border-2 flex items-center justify-center transition-all"
                         style={form.smsTransactional
                           ? { background: '#8B7355', borderColor: '#8B7355' }
                           : { background: '#FDFAF5', borderColor: 'rgba(0,0,0,0.25)' }}>
                         {form.smsTransactional && (
-                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="20 6 9 17 4 12" />
                           </svg>
                         )}
@@ -414,7 +414,7 @@ export default function CustomerForm() {
                 <button
                   type="button"
                   onClick={() => setStaffOpen(o => !o)}
-                  className="w-full flex items-center gap-3 py-1 transition-opacity hover:opacity-70"
+                  className="w-full flex items-center gap-3 py-3 transition-opacity hover:opacity-70"
                 >
                   <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.10)' }} />
                   <span className="text-[10px] md:text-[13px]" style={{ fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#9A9388' }}>
