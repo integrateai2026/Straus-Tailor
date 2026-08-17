@@ -162,6 +162,8 @@ export default function CustomerForm() {
   const [order, setOrder] = useState<Order | null>(null)
   const [focused, setFocused] = useState('phone')
   const lastLookupRef = useRef('')   // last 10-digit number looked up — avoid duplicate requests
+  const nameTouchedRef = useRef(false) // true once the user focuses/types in the name field
+  const [suggestedName, setSuggestedName] = useState('') // offered instead of auto-filling once touched
   const [staffOpen, setStaffOpen] = useState(false)
   const [garments, setGarments] = useState<Record<string, number>>({})
   const [alterations, setAlterations] = useState<string[]>([])
@@ -199,6 +201,7 @@ export default function CustomerForm() {
       }
     } else {
       lastLookupRef.current = '' // re-lookup if the same number is completed again
+      setSuggestedName('')
     }
   }
 
@@ -208,16 +211,20 @@ export default function CustomerForm() {
       if (!res.ok) return
       const data = await res.json()
       if (data.found && data.customerName) {
-        // Fill only if this response still matches the number on screen, and the
-        // name is empty or holds a previous auto-fill — never overwrite hand-typed input
-        setForm(f =>
-          f.phone.replace(/\D/g, '') !== digits ||
-          (f.customerName.trim() && f.customerName !== f.autoFilledName)
-            ? f
-            : { ...f, customerName: data.customerName, autoFilledName: data.customerName }
-        )
+        setForm(f => {
+          // Ignore a stale response for a number that's no longer on screen
+          if (f.phone.replace(/\D/g, '') !== digits) return f
+          // Never type into a field the user is already working in — offer it instead.
+          // This is what keeps a late response from landing mid-keystroke.
+          if (nameTouchedRef.current || f.customerName.trim()) {
+            if (f.customerName.trim() !== data.customerName) setSuggestedName(data.customerName)
+            return f
+          }
+          return { ...f, customerName: data.customerName, autoFilledName: data.customerName }
+        })
       } else {
         // Unknown number: clear a lingering auto-fill (hand-typed names always stay)
+        setSuggestedName('')
         setForm(f =>
           f.phone.replace(/\D/g, '') !== digits ||
           !f.autoFilledName || f.customerName !== f.autoFilledName
@@ -226,6 +233,11 @@ export default function CustomerForm() {
         )
       }
     } catch { /* lookup is best-effort — the form works fine without it */ }
+  }
+
+  function useSuggestedName() {
+    setForm(f => ({ ...f, customerName: suggestedName, autoFilledName: suggestedName }))
+    setSuggestedName('')
   }
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -249,7 +261,9 @@ export default function CustomerForm() {
         setStaffOpen(false)
         setGarments({})
         setAlterations([])
+        setSuggestedName('')
         lastLookupRef.current = ''
+        nameTouchedRef.current = false
         gsap.fromTo(fieldsRef.current!.children, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.05, ease: 'power2.out' })
         gsap.fromTo(btnRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 })
       },
@@ -258,9 +272,17 @@ export default function CustomerForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    const shake = () => gsap.to(containerRef.current, { x: -5, duration: 0.06, yoyo: true, repeat: 5, ease: 'power2.inOut' })
     if (!form.customerName.trim() || !form.phone.trim() || !form.dueDate) {
       setError('Please fill in all required fields.')
-      gsap.to(containerRef.current, { x: -5, duration: 0.06, yoyo: true, repeat: 5, ease: 'power2.inOut' })
+      shake()
+      return
+    }
+    // Guard against a partially deleted number reaching the ticket
+    if (form.phone.replace(/\D/g, '').length !== 10) {
+      setError('Phone number is incomplete — please enter all 10 digits.')
+      setFocused('phone')
+      shake()
       return
     }
     setLoading(true)
@@ -369,7 +391,11 @@ export default function CustomerForm() {
                     <label className={`${FIELD} ${FIELD_H} cursor-text`}>
                       <span className="shrink-0">{I.user}</span>
                       <input className={INPUT} style={INPUT_STYLE} placeholder="Customer name" value={form.customerName}
-                        onChange={e => setForm(f => ({ ...f, customerName: e.target.value }))}
+                        onFocus={() => { nameTouchedRef.current = true }}
+                        onChange={e => {
+                          nameTouchedRef.current = true
+                          setForm(f => ({ ...f, customerName: e.target.value }))
+                        }}
                         autoComplete="off" />
                     </label>
                   </FieldWrap>
@@ -377,6 +403,40 @@ export default function CustomerForm() {
                     <p style={{ fontSize: 12, marginTop: 6, fontWeight: 600, color: '#8B7355' }}>
                       ↩ Returning customer — name filled automatically
                     </p>
+                  )}
+                  {suggestedName && form.customerName !== suggestedName && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <button type="button" onClick={useSuggestedName}
+                        className="flex-1 flex items-center gap-3 h-[52px] px-4 rounded-xl transition-colors text-left"
+                        style={{ background: 'rgba(139,115,85,0.09)', border: '1.5px solid rgba(139,115,85,0.35)' }}
+                        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = 'rgba(139,115,85,0.16)'}
+                        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = 'rgba(139,115,85,0.09)'}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B7355" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <span className="flex-1 min-w-0">
+                          <span className="block truncate" style={{ fontSize: 16, fontWeight: 700, color: '#1C1A18', lineHeight: 1.2 }}>
+                            {suggestedName}
+                          </span>
+                          <span className="block" style={{ fontSize: 11, color: '#8B7355', marginTop: 1 }}>
+                            Returning customer — tap to use
+                          </span>
+                        </span>
+                        <span className="shrink-0 px-3 py-1.5 rounded-lg" style={{ background: '#8B7355', color: '#fff', fontSize: 12, fontWeight: 700 }}>
+                          Use
+                        </span>
+                      </button>
+                      <button type="button" onClick={() => setSuggestedName('')}
+                        aria-label="Dismiss suggestion"
+                        className="w-11 h-[52px] shrink-0 flex items-center justify-center rounded-xl transition-colors"
+                        style={{ color: '#A89F94' }}
+                        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = '#6B6358'}
+                        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = '#A89F94'}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -479,7 +539,7 @@ export default function CustomerForm() {
                     {error && <p className="text-sm text-center mt-1" style={{ color: '#8B3A3A' }}>{error}</p>}
 
                     {(() => {
-                      const isReady = !!(form.customerName.trim() && form.phone.trim())
+                      const isReady = !!(form.customerName.trim() && form.phone.replace(/\D/g, '').length === 10)
                       return (
                         <>
                           <p style={{
