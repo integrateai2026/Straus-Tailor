@@ -64,6 +64,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
   const [order, setOrder] = useState(initialOrder)
   const [showSMS, setShowSMS] = useState(false)
   const [showPrint, setShowPrint] = useState(false)
+  const [confirmPickup, setConfirmPickup] = useState(false)
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
   const [editForm, setEditForm] = useState({
@@ -377,12 +378,11 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 }
-                onClick={() =>
-                  patchOrder(
-                    { pickedUp: !order.pickedUp, status: !order.pickedUp ? 'completed' : order.status },
-                    'pickedUp'
-                  )
-                }
+                onClick={() => {
+                  // Confirm before marking picked up; un-marking needs no prompt
+                  if (!order.pickedUp) { setConfirmPickup(true); return }
+                  patchOrder({ pickedUp: false, status: order.status }, 'pickedUp')
+                }}
               />
               <ActionButton
                 label="Reprint"
@@ -454,6 +454,63 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
           onPrint={() => window.print()}
           onClose={() => setShowPrint(false)}
         />
+      )}
+
+      {/* Pickup confirmation — guards against marking an order collected
+          before the garments have actually been checked over */}
+      {confirmPickup && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setConfirmPickup(false) }}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl p-6 shadow-2xl border"
+            style={light
+              ? { background: '#F6F1E9', borderColor: 'rgba(0,0,0,0.10)' }
+              : { background: '#141414', borderColor: '#2a2a2a' }}
+          >
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                  style={light ? { background: 'rgba(139,92,246,0.12)' } : { background: 'rgba(139,92,246,0.15)' }}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={light ? '#6D28D9' : '#c4b5fd'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <p className="text-base font-semibold" style={{ color: light ? '#1C1A18' : '#fff' }}>
+                  Mark as picked up?
+                </p>
+              </div>
+              <button
+                onClick={() => setConfirmPickup(false)}
+                aria-label="Close"
+                className="w-10 h-10 -mt-1 -mr-1 shrink-0 rounded-full flex items-center justify-center transition-colors"
+                style={{ color: light ? '#A89F94' : '#666' }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <p className="text-sm leading-relaxed mb-5" style={{ color: light ? '#4A443C' : '#aaa' }}>
+              Did you check that all the items are there and in good condition?
+            </p>
+
+            <button
+              onClick={() => {
+                setConfirmPickup(false)
+                patchOrder({ pickedUp: true, status: 'completed' }, 'pickedUp')
+              }}
+              className="w-full h-12 rounded-xl text-sm font-semibold border transition-colors"
+              style={light
+                ? { background: '#6D28D9', borderColor: '#6D28D9', color: '#fff' }
+                : { background: '#7c3aed', borderColor: '#7c3aed', color: '#fff' }}
+            >
+              Yes, picked up
+            </button>
+          </div>
+        </div>
       )}
     </>
   )
