@@ -53,4 +53,5 @@ export interface UpdateOrderInput {
   phone?: string
   dropoffDate?: string
   dueDate?: string
+  notes?: string
 }

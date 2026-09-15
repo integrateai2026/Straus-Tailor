@@ -128,6 +128,7 @@ export async function updateOrder(
   if (input.phone        !== undefined) patch.phone         = input.phone
   if (input.dropoffDate  !== undefined) patch.dropoff_date  = input.dropoffDate
   if (input.dueDate      !== undefined) patch.due_date      = input.dueDate
+  if (input.notes        !== undefined) patch.notes         = input.notes
 
   const { data, error } = await supabase
     .from('orders').update(patch).eq('id', id).select().single()

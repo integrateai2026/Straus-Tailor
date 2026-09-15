@@ -104,14 +104,6 @@ export function buildReceipt(order: Order): Buffer {
     push(...line(padRow(label, value)))
   }
 
-  if (order.notes) {
-    push(...divider('-'))
-    push(...CMD.BOLD_ON)
-    push(...line('NOTES:'))
-    push(...CMD.BOLD_OFF)
-    push(...line(order.notes))
-  }
-
   // ── Footer ───────────────────────────────────────────
   push(...divider('='))
   push(...CMD.CENTER)

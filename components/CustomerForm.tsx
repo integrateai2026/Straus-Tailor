@@ -491,7 +491,7 @@ export default function CustomerForm() {
                 {/* ── Collapsible staff panel ── */}
                 <div ref={staffPanelRef} style={{
                   overflow: 'hidden',
-                  maxHeight: staffOpen ? '900px' : '0px',
+                  maxHeight: staffOpen ? '1300px' : '0px',
                   opacity: staffOpen ? 1 : 0,
                   marginTop: staffOpen ? undefined : 0,
                   transition: 'max-height 350ms ease, opacity 250ms ease, margin-top 300ms ease',
@@ -534,6 +534,24 @@ export default function CustomerForm() {
                           Paid
                         </button>
                       </div>
+                    </div>
+
+                    <div>
+                      <span className={FL_CLASS} style={FL_STYLE}>Notes</span>
+                      <FieldWrap fieldId="notes" focused={focused} onFocus={handleFocus} onBlur={handleBlur}>
+                        <textarea
+                          value={form.notes}
+                          onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                          rows={3}
+                          maxLength={1000}
+                          placeholder="Anything staff should know about this order…"
+                          className="w-full block bg-[#FDFAF5] border border-black/[0.12] rounded-xl px-4 py-3 text-[16px] md:text-[18px] placeholder-[#8A847C] outline-none resize-none leading-relaxed"
+                          style={INPUT_STYLE}
+                        />
+                      </FieldWrap>
+                      {form.notes.length > 800 && (
+                        <p style={{ fontSize: 11, textAlign: 'right', marginTop: 4, color: '#8A847C' }}>{form.notes.length}/1000</p>
+                      )}
                     </div>
 
                     {error && <p className="text-sm text-center mt-1" style={{ color: '#8B3A3A' }}>{error}</p>}

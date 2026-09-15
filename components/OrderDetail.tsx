@@ -73,6 +73,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
     dropoffDate:  initialOrder.dropoffDate,
     dueDate:      initialOrder.dueDate,
     totalAmount:  initialOrder.totalAmount != null ? String(initialOrder.totalAmount) : '',
+    notes:        initialOrder.notes ?? '',
   })
 
   const light = theme === 'light'
@@ -104,6 +105,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
           dropoffDate:  editForm.dropoffDate,
           dueDate:      editForm.dueDate,
           totalAmount:  editForm.totalAmount !== '' ? parseFloat(editForm.totalAmount) : null,
+          notes:        editForm.notes,
         }),
       })
       if (!res.ok) return
@@ -201,7 +203,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
             <button
               onClick={() => {
                 if (editing) { setEditing(false) }
-                else { setEditForm({ customerName: order.customerName, phone: order.phone, dropoffDate: order.dropoffDate, dueDate: order.dueDate, totalAmount: order.totalAmount != null ? String(order.totalAmount) : '' }); setEditing(true) }
+                else { setEditForm({ customerName: order.customerName, phone: order.phone, dropoffDate: order.dropoffDate, dueDate: order.dueDate, totalAmount: order.totalAmount != null ? String(order.totalAmount) : '', notes: order.notes ?? '' }); setEditing(true) }
               }}
               className="text-xs px-3.5 py-1.5 rounded-full border font-semibold transition-all"
               style={editing
@@ -246,6 +248,22 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
                     />
                   </div>
                 ))}
+                <div>
+                  <p className={`text-[10px] uppercase tracking-widest mb-1 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>Notes</p>
+                  <textarea
+                    value={editForm.notes}
+                    onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
+                    rows={3}
+                    maxLength={1000}
+                    placeholder="Add notes about this order…"
+                    className={`w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition-colors resize-none leading-relaxed ${
+                      light
+                        ? 'bg-black/[0.04] border-black/[0.12] text-[#1C1A18] placeholder-[#A89F94] focus:border-black/[0.35]'
+                        : 'bg-white/[0.06] border-white/[0.12] text-white placeholder-[#555] focus:border-white/[0.3]'
+                    }`}
+                  />
+                  <p className={`text-[10px] text-right mt-0.5 ${light ? 'text-[#A89F94]' : 'text-[#555]'}`}>{editForm.notes.length}/1000</p>
+                </div>
                 <button
                   onClick={saveEdits}
                   disabled={loadingAction === 'edit'}
@@ -273,6 +291,14 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
                     <span className={`text-sm font-semibold ${light ? 'text-[#1C1A18]' : 'text-white'}`}>{value}</span>
                   </div>
                 ))}
+                <div className={`mt-3 rounded-xl border px-4 py-3 ${light ? 'bg-black/[0.03] border-black/[0.08]' : 'bg-white/[0.03] border-white/[0.06]'}`}>
+                  <p className={`text-[10px] uppercase tracking-widest font-medium mb-1 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>Notes</p>
+                  {order.notes?.trim() ? (
+                    <p className={`text-sm whitespace-pre-wrap break-words leading-relaxed ${light ? 'text-[#1C1A18]' : 'text-white'}`}>{order.notes}</p>
+                  ) : (
+                    <p className={`text-sm italic ${light ? 'text-[#A89F94]' : 'text-[#555]'}`}>No notes — tap Edit to add</p>
+                  )}
+                </div>
               </>
             )}
           </div>

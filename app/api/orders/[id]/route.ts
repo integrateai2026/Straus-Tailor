@@ -20,6 +20,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const decodedId = decodeURIComponent(id)
   const body = await req.json()
 
+  // Normalize notes server-side so edits get the same cap as new orders
+  if (body.notes !== undefined) {
+    body.notes = String(body.notes ?? '').trim().slice(0, 1000)
+  }
+
   // Auto-record pickup timestamp on first mark as picked up
   if (body.pickedUp === true) {
     const current = await getOrderById(decodedId)
