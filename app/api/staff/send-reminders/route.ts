@@ -10,5 +10,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const result = await sendDueReminders()
+  // A send failure must surface as an error, not as "no orders due"
+  if (result.error) return NextResponse.json(result, { status: 502 })
   return NextResponse.json(result)
 }
