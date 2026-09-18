@@ -231,8 +231,8 @@ function Hero() {
         </div>
 
         <h1 style={{ margin: '0 auto 24px', lineHeight: 0.93 }}>
-          <span ref={title1Ref} style={{ display: 'block', fontFamily: STRAUS_FONT, fontSynthesis: 'none', fontWeight: 600, fontSize: 'clamp(80px, 12vw, 172px)', color: B, textShadow: '0 4px 40px rgba(0,0,0,0.4)' }}>Straus</span>
-          <span ref={title2Ref} style={{ display: 'block', fontFamily: TAILOR_FONT, fontWeight: 400, fontSize: 'clamp(40px, 6.5vw, 96px)', color: '#fff', textShadow: '0 4px 40px rgba(0,0,0,0.4)' }}>Tailor Shop</span>
+          <span ref={title1Ref} style={{ display: 'block', fontFamily: STRAUS_FONT, fontSynthesis: 'none', fontWeight: 600, fontSize: 'clamp(96px, 15vw, 210px)', color: B, textShadow: '0 4px 40px rgba(0,0,0,0.4)' }}>Straus</span>
+          <span ref={title2Ref} style={{ display: 'block', fontFamily: TAILOR_FONT, fontWeight: 400, fontSize: 'clamp(46px, 8vw, 120px)', color: '#fff', textShadow: '0 4px 40px rgba(0,0,0,0.4)' }}>Tailor Shop</span>
         </h1>
 
         <div ref={taglineRef} style={{
