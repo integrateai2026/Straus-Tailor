@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
+import { STRAUS_FONT, TAILOR_FONT } from '@/lib/brandFonts'
 
 interface Props {
   onLogin: () => void
@@ -68,8 +69,9 @@ export default function LoginScreen({ onLogin }: Props) {
     >
       {/* Header */}
       <div ref={headerRef} className="flex flex-col items-center mb-10" style={{ opacity: 0 }}>
-        <h1 className="text-5xl text-white leading-none" style={{ fontFamily: 'var(--font-dancing)' }}>
-          Straus Tailor Shop
+        <h1 className="text-5xl text-white leading-none">
+          <span style={{ fontFamily: STRAUS_FONT, fontSynthesis: 'none' }}>Straus</span>{' '}
+          <span style={{ fontFamily: TAILOR_FONT, fontSize: '0.8em' }}>Tailor Shop</span>
         </h1>
       </div>
 

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react' // useRef still used by containerRef, headerRef, etc.
 import gsap from 'gsap'
 import { Order } from '@/lib/types'
+import { STRAUS_FONT, TAILOR_FONT } from '@/lib/brandFonts'
 import PrintTicket from './PrintTicket'
 import './StarBorder.css'
 
@@ -347,11 +348,11 @@ export default function CustomerForm() {
           {/* Header — warm cream on dark charcoal */}
           <div ref={headerRef} className="mb-4 md:mb-6" style={{ opacity: 0 }}>
             <h1 className="text-4xl md:text-5xl text-center leading-none" style={{
-              fontFamily: 'var(--font-dancing)',
               color: '#E8E0D0',
               letterSpacing: '0.5px',
             }}>
-              Straus Tailor Shop
+              <span style={{ fontFamily: STRAUS_FONT, fontSynthesis: 'none' }}>Straus</span>{' '}
+              <span style={{ fontFamily: TAILOR_FONT, fontSize: '0.8em' }}>Tailor Shop</span>
             </h1>
           </div>
 
