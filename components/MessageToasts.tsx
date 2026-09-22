@@ -14,7 +14,7 @@ interface Props {
   onView: (thread: SmsThread) => void
 }
 
-const SHOW_MS = 8000
+const SHOW_MS = 3000
 const MAX_TOASTS = 3
 
 function Toast({ thread, theme, onView, onDismiss }: {

@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { SmsMessage } from '@/lib/types'
 import { optKeyword } from '@/lib/smsRules'
 import { useMessages } from './MessagesProvider'
@@ -13,7 +13,7 @@ interface Props {
   customerName?: string
   theme?: Theme
   reloadKey?: number       // bump to reload after a text is sent elsewhere (e.g. the Ready SMS)
-  scrollable?: boolean     // for a fixed-height sheet: the texts scroll inside, composer stays put
+  fillHeight?: boolean     // in a fixed-height sheet: the texts fill the space above the composer
 }
 
 interface ThreadData {
@@ -23,7 +23,6 @@ interface ThreadData {
 }
 
 const MAX_LENGTH = 1600  // Twilio's limit for a single text
-const PAGE = 20          // texts shown before "Show earlier"
 
 const STYLES = {
   dark: {
@@ -159,7 +158,7 @@ function Bubble({ message, currentOrderId, theme }: { message: SmsMessage; curre
   )
 }
 
-export default function MessageThread({ phone, orderId, customerName, theme = 'dark', reloadKey = 0, scrollable = false }: Props) {
+export default function MessageThread({ phone, orderId, customerName, theme = 'dark', reloadKey = 0, fillHeight = false }: Props) {
   const s = STYLES[theme]
   const light = theme === 'light'
   const name = customerName?.trim().split(/\s+/)[0] || 'this customer'
@@ -171,12 +170,13 @@ export default function MessageThread({ phone, orderId, customerName, theme = 'd
   const [data, setData]       = useState<ThreadData | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [retryKey, setRetryKey]   = useState(0)
-  const [showAll, setShowAll] = useState(false)
   const [draft, setDraft]     = useState('')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
 
-  const listRef = useRef<HTMLDivElement>(null)
+  const listRef    = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const stickRef   = useRef(true) // keep the newest text in view, unless staff scrolled up to read older ones
   const hasUnreadRef = useRef(false)
 
   // Clear this conversation's unread badge — only while staff can actually see the page
@@ -224,11 +224,26 @@ export default function MessageThread({ phone, orderId, customerName, theme = 'd
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [markRead])
 
-  // Sheet layout: keep the newest text in view
-  useLayoutEffect(() => {
+  // Scroll to the newest text whenever the conversation grows (new texts, a photo
+  // finishing loading) — but only if staff are already at the bottom
+  useEffect(() => {
+    const list = listRef.current
+    const content = contentRef.current
+    if (!list || !content) return
+    const observer = new ResizeObserver(() => {
+      if (stickRef.current) list.scrollTop = list.scrollHeight
+    })
+    observer.observe(content)
+    return () => observer.disconnect()
+  }, [])
+
+  // A different customer's conversation starts at its newest text
+  useEffect(() => { stickRef.current = true }, [phone])
+
+  function onListScroll() {
     const el = listRef.current
-    if (scrollable && el) el.scrollTop = el.scrollHeight
-  }, [data, scrollable])
+    if (el) stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40
+  }
 
   async function send() {
     const body = draft.trim()
@@ -244,6 +259,7 @@ export default function MessageThread({ phone, orderId, customerName, theme = 'd
       const result = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(result.error || 'Failed to send')
       setDraft('')
+      stickRef.current = true // show the text just sent
       if (result.message) {
         setData(d => d && { ...d, messages: [...d.messages, result.message] })
       } else {
@@ -258,60 +274,54 @@ export default function MessageThread({ phone, orderId, customerName, theme = 'd
   }
 
   const messages = data?.messages ?? []
-  const hidden = showAll ? 0 : Math.max(0, messages.length - PAGE)
-  const visible = messages.slice(hidden)
   const segments = segmentCount(draft)
 
   return (
-    <div className={`flex flex-col ${scrollable ? 'flex-1 min-h-0' : ''}`}>
-      {/* Conversation */}
+    <div className={`flex flex-col ${fillHeight ? 'flex-1 min-h-0' : ''}`}>
+      {/* Conversation — scrolls inside its own box so a long history doesn't stretch the page */}
       <div
         ref={listRef}
-        className={scrollable
-          ? 'flex-1 min-h-0 overflow-y-auto px-1 py-2'
-          : `rounded-xl border px-3 py-3 ${s.card}`}
+        onScroll={onListScroll}
+        className={fillHeight
+          ? 'flex-1 min-h-0 overflow-y-auto overscroll-contain px-1 py-2'
+          : `max-h-[min(360px,55vh)] overflow-y-auto overscroll-contain rounded-xl border px-3 py-3 ${s.card}`}
       >
-        {!data && !loadError && (
-          <div className={`flex justify-center py-6 ${s.faint}`}><Spinner size={18} /></div>
-        )}
+        <div ref={contentRef}>
+          {!data && !loadError && (
+            <div className={`flex justify-center py-6 ${s.faint}`}><Spinner size={18} /></div>
+          )}
 
-        {!data && loadError && (
-          <div className="flex flex-col items-center gap-2 py-5">
-            <p className={`text-sm ${s.muted}`}>Couldn&apos;t load texts.</p>
-            <button onClick={() => setRetryKey(k => k + 1)} className={`text-xs font-semibold h-10 px-3 ${s.link}`}>
-              Try again
-            </button>
-          </div>
-        )}
+          {!data && loadError && (
+            <div className="flex flex-col items-center gap-2 py-5">
+              <p className={`text-sm ${s.muted}`}>Couldn&apos;t load texts.</p>
+              <button onClick={() => setRetryKey(k => k + 1)} className={`text-xs font-semibold h-10 px-3 ${s.link}`}>
+                Try again
+              </button>
+            </div>
+          )}
 
-        {data && messages.length === 0 && (
-          <p className={`text-sm italic text-center py-4 ${s.faint}`}>No texts with {name} yet</p>
-        )}
+          {data && messages.length === 0 && (
+            <p className={`text-sm italic text-center py-4 ${s.faint}`}>No texts with {name} yet</p>
+          )}
 
-        {data && messages.length > 0 && (
-          <div className="space-y-3">
-            {hidden > 0 && (
-              <div className="flex justify-center">
-                <button onClick={() => setShowAll(true)} className={`text-xs font-semibold h-10 px-3 ${s.link}`}>
-                  Show {hidden} earlier {hidden === 1 ? 'text' : 'texts'}
-                </button>
-              </div>
-            )}
-            {visible.map((m, i) => (
-              <Fragment key={m.id}>
-                {(i === 0 || dayKey(visible[i - 1].createdAt) !== dayKey(m.createdAt)) && (
-                  <p className={`text-[10px] uppercase tracking-widest text-center pt-1 ${s.faint}`}>{dayLabel(m.createdAt)}</p>
-                )}
-                <Bubble message={m} currentOrderId={orderId} theme={theme} />
-              </Fragment>
-            ))}
-          </div>
-        )}
+          {data && messages.length > 0 && (
+            <div className="space-y-3">
+              {messages.map((m, i) => (
+                <Fragment key={m.id}>
+                  {(i === 0 || dayKey(messages[i - 1].createdAt) !== dayKey(m.createdAt)) && (
+                    <p className={`text-[10px] uppercase tracking-widest text-center pt-1 ${s.faint}`}>{dayLabel(m.createdAt)}</p>
+                  )}
+                  <Bubble message={m} currentOrderId={orderId} theme={theme} />
+                </Fragment>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Composer */}
       {data && (
-        <div className={scrollable ? 'pt-3' : 'mt-3'}>
+        <div className={fillHeight ? 'pt-3' : 'mt-3'}>
           {data.optedOut ? (
             <p className={`text-xs leading-relaxed rounded-xl border px-3.5 py-2.5 ${s.warn}`}>
               Texts are blocked — {name} texted STOP. They can text START to opt back in.

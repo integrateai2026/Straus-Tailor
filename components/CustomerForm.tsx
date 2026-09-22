@@ -5,6 +5,7 @@ import gsap from 'gsap'
 import { Order } from '@/lib/types'
 import { STRAUS_FONT, TAILOR_FONT } from '@/lib/brandFonts'
 import PrintTicket from './PrintTicket'
+import DueDateCalendar from './DueDateCalendar'
 import './StarBorder.css'
 
 /* ── Field wrapper — clean brass focus ring, no animation ─── */
@@ -106,23 +107,29 @@ function autoFormatPhone(value: string): string {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
 }
 
-/* ── DateField — label ABOVE box ──────────────────────────── */
+/* ── DateField — label ABOVE box; opens our calendar with not-ready counts per day ── */
 function DateField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false)
   return (
     <div>
       <span className={FL_CLASS} style={FL_STYLE}>{label}</span>
-      <div className={`${FIELD} ${FIELD_H} cursor-pointer relative`}>
-        <span className="shrink-0 pointer-events-none">{I.cal}</span>
-        <span className="flex-1 pointer-events-none text-[18px] md:text-[21px]"
+      <button type="button" onClick={() => setOpen(true)} className={`${FIELD} ${FIELD_H} w-full cursor-pointer text-left`}>
+        <span className="shrink-0">{I.cal}</span>
+        <span className="flex-1 text-[18px] md:text-[21px]"
           style={{ color: value ? '#1C1A18' : '#8A847C' }}>
           {value ? formatDate(value) : 'Select date'}
         </span>
-        <svg className="pointer-events-none shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={ICON_CLR} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg className="shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={ICON_CLR} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M6 9l6 6 6-6"/>
         </svg>
-        <input type="date" value={value} onChange={e => onChange(e.target.value)}
-          style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
-      </div>
+      </button>
+      {open && (
+        <DueDateCalendar
+          value={value}
+          onSelect={date => { onChange(date); setOpen(false) }}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </div>
   )
 }

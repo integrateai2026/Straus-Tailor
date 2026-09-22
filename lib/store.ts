@@ -83,6 +83,28 @@ export async function findCustomerNameByPhone(digits: string): Promise<string | 
   }
 }
 
+// How many orders are due on each date and not ready yet (still Active) — for the Need By calendar
+export async function countOpenOrdersByDueDate(): Promise<Record<string, number>> {
+  const PAGE = 1000
+  const counts: Record<string, number> = {}
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('due_date')
+      .eq('status', 'active')
+      .eq('picked_up', false)
+      .order('due_date')
+      .order('id')
+      .range(from, from + PAGE - 1)
+    if (error) throw new Error(error.message)
+    for (const row of data ?? []) {
+      const due = row.due_date as string
+      if (due) counts[due] = (counts[due] ?? 0) + 1
+    }
+    if (!data || data.length < PAGE) return counts
+  }
+}
+
 export async function createOrder(input: CreateOrderInput): Promise<Order> {
   const orderNumber = await uniqueOrderNumber()
   const { data, error } = await supabase

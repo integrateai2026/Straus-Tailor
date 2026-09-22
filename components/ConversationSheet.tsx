@@ -65,7 +65,7 @@ export default function ConversationSheet({ thread, theme, onClose }: Props) {
           </button>
         </div>
 
-        <MessageThread phone={thread.phone} customerName={thread.customerName} theme={theme} scrollable />
+        <MessageThread phone={thread.phone} customerName={thread.customerName} theme={theme} fillHeight />
       </div>
     </div>
   )
