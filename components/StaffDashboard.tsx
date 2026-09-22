@@ -2,8 +2,13 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
-import { Order, OrderStatus } from '@/lib/types'
+import { Order, OrderStatus, SmsThread } from '@/lib/types'
+import { phoneDigits } from '@/lib/phone'
 import OrderDetail from './OrderDetail'
+import { useMessages } from './MessagesProvider'
+import MessagesPanel from './MessagesPanel'
+import MessageToasts from './MessageToasts'
+import ConversationSheet from './ConversationSheet'
 
 type Tab = 'all' | OrderStatus
 export type Theme = 'dark' | 'light'
@@ -76,6 +81,19 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
   const [reminderState, setReminderState] = useState<'idle' | 'sending' | 'sent' | 'error' | 'none'>('idle')
   const [reminderMsg, setReminderMsg] = useState('')
   const [theme, setTheme] = useState<Theme>('dark')
+  const [showMessages, setShowMessages] = useState(false)
+  const [conversation, setConversation] = useState<SmsThread | null>(null) // texts from a number with no orders
+  const [focusMessages, setFocusMessages] = useState(false)                // open the order scrolled to its texts
+  const { threads, unread } = useMessages()
+
+  // Unread customer texts per order, for the badges on order rows
+  const unreadByOrder = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const t of threads) {
+      if (t.orderId && t.unread > 0) counts.set(t.orderId, (counts.get(t.orderId) ?? 0) + t.unread)
+    }
+    return counts
+  }, [threads])
   // Cap how many rows are in the DOM at once — search still covers ALL orders,
   // this only limits what's painted. Keeps tab switching fast forever.
   const PAGE_SIZE = 100
@@ -217,6 +235,27 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
     if (selected) setSelected(null)
   }
 
+  // Open a conversation from the Messages panel or a new-text alert: on its order,
+  // or in a standalone sheet when the number has no orders
+  async function openThread(t: SmsThread) {
+    setConversation(null)
+    let order = t.orderId ? allOrders.find(o => o.id === t.orderId) : undefined
+    if (!order && t.orderId) {
+      try {
+        const res = await fetch(`/api/orders/${encodeURIComponent(t.orderId)}`)
+        if (res.ok) order = await res.json()
+      } catch {
+        // fall back to the standalone conversation below
+      }
+    }
+    if (order) {
+      setFocusMessages(true)
+      setSelected(order)
+    } else {
+      setConversation(t)
+    }
+  }
+
   // Header button colors per theme (inline styles for the reminder button states)
   const btnIdle = light
     ? { color: '#6B6358', borderColor: 'rgba(0,0,0,0.12)', background: 'transparent' }
@@ -235,12 +274,13 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
     <div className={`min-h-screen flex flex-col ${light ? 'bg-[#F1EBE1]' : 'bg-[#0a0a0a]'}`}>
       {/* Header */}
       <div ref={headerRef} className={`px-6 pt-7 pb-4 border-b ${light ? 'border-black/[0.08]' : 'border-white/[0.06]'}`} style={{ opacity: 0 }}>
-        <div className="flex items-center justify-between max-w-3xl mx-auto">
+        {/* Wraps onto two lines on phones instead of pushing the page wider than the screen */}
+        <div className="flex flex-wrap items-center justify-between gap-3 max-w-3xl mx-auto">
           <div>
             <p className={`text-sm font-semibold tracking-wide ${light ? 'text-[#1C1A18]' : 'text-white'}`}>Staff Dashboard</p>
             <p className={`text-[11px] mt-0.5 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>Straus Tailor Shop</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
@@ -262,6 +302,29 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                   <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
                   <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                 </svg>
+              )}
+            </button>
+
+            {/* Messages — customer texts, with unread count */}
+            <button
+              onClick={() => setShowMessages(true)}
+              title="Texts from customers"
+              aria-label={unread > 0 ? `Messages, ${unread} unread` : 'Messages'}
+              className="relative flex items-center gap-2 px-3.5 h-10 rounded-xl text-xs font-medium transition-all border"
+              style={unread > 0
+                ? (light
+                    ? { color: '#0369a1', borderColor: 'rgba(2,132,199,0.35)', background: 'rgba(14,165,233,0.10)' }
+                    : { color: '#7dd3fc', borderColor: 'rgba(56,189,248,0.30)', background: 'rgba(56,189,248,0.10)' })
+                : btnIdle}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span className="hidden sm:inline">Messages</span>
+              {unread > 0 && (
+                <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-sky-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  {unread > 99 ? '99+' : unread}
+                </span>
               )}
             </button>
 
@@ -331,9 +394,11 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
         {selected ? (
           <div className="flex-1 overflow-hidden">
             <OrderDetail
+              key={selected.id}
               order={selected}
               theme={theme}
-              onBack={() => { animateRowsRef.current = true; setSelected(null); fetchOrders() }}
+              focusMessages={focusMessages}
+              onBack={() => { animateRowsRef.current = true; setSelected(null); setFocusMessages(false); fetchOrders() }}
               onUpdate={(u) => { setAllOrders(p => p.map(o => o.id === u.id ? u : o)); setSelected(u) }}
             />
           </div>
@@ -392,10 +457,11 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                 const due = order.status === 'completed'
                   ? { ...dueRaw, overdue: false, color: light ? 'text-[#8A847C]' : 'text-[#555]', bg: light ? 'bg-black/[0.04]' : 'bg-[#181818]', ring: '' }
                   : dueRaw
+                const unreadTexts = unreadByOrder.get(order.id) ?? 0
                 return (
                   <button
                     key={order.id}
-                    onClick={() => setSelected(order)}
+                    onClick={() => { setFocusMessages(unreadTexts > 0); setSelected(order) }}
                     className={`order-row w-full text-left rounded-2xl px-4 py-3.5 transition-all group border ${
                       due.overdue
                         ? (light
@@ -418,6 +484,17 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                         <div className="flex items-baseline gap-2 min-w-0">
                           <p className={`text-[15px] font-semibold truncate leading-tight ${light ? 'text-[#1C1A18]' : 'text-white'}`}>{order.customerName}</p>
                           <span className={`text-[12px] font-mono font-semibold shrink-0 ${light ? 'text-[#8B7355]' : 'text-[#C4A882]'}`}>{order.id}</span>
+                          {unreadTexts > 0 && (
+                            <span
+                              title={`${unreadTexts} unread ${unreadTexts === 1 ? 'text' : 'texts'}`}
+                              className="shrink-0 self-center inline-flex items-center gap-1 h-[18px] px-1.5 rounded-full bg-sky-500 text-white text-[10px] font-bold"
+                            >
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                              </svg>
+                              {unreadTexts}
+                            </span>
+                          )}
                         </div>
                         <p className={`text-[12px] mt-0.5 leading-tight ${light ? 'text-[#6B6358]' : 'text-[#777]'}`}>{formatPhone(order.phone)}</p>
                       </div>
@@ -470,6 +547,20 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
           </div>
         )}
       </div>
+
+      {showMessages && (
+        <MessagesPanel theme={theme} onOpen={openThread} onClose={() => setShowMessages(false)} />
+      )}
+
+      {conversation && (
+        <ConversationSheet thread={conversation} theme={theme} onClose={() => setConversation(null)} />
+      )}
+
+      <MessageToasts
+        theme={theme}
+        mutedPhone={selected ? phoneDigits(selected.phone) : conversation?.phone}
+        onView={openThread}
+      />
     </div>
   )
 }

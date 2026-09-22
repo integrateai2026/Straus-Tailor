@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getOrderById, updateOrder } from '@/lib/store'
 import { sendSMS } from '@/lib/twilio'
 import { requireAuth } from '@/lib/session'
+import { logOutbound } from '@/lib/messages'
 
 export async function POST(req: NextRequest) {
   if (!(await requireAuth(req))) {
@@ -18,6 +19,9 @@ export async function POST(req: NextRequest) {
     if (!result.ok) {
       return NextResponse.json({ error: result.error || 'SMS failed' }, { status: 500 })
     }
+
+    // Show it in the order's conversation, so replies have context
+    await logOutbound({ phone, body: message, orderId, sid: result.sid })
 
     // Append this send time to the notifiedAt history
     const current = await getOrderById(orderId)

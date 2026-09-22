@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { Order } from '@/lib/types'
+import { phoneDigits } from '@/lib/phone'
 import SMSModal from './SMSModal'
 import PrintTicket from './PrintTicket'
+import MessageThread from './MessageThread'
 
 type Theme = 'dark' | 'light'
 
@@ -13,6 +15,7 @@ interface Props {
   onBack: () => void
   onUpdate: (order: Order) => void
   theme?: Theme
+  focusMessages?: boolean // scroll to the customer's texts on open (opened from a new-text alert)
 }
 
 function formatPhone(raw: string): string {
@@ -60,9 +63,10 @@ const ACTIVE_STYLES: Record<Theme, Record<ActiveColor, string>> = {
   },
 }
 
-export default function OrderDetail({ order: initialOrder, onBack, onUpdate, theme = 'dark' }: Props) {
+export default function OrderDetail({ order: initialOrder, onBack, onUpdate, theme = 'dark', focusMessages = false }: Props) {
   const [order, setOrder] = useState(initialOrder)
   const [showSMS, setShowSMS] = useState(false)
+  const [smsSentCount, setSmsSentCount] = useState(0) // reloads the conversation after a Ready text goes out
   const [showPrint, setShowPrint] = useState(false)
   const [confirmPickup, setConfirmPickup] = useState(false)
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
@@ -78,6 +82,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
 
   const light = theme === 'light'
   const panelRef = useRef<HTMLDivElement>(null)
+  const messagesRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const el = panelRef.current
@@ -85,6 +90,13 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
     // Kill any in-flight tween on unmount so a detached goBack callback can't fire afterwards
     return () => { if (el) gsap.killTweensOf(el) }
   }, [])
+
+  // Opened for a new text — bring the conversation into view once the panel has slid in
+  useEffect(() => {
+    if (!focusMessages) return
+    const timer = setTimeout(() => messagesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400)
+    return () => clearTimeout(timer)
+  }, [focusMessages])
 
   function goBack() {
     gsap.to(panelRef.current, {
@@ -425,6 +437,20 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
             </div>
           </div>
 
+          {/* Texts with the customer (needs a full phone number) */}
+          {phoneDigits(order.phone).length >= 10 && (
+            <div ref={messagesRef} className="scroll-mt-4">
+              <p className={`text-[10px] uppercase tracking-[0.18em] font-medium mb-3 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>Messages</p>
+              <MessageThread
+                phone={phoneDigits(order.phone)}
+                orderId={order.id}
+                customerName={order.customerName}
+                theme={theme}
+                reloadKey={smsSentCount}
+              />
+            </div>
+          )}
+
           {/* Meta */}
           <div className={`space-y-2 pt-2 border-t ${light ? 'border-black/[0.08]' : 'border-white/[0.06]'}`}>
             <div className="flex justify-between">
@@ -470,6 +496,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
             setOrder(updated)
             onUpdate(updated)
             setShowSMS(false)
+            setSmsSentCount(n => n + 1)
           }}
         />
       )}

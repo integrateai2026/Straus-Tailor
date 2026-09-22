@@ -9,6 +9,7 @@ const PUBLIC_ROUTES = [
   '/api/printer/poll',   // Epson printer polls this — no browser session
   '/api/printer/queue',  // Print Ticket button posts here from client
   '/api/contact',        // Public contact form
+  '/api/sms/incoming',   // Twilio posts customer texts here — checks the Twilio signature itself
 ]
 
 export async function proxy(req: NextRequest) {

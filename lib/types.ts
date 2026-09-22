@@ -55,3 +55,29 @@ export interface UpdateOrderInput {
   dueDate?: string
   notes?: string
 }
+
+export type SmsDirection = 'inbound' | 'outbound'
+
+// One text to or from a customer
+export interface SmsMessage {
+  id: string
+  phone: string                      // customer's number, digits only
+  orderId?: string                   // order the text is about, when known
+  direction: SmsDirection
+  body: string
+  media: { contentType: string }[]   // photos etc., served by /api/messages/[id]/media/[index]
+  createdAt: string
+  readAt?: string
+}
+
+// A customer's conversation, as listed in the Messages panel
+export interface SmsThread {
+  phone: string
+  orderId?: string
+  customerName?: string
+  unread: number
+  lastBody: string
+  lastDirection: SmsDirection
+  lastAt: string
+  lastHasMedia: boolean
+}

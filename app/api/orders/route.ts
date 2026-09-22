@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { getAllOrders, createOrder } from '@/lib/store'
 import { CreateOrderInput } from '@/lib/types'
 import { sendSMS } from '@/lib/twilio'
 import { requireAuth } from '@/lib/session'
+import { logOutbound } from '@/lib/messages'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -78,13 +79,20 @@ export async function POST(req: NextRequest) {
         `Reply STOP to opt out.`,
       ].join('\n')
       console.log(`[SMS] Sending confirmation to ${input.phone} for order ${order.id}`)
-      sendSMS(input.phone, msg).then(result => {
-        if (result.ok) {
-          console.log(`[SMS] Confirmation sent successfully to ${input.phone}`)
-        } else {
-          console.error(`[SMS] Failed to send to ${input.phone}:`, result.error)
+      // Runs once the response is sent; after() keeps the serverless function alive until it's done
+      after(async () => {
+        try {
+          const result = await sendSMS(input.phone, msg)
+          if (result.ok) {
+            console.log(`[SMS] Confirmation sent successfully to ${input.phone}`)
+            await logOutbound({ phone: input.phone, body: msg, orderId: order.id, sid: result.sid })
+          } else {
+            console.error(`[SMS] Failed to send to ${input.phone}:`, result.error)
+          }
+        } catch (err) {
+          console.error('[SMS] Unexpected error:', err)
         }
-      }).catch(err => console.error('[SMS] Unexpected error:', err))
+      })
     }
 
     return NextResponse.json(order, { status: 201 })
