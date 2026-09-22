@@ -3,7 +3,7 @@ import { createHmac, timingSafeEqual } from 'crypto'
 /**
  * Normalize any US phone number to E.164 format (+1XXXXXXXXXX) for Twilio.
  */
-function normalizePhone(raw: string): string {
+export function normalizePhone(raw: string): string {
   const digits = raw.replace(/\D/g, '')
   if (digits.length === 10) return `+1${digits}`
   if (digits.length === 11 && digits[0] === '1') return `+${digits}`

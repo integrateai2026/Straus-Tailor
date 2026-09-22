@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { SmsThread } from '@/lib/types'
 import { formatPhone } from '@/lib/phone'
@@ -41,10 +41,34 @@ function initials(name: string): string {
 
 // Every number that has texted the shop, newest first — opened from the dashboard's Messages button
 export default function MessagesPanel({ theme, onOpen, onClose }: Props) {
-  const { threads } = useMessages()
+  const { threads, refresh } = useMessages()
   const light = theme === 'light'
   const backdropRef = useRef<HTMLDivElement>(null)
   const panelRef    = useRef<HTMLDivElement>(null)
+  const [importing, setImporting]     = useState(false)
+  const [importNote, setImportNote]   = useState('')
+  const [importError, setImportError] = useState(false)
+
+  // Bring in texts from before the app saved them (safe to press again — nothing is duplicated)
+  async function importOlder() {
+    setImporting(true)
+    setImportNote('')
+    setImportError(false)
+    try {
+      const res = await fetch('/api/messages/import', { method: 'POST' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Import failed')
+      setImportNote(data.added > 0
+        ? `Added ${data.added.toLocaleString()} older ${data.added === 1 ? 'text' : 'texts'}`
+        : 'All older texts are already here')
+      refresh()
+    } catch (err) {
+      setImportError(true)
+      setImportNote(err instanceof Error ? err.message : 'Import failed')
+    } finally {
+      setImporting(false)
+    }
+  }
 
   useEffect(() => {
     gsap.fromTo(backdropRef.current, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'power2.out' })
@@ -145,6 +169,31 @@ export default function MessagesPanel({ theme, onOpen, onClose }: Props) {
               </button>
             )
           })}
+        </div>
+
+        {/* Older texts from Twilio */}
+        <div className={`flex items-center justify-between gap-3 px-5 py-3 border-t ${light ? 'border-black/[0.08]' : 'border-white/[0.06]'}`}>
+          <p className={`text-[11px] leading-snug ${
+            importError ? (light ? 'text-red-700' : 'text-red-400') : (light ? 'text-[#8A847C]' : 'text-[#666]')
+          }`}>
+            {importNote || 'Texts from before the app saved them are still in Twilio.'}
+          </p>
+          <button
+            onClick={importOlder}
+            disabled={importing}
+            className={`shrink-0 h-10 px-3.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-colors disabled:opacity-50 ${
+              light
+                ? 'border-black/[0.15] text-[#4A443C] hover:border-black/[0.30] hover:text-[#1C1A18]'
+                : 'border-white/[0.12] text-[#bbb] hover:border-white/[0.25] hover:text-white'
+            }`}
+          >
+            {importing && (
+              <svg className="animate-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+            )}
+            {importing ? 'Importing…' : 'Import older texts'}
+          </button>
         </div>
       </div>
     </div>
