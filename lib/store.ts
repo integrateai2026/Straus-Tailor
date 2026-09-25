@@ -26,14 +26,14 @@ function toOrder(row: Record<string, unknown>): Order {
   }
 }
 
-async function uniqueOrderNumber(): Promise<number> {
-  for (let i = 0; i < 20; i++) {
-    const num = Math.floor(10000 + Math.random() * 90000)
-    const { data } = await supabase
-      .from('orders').select('id').eq('order_number', num).maybeSingle()
-    if (!data) return num
+// Next order number: sequential from #10001, skipping any number an older
+// (randomly numbered) order already has — see public.next_order_number()
+async function nextOrderNumber(): Promise<number> {
+  const { data, error } = await supabase.rpc('next_order_number')
+  if (error || typeof data !== 'number') {
+    throw new Error(error?.message ?? 'Could not get the next order number')
   }
-  throw new Error('Could not generate a unique order number')
+  return data
 }
 
 export async function getAllOrders(status?: string, query?: string): Promise<Order[]> {
@@ -106,7 +106,7 @@ export async function countOpenOrdersByDueDate(): Promise<Record<string, number>
 }
 
 export async function createOrder(input: CreateOrderInput): Promise<Order> {
-  const orderNumber = await uniqueOrderNumber()
+  const orderNumber = await nextOrderNumber()
   const { data, error } = await supabase
     .from('orders')
     .insert({
