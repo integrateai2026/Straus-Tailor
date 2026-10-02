@@ -24,6 +24,7 @@ function toOrder(row: Record<string, unknown>): Order {
     ...(row.garments     != null ? { garments:     row.garments      as Record<string, number> } : {}),
     ...(row.alterations  != null ? { alterations:  row.alterations   as string[] } : {}),
     ...(row.history      != null ? { history:      row.history       as OrderEvent[] } : {}),
+    ...(row.tailors      != null ? { tailors:      row.tailors       as string[] } : {}),
   }
 }
 
@@ -153,6 +154,7 @@ export async function updateOrder(
   if (input.dueDate      !== undefined) patch.due_date      = input.dueDate
   if (input.notes        !== undefined) patch.notes         = input.notes
   if (input.history      !== undefined) patch.history       = input.history
+  if (input.tailors      !== undefined) patch.tailors       = input.tailors
 
   const { data, error } = await supabase
     .from('orders').update(patch).eq('id', id).select().single()

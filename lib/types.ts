@@ -29,6 +29,7 @@ export interface Order {
   garments?: Record<string, number>
   alterations?: string[]
   history?: OrderEvent[]
+  tailors?: string[]   // who worked on it (optional)
 }
 
 export interface CreateOrderInput {
@@ -62,6 +63,7 @@ export interface UpdateOrderInput {
   dueDate?: string
   notes?: string
   history?: OrderEvent[]
+  tailors?: string[] | null
 }
 
 export type SmsDirection = 'inbound' | 'outbound'

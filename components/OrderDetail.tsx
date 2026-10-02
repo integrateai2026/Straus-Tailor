@@ -5,6 +5,7 @@ import gsap from 'gsap'
 import { Order } from '@/lib/types'
 import { phoneDigits } from '@/lib/phone'
 import { orderTimeline, TimelineTone } from '@/lib/orderHistory'
+import { TAILORS, sortTailors } from '@/lib/tailors'
 import SMSModal from './SMSModal'
 import PrintTicket from './PrintTicket'
 import MessageThread from './MessageThread'
@@ -85,6 +86,102 @@ const ACTIVE_STYLES: Record<Theme, Record<ActiveColor, string>> = {
     sky:     'bg-sky-500/12 border-sky-600/35 text-sky-700',
     violet:  'bg-violet-500/10 border-violet-600/35 text-violet-700',
   },
+}
+
+// Optional "Tailor" detail: tap to drop down the names, tick any number, OK saves
+function TailorField({ value, theme, saving, onSave }: {
+  value: string[]
+  theme: Theme
+  saving: boolean
+  onSave: (names: string[]) => void
+}) {
+  const light = theme === 'light'
+  const [open, setOpen] = useState(false)
+  const [picked, setPicked] = useState<string[]>(value)
+  const names = sortTailors(value)
+  const unchanged = sortTailors(picked).join() === names.join()
+
+  function toggle(name: string) {
+    setPicked(p => p.includes(name) ? p.filter(n => n !== name) : [...p, name])
+  }
+
+  return (
+    <div className={`border-b ${light ? 'border-black/[0.06]' : 'border-white/[0.05]'}`}>
+      <button
+        type="button"
+        onClick={() => { setPicked(value); setOpen(o => !o) }}
+        aria-expanded={open}
+        className="w-full flex justify-between items-center gap-3 py-2.5 min-h-[44px] text-left"
+      >
+        <span className={`text-sm ${light ? 'text-[#6B6358]' : 'text-[#888]'}`}>Tailor</span>
+        <span className="flex items-center gap-2 min-w-0">
+          {saving ? (
+            <svg className={`animate-spin ${light ? 'text-[#8A847C]' : 'text-[#666]'}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+          ) : names.length > 0 ? (
+            <span className={`text-sm font-semibold text-right ${light ? 'text-[#1C1A18]' : 'text-white'}`}>{names.join(', ')}</span>
+          ) : (
+            <span className={`text-sm italic ${light ? 'text-[#A89F94]' : 'text-[#555]'}`}>Not set</span>
+          )}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={light ? '#8A847C' : '#666'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+            className="shrink-0 transition-transform" style={{ transform: open ? 'rotate(180deg)' : undefined }}>
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </span>
+      </button>
+
+      {open && (
+        <div className={`mb-3 rounded-xl border p-2 ${light ? 'bg-black/[0.03] border-black/[0.08]' : 'bg-white/[0.03] border-white/[0.06]'}`}>
+          <div className="grid grid-cols-2 gap-1.5">
+            {TAILORS.map(name => {
+              const on = picked.includes(name)
+              return (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => toggle(name)}
+                  aria-pressed={on}
+                  className={`h-12 px-3 rounded-lg border flex items-center gap-3 text-sm font-medium transition-colors ${
+                    on
+                      ? (light ? 'bg-[#8B7355]/[0.10] border-[#8B7355]/45 text-[#5C4A33]' : 'bg-[#C4A882]/[0.12] border-[#C4A882]/40 text-[#E8D7BE]')
+                      : (light ? 'border-black/[0.10] text-[#4A443C] hover:border-black/[0.22]' : 'border-white/[0.08] text-[#bbb] hover:border-white/[0.16]')
+                  }`}
+                >
+                  <span className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 ${
+                    on
+                      ? (light ? 'bg-[#8B7355] border-[#8B7355]' : 'bg-[#C4A882] border-[#C4A882]')
+                      : (light ? 'border-black/[0.25]' : 'border-white/[0.25]')
+                  }`}>
+                    {on && (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={light ? '#fff' : '#141414'} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </span>
+                  {name}
+                </button>
+              )
+            })}
+          </div>
+          <div className="flex justify-end gap-2 mt-2">
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className={`h-11 px-4 rounded-xl text-sm font-semibold transition-colors ${light ? 'text-[#4A443C] hover:bg-black/[0.05]' : 'text-[#bbb] hover:bg-white/[0.05]'}`}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => { if (!unchanged) onSave(sortTailors(picked)); setOpen(false) }}
+              className={`h-11 px-6 rounded-xl text-sm font-semibold ${light ? 'bg-[#1C1A18] text-[#F6F1E9]' : 'bg-white text-black'}`}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function OrderDetail({ order: initialOrder, onBack, onUpdate, theme = 'dark', focusMessages = false }: Props) {
@@ -327,6 +424,12 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
                     <span className={`text-sm font-semibold ${light ? 'text-[#1C1A18]' : 'text-white'}`}>{value}</span>
                   </div>
                 ))}
+                <TailorField
+                  value={order.tailors ?? []}
+                  theme={theme}
+                  saving={loadingAction === 'tailors'}
+                  onSave={names => patchOrder({ tailors: names }, 'tailors')}
+                />
                 <div className={`mt-3 rounded-xl border px-4 py-3 ${light ? 'bg-black/[0.03] border-black/[0.08]' : 'bg-white/[0.03] border-white/[0.06]'}`}>
                   <p className={`text-[10px] uppercase tracking-widest font-medium mb-1 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>Notes</p>
                   {order.notes?.trim() ? (

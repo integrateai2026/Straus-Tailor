@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getOrderById, updateOrder } from '@/lib/store'
 import { requireAuth } from '@/lib/session'
 import { pickupChange } from '@/lib/orderHistory'
+import { normalizeTailors } from '@/lib/tailors'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await requireAuth(req))) {
@@ -28,6 +29,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   // History is kept by the server only
   delete body.history
+
+  // Tailors who worked on it: optional; trimmed, no repeats, null when none picked
+  if (body.tailors !== undefined) {
+    body.tailors = normalizeTailors(body.tailors)
+  }
 
   // Marking picked up (or undoing it) sets the status and adds a dated entry to the
   // order's history; undoing sends the order back to Active
