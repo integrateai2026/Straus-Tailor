@@ -9,6 +9,7 @@ import { useMessages } from './MessagesProvider'
 import MessagesPanel from './MessagesPanel'
 import MessageToasts from './MessageToasts'
 import ConversationSheet from './ConversationSheet'
+import OrderDatePicker, { DATE_MODES, DateMode, DateModeSwitch, orderDate } from './OrderDatePicker'
 
 type Tab = 'all' | OrderStatus
 export type Theme = 'dark' | 'light'
@@ -84,6 +85,9 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
   const [showMessages, setShowMessages] = useState(false)
   const [conversation, setConversation] = useState<SmsThread | null>(null) // texts from a number with no orders
   const [focusMessages, setFocusMessages] = useState(false)                // open the order scrolled to its texts
+  const [dateFilter, setDateFilter] = useState<{ mode: DateMode; date: string } | null>(null) // one day's orders
+  const [dateMode, setDateMode] = useState<DateMode>('due')                // last Due / Drop-off choice
+  const [pickingDate, setPickingDate] = useState(false)
   const { threads, unread } = useMessages()
 
   // Unread customer texts per order, for the badges on order rows
@@ -99,7 +103,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
   const PAGE_SIZE = 100
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
-  useEffect(() => { setVisibleCount(PAGE_SIZE) }, [tab, search])
+  useEffect(() => { setVisibleCount(PAGE_SIZE) }, [tab, search, dateFilter])
 
   // Load saved theme (per-device)
   useEffect(() => {
@@ -182,7 +186,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
   }, [fetchOrders])
 
   // Client-side filter + sort — instant tab switching and search, no network round-trip
-  const orders = useMemo(() => {
+  const tabAndSearch = useMemo(() => {
     const digitsOf = (s: string) => s.replace(/\D/g, '')
     let list = tab === 'all' ? allOrders : allOrders.filter(o => o.status === tab)
     const q = search.trim().toLowerCase()
@@ -195,6 +199,14 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
         (qDigits.length > 0 && digitsOf(o.phone).includes(qDigits))
       )
     }
+    return list
+  }, [allOrders, tab, search])
+
+  // …then the picked day (by due date or drop-off date), then sort
+  const orders = useMemo(() => {
+    const list = dateFilter
+      ? tabAndSearch.filter(o => orderDate(o, dateFilter.mode) === dateFilter.date)
+      : tabAndSearch
     return [...list].sort((a, b) => {
       if (tab === 'all') {
         // Most recently created first
@@ -206,7 +218,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
       if (!b.dueDate) return -1
       return a.dueDate.localeCompare(b.dueDate)
     })
-  }, [allOrders, tab, search])
+  }, [tabAndSearch, dateFilter, tab])
 
   useEffect(() => {
     const tl = gsap.timeline()
@@ -404,24 +416,73 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
           </div>
         ) : (
           <div className="flex-1 flex flex-col px-6 pb-6">
-            {/* Search */}
-            <div className={`flex items-center gap-3 border rounded-xl px-4 h-11 mb-3 ${light ? 'bg-[#FDFAF5] border-black/[0.10]' : 'bg-[#111] border-white/[0.06]'}`}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={light ? '#8A847C' : '#555'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              </svg>
-              <input value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Search by name, phone, or order ID…"
-                className={`flex-1 bg-transparent text-sm outline-none ${light ? 'text-[#1C1A18] placeholder-[#A89F94]' : 'text-white placeholder-[#444]'}`}/>
-              {search && (
-                <button onClick={() => setSearch('')}
-                  aria-label="Clear search"
-                  className={`w-11 h-11 -mr-4 shrink-0 flex items-center justify-center transition-colors ${light ? 'text-[#A89F94] hover:text-[#6B6358]' : 'text-[#444] hover:text-[#888]'}`}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                  </svg>
-                </button>
-              )}
+            {/* Search + pick a day */}
+            <div className="flex gap-2 mb-3">
+              <div className={`flex-1 min-w-0 flex items-center gap-3 border rounded-xl px-4 h-11 ${light ? 'bg-[#FDFAF5] border-black/[0.10]' : 'bg-[#111] border-white/[0.06]'}`}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={light ? '#8A847C' : '#555'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input value={search} onChange={e => setSearch(e.target.value)}
+                  placeholder="Search by name, phone, or order ID…"
+                  className={`flex-1 min-w-0 bg-transparent text-sm outline-none ${light ? 'text-[#1C1A18] placeholder-[#A89F94]' : 'text-white placeholder-[#444]'}`}/>
+                {search && (
+                  <button onClick={() => setSearch('')}
+                    aria-label="Clear search"
+                    className={`w-11 h-11 -mr-4 shrink-0 flex items-center justify-center transition-colors ${light ? 'text-[#A89F94] hover:text-[#6B6358]' : 'text-[#444] hover:text-[#888]'}`}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={() => setPickingDate(true)}
+                aria-label="Show one day's orders"
+                title="Show one day's orders"
+                className={`shrink-0 w-11 h-11 rounded-xl border flex items-center justify-center transition-colors ${
+                  dateFilter
+                    ? (light ? 'bg-[#8B7355]/[0.12] border-[#8B7355]/45 text-[#6B5A43]' : 'bg-[#C4A882]/[0.12] border-[#C4A882]/40 text-[#C4A882]')
+                    : (light ? 'bg-[#FDFAF5] border-black/[0.10] text-[#8A847C] hover:text-[#4A443C]' : 'bg-[#111] border-white/[0.06] text-[#666] hover:text-[#aaa]')
+                }`}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              </button>
             </div>
+
+            {/* The picked day: flip Due / Drop-off, change the day, or × back to all dates */}
+            {dateFilter && (
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <DateModeSwitch
+                  mode={dateFilter.mode}
+                  theme={theme}
+                  onChange={m => { setDateMode(m); setDateFilter(f => f && { ...f, mode: m }) }}
+                />
+                {/* The day and its × stay together; the year is left off on phone-width screens */}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setPickingDate(true)}
+                    className={`h-12 px-4 rounded-xl border text-sm font-semibold transition-colors ${
+                      light ? 'bg-[#FDFAF5] border-black/[0.10] text-[#1C1A18] hover:border-black/[0.22]' : 'bg-[#111] border-white/[0.08] text-white hover:border-white/[0.16]'
+                    }`}
+                  >
+                    {new Date(dateFilter.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    <span className="hidden sm:inline">, {dateFilter.date.slice(0, 4)}</span>
+                  </button>
+                  <button
+                    onClick={() => setDateFilter(null)}
+                    aria-label="Show all dates"
+                    title="Show all dates"
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${light ? 'text-[#8A847C] hover:bg-black/[0.05] hover:text-[#1C1A18]' : 'text-[#777] hover:bg-white/[0.05] hover:text-white'}`}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Meta row */}
             <div className="flex items-center justify-between mb-2.5">
@@ -449,7 +510,11 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
               ) : orders.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <p className={`text-sm ${light ? 'text-[#8A847C]' : 'text-[#444]'}`}>No orders found</p>
-                  <p className={`text-xs mt-1 ${light ? 'text-[#C9C2B6]' : 'text-[#2a2a2a]'}`}>{search ? 'Try a different search' : 'Orders will appear here'}</p>
+                  <p className={`text-xs mt-1 ${light ? 'text-[#A89F94]' : 'text-[#555]'}`}>
+                    {dateFilter
+                      ? `Nothing ${DATE_MODES[dateFilter.mode].verb} on ${new Date(dateFilter.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}${search || tab !== 'all' ? ' here' : ''}`
+                      : search ? 'Try a different search' : 'Orders will appear here'}
+                  </p>
                 </div>
               ) : orders.slice(0, visibleCount).map((order) => {
                 const dueRaw = getDueInfo(order.dueDate, theme)
@@ -550,6 +615,17 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
 
       {showMessages && (
         <MessagesPanel theme={theme} onOpen={openThread} onClose={() => setShowMessages(false)} />
+      )}
+
+      {pickingDate && (
+        <OrderDatePicker
+          orders={tabAndSearch}
+          mode={dateFilter?.mode ?? dateMode}
+          date={dateFilter?.date ?? ''}
+          theme={theme}
+          onApply={(mode, date) => { setDateMode(mode); setDateFilter({ mode, date }); setPickingDate(false) }}
+          onClose={() => setPickingDate(false)}
+        />
       )}
 
       {conversation && (
