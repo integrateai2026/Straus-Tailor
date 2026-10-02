@@ -5,12 +5,15 @@ import gsap from 'gsap'
 import { Order, OrderStatus, SmsThread } from '@/lib/types'
 import { phoneDigits } from '@/lib/phone'
 import { lastCounterActivity } from '@/lib/orderHistory'
+import { countsByDay, dayActivity, DayActivity, timeOfDay, todayISO } from '@/lib/dayActivity'
 import OrderDetail from './OrderDetail'
 import { useMessages } from './MessagesProvider'
 import MessagesPanel from './MessagesPanel'
 import MessageToasts from './MessageToasts'
 import ConversationSheet from './ConversationSheet'
 import OrderDatePicker, { DATE_MODES, DateMode, DateModeSwitch, orderDate } from './OrderDatePicker'
+import DateCalendar from './DateCalendar'
+import DayActivityBar, { DayShow } from './DayActivityBar'
 
 type Tab = 'all' | OrderStatus
 export type Theme = 'dark' | 'light'
@@ -89,6 +92,10 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
   const [dateFilter, setDateFilter] = useState<{ mode: DateMode; date: string } | null>(null) // one day's orders
   const [dateMode, setDateMode] = useState<DateMode>('due')                // last Due / Drop-off choice
   const [pickingDate, setPickingDate] = useState(false)
+  const [activityDay, setActivityDay] = useState<string | null>(null)   // Today view: 'today' (follows the clock) or a YYYY-MM-DD
+  const [activityShow, setActivityShow] = useState<DayShow>('all')       // both, or just the drop-offs / pickups
+  const [pickingActivityDay, setPickingActivityDay] = useState(false)
+  const [today, setToday] = useState(todayISO)
   const { threads, unread } = useMessages()
 
   // Unread customer texts per order, for the badges on order rows
@@ -104,7 +111,18 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
   const PAGE_SIZE = 100
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
-  useEffect(() => { setVisibleCount(PAGE_SIZE) }, [tab, search, dateFilter])
+  useEffect(() => { setVisibleCount(PAGE_SIZE) }, [tab, search, dateFilter, activityDay, activityShow])
+
+  // The store iPad stays open for days: keep "today" current so the Today view rolls over at midnight
+  useEffect(() => {
+    const tick = () => setToday(todayISO())
+    const timer = setInterval(tick, 60_000)
+    document.addEventListener('visibilitychange', tick)
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', tick)
+    }
+  }, [])
 
   // Load saved theme (per-device)
   useEffect(() => {
@@ -203,8 +221,47 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
     return list
   }, [allOrders, tab, search])
 
-  // …then the picked day (by due date or drop-off date), then sort
+  // Today view: what was dropped off and picked up on the shown day, in the current tab and search
+  const shownDay = activityDay === 'today' ? today : activityDay
+  const dayActivities = useMemo(() => {
+    if (!shownDay) return null
+    const found = new Map<string, DayActivity>()
+    for (const o of tabAndSearch) {
+      const a = dayActivity(o, shownDay)
+      if (a) found.set(o.id, a)
+    }
+    return found
+  }, [tabAndSearch, shownDay])
+
+  const dayCounts = useMemo(() => {
+    const counts = { dropoffs: 0, pickups: 0 }
+    for (const a of dayActivities?.values() ?? []) {
+      if (a.dropoff) counts.dropoffs++
+      if (a.pickup) counts.pickups++
+    }
+    return counts
+  }, [dayActivities])
+
+  // The Today view's calendar: drop-offs + pickups under each day, split for the picked day
+  const activityCalendar = useMemo(() => {
+    if (!pickingActivityDay) return null
+    const byDay = countsByDay(tabAndSearch)
+    const totals = Object.fromEntries(Object.entries(byDay).map(([day, c]) => [day, c.dropoffs + c.pickups]))
+    return { byDay, totals }
+  }, [pickingActivityDay, tabAndSearch])
+
+  // …then the Today view or the picked day (by due date or drop-off date), then sort
   const orders = useMemo(() => {
+    if (dayActivities) {
+      // Latest drop-off or pickup first; a tapped number narrows it to that kind
+      const at = (o: Order) => dayActivities.get(o.id)?.at ?? 0
+      return tabAndSearch
+        .filter(o => {
+          const a = dayActivities.get(o.id)
+          return !!a && (activityShow === 'all' || (activityShow === 'dropoffs' ? a.dropoff : a.pickup))
+        })
+        .sort((a, b) => at(b) - at(a))
+    }
     const list = dateFilter
       ? tabAndSearch.filter(o => orderDate(o, dateFilter.mode) === dateFilter.date)
       : tabAndSearch
@@ -222,7 +279,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
       if (!b.dueDate) return -1
       return a.dueDate.localeCompare(b.dueDate)
     })
-  }, [tabAndSearch, dateFilter, tab])
+  }, [tabAndSearch, dateFilter, tab, dayActivities, activityShow])
 
   useEffect(() => {
     const tl = gsap.timeline()
@@ -249,6 +306,28 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
     animateRowsRef.current = true
     setTab(t)
     if (selected) setSelected(null)
+  }
+
+  // Today button: everything dropped off or picked up today, across all orders
+  function openToday() {
+    animateRowsRef.current = true
+    setTab('all')
+    setSearch('')
+    setDateFilter(null)
+    setActivityShow('all')
+    setToday(todayISO())
+    setActivityDay('today')
+  }
+
+  function showActivityDay(day: string) {
+    animateRowsRef.current = true
+    setActivityDay(day === today ? 'today' : day)
+  }
+
+  function closeActivity() {
+    animateRowsRef.current = true
+    setActivityDay(null)
+    setActivityShow('all')
   }
 
   // Open a conversation from the Messages panel or a new-text alert: on its order,
@@ -440,6 +519,17 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                 )}
               </div>
               <button
+                onClick={openToday}
+                title="Today's drop-offs and pickups"
+                className={`shrink-0 h-11 px-4 rounded-xl border text-xs font-semibold transition-colors ${
+                  activityDay
+                    ? (light ? 'bg-[#8B7355]/[0.12] border-[#8B7355]/45 text-[#6B5A43]' : 'bg-[#C4A882]/[0.12] border-[#C4A882]/40 text-[#C4A882]')
+                    : (light ? 'bg-[#FDFAF5] border-black/[0.10] text-[#6B6358] hover:text-[#1C1A18]' : 'bg-[#111] border-white/[0.06] text-[#9CA3AF] hover:text-white')
+                }`}
+              >
+                Today
+              </button>
+              <button
                 onClick={() => setPickingDate(true)}
                 aria-label="Show one day's orders"
                 title="Show one day's orders"
@@ -455,8 +545,23 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
               </button>
             </div>
 
+            {/* Today view: the day's drop-off and pickup counts */}
+            {shownDay && (
+              <DayActivityBar
+                day={shownDay}
+                today={today}
+                counts={dayCounts}
+                show={activityShow}
+                theme={theme}
+                onShow={s => { animateRowsRef.current = true; setActivityShow(s) }}
+                onDay={showActivityDay}
+                onPickDay={() => setPickingActivityDay(true)}
+                onClose={closeActivity}
+              />
+            )}
+
             {/* The picked day: flip Due / Drop-off, change the day, or × back to all dates */}
-            {dateFilter && (
+            {!shownDay && dateFilter && (
               <div className="flex items-center gap-2 mb-3 flex-wrap">
                 <DateModeSwitch
                   mode={dateFilter.mode}
@@ -515,7 +620,9 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <p className={`text-sm ${light ? 'text-[#8A847C]' : 'text-[#444]'}`}>No orders found</p>
                   <p className={`text-xs mt-1 ${light ? 'text-[#A89F94]' : 'text-[#555]'}`}>
-                    {dateFilter
+                    {shownDay
+                      ? `No ${activityShow === 'dropoffs' ? 'drop-offs' : activityShow === 'pickups' ? 'pickups' : 'drop-offs or pickups'} on ${new Date(shownDay + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}${search || tab !== 'all' ? ' here' : ''}`
+                      : dateFilter
                       ? `Nothing ${DATE_MODES[dateFilter.mode].verb} on ${new Date(dateFilter.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}${search || tab !== 'all' ? ' here' : ''}`
                       : search ? 'Try a different search' : 'Orders will appear here'}
                   </p>
@@ -527,6 +634,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                   ? { ...dueRaw, overdue: false, color: light ? 'text-[#8A847C]' : 'text-[#555]', bg: light ? 'bg-black/[0.04]' : 'bg-[#181818]', ring: '' }
                   : dueRaw
                 const unreadTexts = unreadByOrder.get(order.id) ?? 0
+                const activity = dayActivities?.get(order.id) // Today view only
                 return (
                   <button
                     key={order.id}
@@ -566,6 +674,19 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                           )}
                         </div>
                         <p className={`text-[12px] mt-0.5 leading-tight ${light ? 'text-[#6B6358]' : 'text-[#777]'}`}>{formatPhone(order.phone)}</p>
+                        {activity && (
+                          <p className="text-[11px] mt-1 leading-tight font-semibold">
+                            {activity.dropoff && (
+                              <span className={light ? 'text-[#8B7355]' : 'text-[#C4A882]'}>
+                                Dropped off{activity.dropoffAt && ` ${timeOfDay(activity.dropoffAt)}`}
+                              </span>
+                            )}
+                            {activity.dropoff && activity.pickup && <span className={light ? 'text-[#A89F94]' : 'text-[#555]'}> · </span>}
+                            {activity.pickupAt && (
+                              <span className={light ? 'text-emerald-700' : 'text-emerald-400'}>Picked up {timeOfDay(activity.pickupAt)}</span>
+                            )}
+                          </p>
+                        )}
                       </div>
 
                       {/* Status column — job status primary, payment secondary */}
@@ -627,8 +748,28 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
           mode={dateFilter?.mode ?? dateMode}
           date={dateFilter?.date ?? ''}
           theme={theme}
-          onApply={(mode, date) => { setDateMode(mode); setDateFilter({ mode, date }); setPickingDate(false) }}
+          onApply={(mode, date) => { setDateMode(mode); setDateFilter({ mode, date }); setActivityDay(null); setPickingDate(false) }}
           onClose={() => setPickingDate(false)}
+        />
+      )}
+
+      {pickingActivityDay && shownDay && activityCalendar && (
+        <DateCalendar
+          value={shownDay}
+          title="Drop-offs & pickups"
+          counts={activityCalendar.totals}
+          countUnit={{ one: 'drop-off or pickup', other: 'drop-offs & pickups' }}
+          breakdown={day => {
+            const c = activityCalendar.byDay[day] ?? { dropoffs: 0, pickups: 0 }
+            return [
+              { count: c.dropoffs, label: c.dropoffs === 1 ? 'drop-off' : 'drop-offs' },
+              { count: c.pickups, label: c.pickups === 1 ? 'pickup' : 'pickups' },
+            ]
+          }}
+          allowPast
+          palette={light ? 'paper' : 'dark'}
+          onSelect={day => { showActivityDay(day); setPickingActivityDay(false) }}
+          onClose={() => setPickingActivityDay(false)}
         />
       )}
 

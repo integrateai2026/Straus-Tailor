@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import gsap from 'gsap'
 import { holidaysIn } from '@/lib/holidays'
@@ -10,6 +10,7 @@ interface Props {
   title: string                          // small label over the full date, e.g. "Need by"
   counts: Record<string, number> | null  // numbers under the days; null while loading
   countUnit?: { one: string; other: string } // "Friday · 3 not ready" / "1 order"
+  breakdown?: (date: string) => { count: number; label: string }[] // split the picked day's number: "19 drop-offs · 24 pickups"
   allowPast?: boolean                    // false: earlier days are greyed out and can't be picked
   palette?: 'paper' | 'dark'
   top?: React.ReactNode                  // extra controls under the full date (e.g. a switch)
@@ -68,7 +69,7 @@ function fullDate(date: string): string {
  * Tapping a day picks it; OK confirms, Cancel / Esc / tapping outside changes nothing.
  */
 export default function DateCalendar({
-  value, title, counts, countUnit = { one: 'not ready', other: 'not ready' },
+  value, title, counts, countUnit = { one: 'not ready', other: 'not ready' }, breakdown,
   allowPast = false, palette = 'paper', top, onSelect, onClose,
 }: Props) {
   const p = PALETTES[palette]
@@ -128,7 +129,7 @@ export default function DateCalendar({
       <div
         ref={panelRef}
         role="dialog"
-        aria-label={`Choose the ${title.toLowerCase()}`}
+        aria-label={`${title}: choose a date`}
         className="w-full max-w-[440px] max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-[28px] border px-4 pt-3 pb-4 sm:px-6 sm:pt-5 sm:pb-5"
         style={{ opacity: 0, background: p.panel, borderColor: p.border, boxShadow: p.shadow }}
       >
@@ -140,9 +141,10 @@ export default function DateCalendar({
           </p>
           <p className="text-[13px] mt-1 min-h-[18px]" style={{ color: p.muted }}>
             {picked && formatDate(picked, { weekday: 'long' })}
-            {picked && counts !== null && (
-              <> · <span className="font-bold" style={{ color: p.brass }}>{pickedCount}</span> {unit(pickedCount)}</>
-            )}
+            {picked && counts !== null &&
+              (breakdown ? breakdown(picked) : [{ count: pickedCount, label: unit(pickedCount) }]).map(({ count, label }) => (
+                <Fragment key={label}> · <span className="font-bold" style={{ color: p.brass }}>{count}</span> {label}</Fragment>
+              ))}
             {pickedHoliday && <span className="font-semibold" style={{ color: p.holiday }}> · {pickedHoliday}</span>}
           </p>
           {top && <div className="mt-3">{top}</div>}
