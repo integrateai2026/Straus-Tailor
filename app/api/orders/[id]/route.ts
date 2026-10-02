@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getOrderById, updateOrder } from '@/lib/store'
 import { requireAuth } from '@/lib/session'
+import { pickupChange } from '@/lib/orderHistory'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await requireAuth(req))) {
@@ -25,11 +26,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     body.notes = String(body.notes ?? '').trim().slice(0, 1000)
   }
 
-  // Auto-record pickup timestamp on first mark as picked up
-  if (body.pickedUp === true) {
+  // History is kept by the server only
+  delete body.history
+
+  // Marking picked up (or undoing it) sets the status and adds a dated entry to the
+  // order's history; undoing sends the order back to Active
+  if (typeof body.pickedUp === 'boolean') {
     const current = await getOrderById(decodedId)
-    if (!current?.pickedUpAt) {
-      body.pickedUpAt = new Date().toISOString()
+    if (current && body.pickedUp !== current.pickedUp) {
+      Object.assign(body, pickupChange(current, body.pickedUp, new Date().toISOString()))
     }
   }
 

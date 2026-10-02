@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { Order, CreateOrderInput, UpdateOrderInput } from './types'
+import { Order, OrderEvent, CreateOrderInput, UpdateOrderInput } from './types'
 
 // Map Supabase snake_case row → camelCase Order
 function toOrder(row: Record<string, unknown>): Order {
@@ -23,6 +23,7 @@ function toOrder(row: Record<string, unknown>): Order {
     ...(row.sms_consent  != null ? { smsConsent:   row.sms_consent   as boolean } : {}),
     ...(row.garments     != null ? { garments:     row.garments      as Record<string, number> } : {}),
     ...(row.alterations  != null ? { alterations:  row.alterations   as string[] } : {}),
+    ...(row.history      != null ? { history:      row.history       as OrderEvent[] } : {}),
   }
 }
 
@@ -151,6 +152,7 @@ export async function updateOrder(
   if (input.dropoffDate  !== undefined) patch.dropoff_date  = input.dropoffDate
   if (input.dueDate      !== undefined) patch.due_date      = input.dueDate
   if (input.notes        !== undefined) patch.notes         = input.notes
+  if (input.history      !== undefined) patch.history       = input.history
 
   const { data, error } = await supabase
     .from('orders').update(patch).eq('id', id).select().single()

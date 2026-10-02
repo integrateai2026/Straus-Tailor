@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createToken, COOKIE_NAME, MAX_AGE } from '@/lib/session'
+import { createToken, sessionCookie } from '@/lib/session'
 
 // In-memory rate limiter: 10 attempts per 15 minutes per IP
 const attempts = new Map<string, { count: number; resetAt: number }>()
@@ -53,15 +53,8 @@ export async function POST(req: NextRequest) {
     // Clear rate limit counter on successful login
     attempts.delete(ip)
 
-    const token = await createToken()
     const res = NextResponse.json({ ok: true })
-    res.cookies.set(COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: MAX_AGE,
-      path: '/',
-    })
+    res.cookies.set(sessionCookie(await createToken()))
     return res
   } catch {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })

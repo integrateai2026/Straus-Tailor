@@ -1,5 +1,11 @@
 export type OrderStatus = 'active' | 'notified' | 'completed'
 
+// A dated pickup change, kept so the order's History shows what happened and when
+export interface OrderEvent {
+  event: 'picked_up' | 'pickup_undone'
+  at: string // ISO time
+}
+
 export interface Order {
   id: string
   orderNumber: number
@@ -22,6 +28,7 @@ export interface Order {
   smsMarketing?: boolean
   garments?: Record<string, number>
   alterations?: string[]
+  history?: OrderEvent[]
 }
 
 export interface CreateOrderInput {
@@ -54,6 +61,7 @@ export interface UpdateOrderInput {
   dropoffDate?: string
   dueDate?: string
   notes?: string
+  history?: OrderEvent[]
 }
 
 export type SmsDirection = 'inbound' | 'outbound'

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { Order } from '@/lib/types'
 import { phoneDigits } from '@/lib/phone'
+import { orderTimeline, TimelineTone } from '@/lib/orderHistory'
 import SMSModal from './SMSModal'
 import PrintTicket from './PrintTicket'
 import MessageThread from './MessageThread'
@@ -31,6 +32,29 @@ function formatDate(iso: string) {
   if (!iso) return '—'
   const d = new Date(iso + 'T00:00:00')
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// "Oct 2, 2026, 3:15 PM"
+function formatWhen(iso: string) {
+  return new Date(iso).toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit',
+  })
+}
+
+// History entry colors — texts sky, pickups violet (like their buttons), undone pickups amber
+const HISTORY_TONES: Record<Theme, Record<TimelineTone, { text: string; dot: string }>> = {
+  dark: {
+    neutral: { text: 'text-[#888]',               dot: 'bg-[#555]' },
+    text:    { text: 'text-sky-300/90',           dot: 'bg-sky-400' },
+    pickup:  { text: 'text-violet-300',           dot: 'bg-violet-400' },
+    undo:    { text: 'text-amber-300 font-semibold', dot: 'bg-amber-400' },
+  },
+  light: {
+    neutral: { text: 'text-[#6B6358]',            dot: 'bg-[#A89F94]' },
+    text:    { text: 'text-sky-700',              dot: 'bg-sky-600' },
+    pickup:  { text: 'text-violet-700',           dot: 'bg-violet-600' },
+    undo:    { text: 'text-amber-800 font-semibold', dot: 'bg-amber-600' },
+  },
 }
 
 const STATUS_CONFIG: Record<Theme, Record<string, { label: string; badge: string }>> = {
@@ -418,8 +442,9 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
                 }
                 onClick={() => {
                   // Confirm before marking picked up; un-marking needs no prompt
+                  // (the server moves it back to Active and notes it in History)
                   if (!order.pickedUp) { setConfirmPickup(true); return }
-                  patchOrder({ pickedUp: false, status: order.status }, 'pickedUp')
+                  patchOrder({ pickedUp: false }, 'pickedUp')
                 }}
               />
               <ActionButton
@@ -451,39 +476,22 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
             </div>
           )}
 
-          {/* Meta */}
-          <div className={`space-y-2 pt-2 border-t ${light ? 'border-black/[0.08]' : 'border-white/[0.06]'}`}>
-            <div className="flex justify-between">
-              <span className={`text-xs ${light ? 'text-[#8A847C]' : 'text-[#666]'}`}>Created</span>
-              <span className={`text-xs ${light ? 'text-[#4A443C]' : 'text-[#aaa]'}`}>
-                {new Date(order.createdAt).toLocaleString()}
-              </span>
-            </div>
-            {order.pickedUpAt && (
-              <div className="flex justify-between">
-                <span className={`text-xs ${light ? 'text-[#8A847C]' : 'text-[#666]'}`}>Picked Up</span>
-                <span className={`text-xs ${light ? 'text-[#4A443C]' : 'text-[#aaa]'}`}>
-                  {new Date(order.pickedUpAt).toLocaleString()}
-                </span>
-              </div>
-            )}
-            {(() => {
-              const times: string[] = Array.isArray(order.notifiedAt)
-                ? order.notifiedAt
-                : order.notifiedAt
-                  ? [order.notifiedAt as unknown as string]
-                  : []
-              return times.map((t, i) => (
-                <div key={t} className="flex justify-between">
-                  <span className={`text-xs ${light ? 'text-[#8A847C]' : 'text-[#666]'}`}>
-                    SMS {times.length > 1 ? `#${i + 1}` : 'Sent'}
+          {/* History — everything that happened to this order, oldest first */}
+          <div className={`pt-4 border-t ${light ? 'border-black/[0.08]' : 'border-white/[0.06]'}`}>
+            <p className={`text-[10px] uppercase tracking-[0.18em] font-medium mb-3 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>History</p>
+            <div className="space-y-2">
+              {orderTimeline(order).map((entry, i) => (
+                <div key={`${entry.at}-${i}`} className="flex items-center justify-between gap-3">
+                  <span className={`flex items-center gap-2 text-xs ${HISTORY_TONES[theme][entry.tone].text}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${HISTORY_TONES[theme][entry.tone].dot}`} />
+                    {entry.label}
                   </span>
-                  <span className={`text-xs ${light ? 'text-sky-700/80' : 'text-sky-400/70'}`}>
-                    {new Date(t).toLocaleString()}
+                  <span className={`text-xs shrink-0 ${light ? 'text-[#4A443C]' : 'text-[#aaa]'}`}>
+                    {formatWhen(entry.at)}
                   </span>
                 </div>
-              ))
-            })()}
+              ))}
+            </div>
           </div>
         </div>
       </div>
