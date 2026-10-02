@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import gsap from 'gsap'
 import { Order, OrderStatus, SmsThread } from '@/lib/types'
 import { phoneDigits } from '@/lib/phone'
+import { lastCounterActivity } from '@/lib/orderHistory'
 import OrderDetail from './OrderDetail'
 import { useMessages } from './MessagesProvider'
 import MessagesPanel from './MessagesPanel'
@@ -207,12 +208,15 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
     const list = dateFilter
       ? tabAndSearch.filter(o => orderDate(o, dateFilter.mode) === dateFilter.date)
       : tabAndSearch
+    if (tab === 'all') {
+      // Latest drop-offs and pickups first (each order's time worked out once, not per comparison)
+      return list
+        .map(o => ({ o, at: lastCounterActivity(o) }))
+        .sort((a, b) => b.at - a.at)
+        .map(({ o }) => o)
+    }
     return [...list].sort((a, b) => {
-      if (tab === 'all') {
-        // Most recently created first
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      }
-      // All other tabs: soonest due / most overdue first
+      // Other tabs: soonest due / most overdue first
       if (!a.dueDate && !b.dueDate) return 0
       if (!a.dueDate) return 1
       if (!b.dueDate) return -1

@@ -22,6 +22,17 @@ export function pickupChange(
     : { status: 'active', history }
 }
 
+/**
+ * When an order last had activity at the counter, in ms: dropped off (created) or a
+ * pickup change (picked up, or a pickup undone). The All tab lists the most recent first.
+ */
+export function lastCounterActivity(order: Pick<Order, 'createdAt' | 'pickedUpAt' | 'history'>): number {
+  let latest = Date.parse(order.createdAt) || 0
+  if (order.pickedUpAt) latest = Math.max(latest, Date.parse(order.pickedUpAt) || 0)
+  for (const e of order.history ?? []) latest = Math.max(latest, Date.parse(e.at) || 0)
+  return latest
+}
+
 export type TimelineTone = 'neutral' | 'text' | 'pickup' | 'undo'
 
 export interface TimelineEntry {
