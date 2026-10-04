@@ -221,17 +221,18 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
     return list
   }, [allOrders, tab, search])
 
-  // Today view: what was dropped off and picked up on the shown day, in the current tab and search
+  // Today view: everything dropped off and picked up on the shown day. The counts are the
+  // day's totals on every tab; the list below still follows the tab and search.
   const shownDay = activityDay === 'today' ? today : activityDay
   const dayActivities = useMemo(() => {
     if (!shownDay) return null
     const found = new Map<string, DayActivity>()
-    for (const o of tabAndSearch) {
+    for (const o of allOrders) {
       const a = dayActivity(o, shownDay)
       if (a) found.set(o.id, a)
     }
     return found
-  }, [tabAndSearch, shownDay])
+  }, [allOrders, shownDay])
 
   const dayCounts = useMemo(() => {
     const counts = { dropoffs: 0, pickups: 0 }
@@ -245,10 +246,10 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
   // The Today view's calendar: drop-offs + pickups under each day, split for the picked day
   const activityCalendar = useMemo(() => {
     if (!pickingActivityDay) return null
-    const byDay = countsByDay(tabAndSearch)
+    const byDay = countsByDay(allOrders)
     const totals = Object.fromEntries(Object.entries(byDay).map(([day, c]) => [day, c.dropoffs + c.pickups]))
     return { byDay, totals }
-  }, [pickingActivityDay, tabAndSearch])
+  }, [pickingActivityDay, allOrders])
 
   // …then the Today view or the picked day (by due date or drop-off date), then sort
   const orders = useMemo(() => {
@@ -306,6 +307,17 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
     animateRowsRef.current = true
     setTab(t)
     if (selected) setSelected(null)
+  }
+
+  // Calendar: one day's orders. Lands on the tab that shows exactly what the calendar
+  // counted — Due: not ready yet (Active); Drop-off: everything dropped off (All).
+  function showDate(mode: DateMode, date: string) {
+    animateRowsRef.current = true
+    setTab(DATE_MODES[mode].tab)
+    setSearch('')
+    setActivityDay(null)
+    setDateMode(mode)
+    setDateFilter({ mode, date })
   }
 
   // Today button: everything dropped off or picked up today, across all orders
@@ -566,7 +578,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                 <DateModeSwitch
                   mode={dateFilter.mode}
                   theme={theme}
-                  onChange={m => { setDateMode(m); setDateFilter(f => f && { ...f, mode: m }) }}
+                  onChange={m => showDate(m, dateFilter.date)}
                 />
                 {/* The day and its × stay together; the year is left off on phone-width screens */}
                 <div className="flex items-center gap-1">
@@ -623,7 +635,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                     {shownDay
                       ? `No ${activityShow === 'dropoffs' ? 'drop-offs' : activityShow === 'pickups' ? 'pickups' : 'drop-offs or pickups'} on ${new Date(shownDay + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}${search || tab !== 'all' ? ' here' : ''}`
                       : dateFilter
-                      ? `Nothing ${DATE_MODES[dateFilter.mode].verb} on ${new Date(dateFilter.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}${search || tab !== 'all' ? ' here' : ''}`
+                      ? `Nothing ${DATE_MODES[dateFilter.mode].verb} on ${new Date(dateFilter.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}${search || tab !== DATE_MODES[dateFilter.mode].tab ? ' here' : ''}`
                       : search ? 'Try a different search' : 'Orders will appear here'}
                   </p>
                 </div>
@@ -744,11 +756,11 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
 
       {pickingDate && (
         <OrderDatePicker
-          orders={tabAndSearch}
+          orders={allOrders}
           mode={dateFilter?.mode ?? dateMode}
           date={dateFilter?.date ?? ''}
           theme={theme}
-          onApply={(mode, date) => { setDateMode(mode); setDateFilter({ mode, date }); setActivityDay(null); setPickingDate(false) }}
+          onApply={(mode, date) => { showDate(mode, date); setPickingDate(false) }}
           onClose={() => setPickingDate(false)}
         />
       )}

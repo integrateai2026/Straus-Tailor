@@ -2,14 +2,16 @@
 
 import { useMemo, useState } from 'react'
 import { Order } from '@/lib/types'
+import { dropoffsByDay, notReadyByDueDate } from '@/lib/dayActivity'
 import DateCalendar from './DateCalendar'
 
 type Theme = 'dark' | 'light'
 export type DateMode = 'due' | 'dropoff'
 
-export const DATE_MODES: Record<DateMode, { label: string; title: string; verb: string }> = {
-  due:     { label: 'Due',      title: 'Due date',      verb: 'due' },
-  dropoff: { label: 'Drop-off', title: 'Drop-off date', verb: 'dropped off' },
+// unit: what the number under each day counts. tab: where picking a day shows exactly those orders.
+export const DATE_MODES: Record<DateMode, { label: string; title: string; verb: string; unit: string; tab: 'active' | 'all' }> = {
+  due:     { label: 'Due',      title: 'Due date',      verb: 'due',         unit: 'not ready',   tab: 'active' },
+  dropoff: { label: 'Drop-off', title: 'Drop-off date', verb: 'dropped off', unit: 'dropped off', tab: 'all' },
 }
 
 export function orderDate(order: Order, mode: DateMode): string {
@@ -47,11 +49,12 @@ export function DateModeSwitch({ mode, onChange, theme }: {
 }
 
 /**
- * Calendar for choosing which day's orders to show. The switch chooses due date or
- * drop-off date; the number under each day is how many orders that would show.
+ * Calendar for choosing which day's orders to show. Under each day: on the Due side, how
+ * many orders due that day aren't ready yet; on the Drop-off side, how many were dropped
+ * off. The numbers are the same on every tab.
  */
 export default function OrderDatePicker({ orders, mode, date, theme, onApply, onClose }: {
-  orders: Order[]  // orders in the current tab and search, before the date filter
+  orders: Order[]  // every order
   mode: DateMode
   date: string
   theme: Theme
@@ -60,21 +63,18 @@ export default function OrderDatePicker({ orders, mode, date, theme, onApply, on
 }) {
   const [pendingMode, setPendingMode] = useState(mode)
 
-  const counts = useMemo(() => {
-    const byDay: Record<string, number> = {}
-    for (const o of orders) {
-      const day = orderDate(o, pendingMode)
-      if (day) byDay[day] = (byDay[day] ?? 0) + 1
-    }
-    return byDay
-  }, [orders, pendingMode])
+  const counts = useMemo(
+    () => (pendingMode === 'due' ? notReadyByDueDate(orders) : dropoffsByDay(orders)),
+    [orders, pendingMode],
+  )
+  const unit = DATE_MODES[pendingMode].unit
 
   return (
     <DateCalendar
       value={date}
       title={DATE_MODES[pendingMode].title}
       counts={counts}
-      countUnit={{ one: 'order', other: 'orders' }}
+      countUnit={{ one: unit, other: unit }}
       allowPast
       palette={theme === 'light' ? 'paper' : 'dark'}
       top={<DateModeSwitch mode={pendingMode} onChange={setPendingMode} theme={theme} />}

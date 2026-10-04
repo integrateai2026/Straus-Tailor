@@ -1,5 +1,25 @@
-// Pure: one day at the counter — what was dropped off and what was picked up — for the Today view
+// Pure: counting orders by day — the staff calendar's numbers, and the Today view's drop-offs and pickups.
+// The numbers never depend on the tab or search, so they read the same everywhere.
 import type { Order } from './types'
+
+/** Not ready = still being worked on (the Active tab). Same rule as the customer form's Need By counts. */
+export function isNotReady(order: Pick<Order, 'status' | 'pickedUp'>): boolean {
+  return order.status === 'active' && !order.pickedUp
+}
+
+/** Orders not ready yet, per due date — the calendar's Due numbers */
+export function notReadyByDueDate(orders: Pick<Order, 'status' | 'pickedUp' | 'dueDate'>[]): Record<string, number> {
+  const days: Record<string, number> = {}
+  for (const o of orders) if (o.dueDate && isNotReady(o)) days[o.dueDate] = (days[o.dueDate] ?? 0) + 1
+  return days
+}
+
+/** Orders dropped off, per drop-off date (the date on the order) — the calendar's Drop-off numbers */
+export function dropoffsByDay(orders: Pick<Order, 'dropoffDate'>[]): Record<string, number> {
+  const days: Record<string, number> = {}
+  for (const o of orders) if (o.dropoffDate) days[o.dropoffDate] = (days[o.dropoffDate] ?? 0) + 1
+  return days
+}
 
 type CounterOrder = Pick<Order, 'dropoffDate' | 'createdAt' | 'pickedUp' | 'pickedUpAt'>
 
