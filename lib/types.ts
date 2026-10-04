@@ -32,6 +32,14 @@ export interface Order {
   tailors?: string[]   // who worked on it (optional)
 }
 
+// The staff dashboard's refresh: just what changed since its last one (GET /api/orders?since=)
+export interface OrderChanges {
+  full: boolean    // true: `orders` is every order (replace the list); false: only changed ones (merge)
+  orders: Order[]
+  cursor: string   // send back as `since` next time
+  total: number    // how many orders exist, so the dashboard can tell it's out of step
+}
+
 export interface CreateOrderInput {
   customerName: string
   phone: string

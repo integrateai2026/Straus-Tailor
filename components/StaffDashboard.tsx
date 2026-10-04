@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
-import { Order, OrderStatus, SmsThread } from '@/lib/types'
+import { Order, OrderChanges, OrderStatus, SmsThread } from '@/lib/types'
+import { applyOrderChanges } from '@/lib/orderSync'
 import { phoneDigits } from '@/lib/phone'
 import { lastCounterActivity } from '@/lib/orderHistory'
-import { countsByDay, dayActivity, DayActivity, timeOfDay, todayISO } from '@/lib/dayActivity'
+import { countsByDay, dayActivity, DayActivity, localDay, timeOfDay, todayISO } from '@/lib/dayActivity'
 import OrderDetail from './OrderDetail'
 import { useMessages } from './MessagesProvider'
 import MessagesPanel from './MessagesPanel'
@@ -50,7 +51,7 @@ function formatPhone(raw: string): string {
 
 function getDueInfo(iso: string, theme: Theme): { top: string; bottom: string; color: string; bg: string; ring: string; overdue: boolean } {
   const light = theme === 'light'
-  if (!iso) return { top: '—', bottom: '', color: light ? 'text-[#8A847C]' : 'text-[#555]', bg: light ? 'bg-black/[0.05]' : 'bg-[#1a1a1a]', ring: '', overdue: false }
+  if (!iso) return { top: '—', bottom: '', color: light ? 'text-[#8A847C]' : 'text-[#8A8A8A]', bg: light ? 'bg-black/[0.05]' : 'bg-[#1a1a1a]', ring: '', overdue: false }
   const today = new Date(); today.setHours(0, 0, 0, 0)
   const due = new Date(iso + 'T00:00:00')
   const diff = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
@@ -69,10 +70,20 @@ function getDueInfo(iso: string, theme: Theme): { top: string; bottom: string; c
     : { top: `${diff}d`,           bottom: 'left',  color: 'text-amber-300/70', bg: 'bg-amber-500/8',   ring: '', overdue: false }
   if (diff <= 7)  return light
     ? { top: `${diff}d`,           bottom: 'left',  color: 'text-[#6B6358]',    bg: 'bg-black/[0.05]',  ring: '', overdue: false }
-    : { top: `${diff}d`,           bottom: 'left',  color: 'text-[#777]',       bg: 'bg-[#1e1e1e]',    ring: '', overdue: false }
+    : { top: `${diff}d`,           bottom: 'left',  color: 'text-[#A3A3A3]',       bg: 'bg-[#1e1e1e]',    ring: '', overdue: false }
   return light
     ? { top: `${diff}d`,           bottom: 'left',  color: 'text-[#8A847C]',    bg: 'bg-black/[0.04]',  ring: '', overdue: false }
-    : { top: `${diff}d`,           bottom: 'left',  color: 'text-[#555]',       bg: 'bg-[#181818]',    ring: '', overdue: false }
+    : { top: `${diff}d`,           bottom: 'left',  color: 'text-[#8A8A8A]',       bg: 'bg-[#181818]',    ring: '', overdue: false }
+}
+
+// Picked-up orders show when they were picked up instead of a due countdown (never "late")
+function getPickupInfo(pickedUpAt: string | undefined, today: string): { top: string; bottom: string } {
+  const day = localDay(pickedUpAt)
+  if (!day) return { top: 'Done', bottom: '' }
+  return {
+    top: day === today ? 'Today' : new Date(day + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    bottom: 'picked up',
+  }
 }
 
 interface Props { onCustomerForm?: () => void }
@@ -162,31 +173,40 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
   const headerRef = useRef<HTMLDivElement>(null)
   const tabsRef   = useRef<HTMLDivElement>(null)
   const listRef   = useRef<HTMLDivElement>(null)
-  const lastDataRef    = useRef('')      // fingerprint of last fetched data — skip re-renders when nothing changed
+  const cursorRef      = useRef<string | null>(null) // where the last refresh left off; null = load everything
+  const lastFullRef    = useRef(0)       // when every order was last loaded
+  const ordersRef      = useRef<Order[]>([]) // the current list, to merge changes into
   const animateRowsRef = useRef(true)    // only animate rows on real navigation, never on background refreshes
   const fetchSeqRef    = useRef(0)       // ignore out-of-order responses from overlapping fetches
 
-  // Fetch everything once; tabs and search filter instantly on-device.
-  const fetchOrders = useCallback(async () => {
+  useEffect(() => { ordersRef.current = allOrders }, [allOrders])
+
+  // Load every order once, then only what changed; tabs and search filter instantly on-device.
+  // Safety nets: everything reloads every 30 minutes, on Refresh, and whenever this device's
+  // order count doesn't match the server's.
+  const fetchOrders = useCallback(async (reloadAll = false) => {
     // Skip background polls while hidden — but never block the FIRST load,
     // some webviews misreport visibility and would strand the spinner
-    if (document.hidden && lastDataRef.current) return
+    if (document.hidden && cursorRef.current) return
+    const everything = reloadAll || !cursorRef.current || Date.now() - lastFullRef.current > 30 * 60_000
     const seq = ++fetchSeqRef.current
     try {
-      const res = await fetch('/api/orders')
+      const res = await fetch(`/api/orders?since=${everything ? '' : encodeURIComponent(cursorRef.current ?? '')}`)
       if (seq !== fetchSeqRef.current) return // superseded by a newer fetch
       if (res.status === 401) { window.location.reload(); return } // session expired — back to login
       if (!res.ok) return
-      // Compare the raw response text — skips JSON parsing entirely when nothing changed,
-      // so background polls cost almost nothing on the tablet
-      const text = await res.text()
+      const data: OrderChanges = await res.json()
       if (seq !== fetchSeqRef.current) return
-      if (text !== lastDataRef.current) {
-        const data = JSON.parse(text)
-        if (!Array.isArray(data)) return
-        lastDataRef.current = text
-        setAllOrders(data)
+      if (!data || !Array.isArray(data.orders) || typeof data.cursor !== 'string') return
+      // Same array back when nothing really changed — no redraw
+      const next = applyOrderChanges(ordersRef.current, data)
+      if (next !== ordersRef.current) {
+        ordersRef.current = next
+        setAllOrders(next)
       }
+      if (data.full) lastFullRef.current = Date.now()
+      // Out of step with the server (e.g. an order removed by hand): reload everything next time
+      cursorRef.current = next.length === data.total ? data.cursor : null
       setLoading(false) // only clear the spinner once real data has arrived
     } catch {
       // network hiccup or malformed response — keep showing current data; next poll retries
@@ -195,7 +215,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
 
   useEffect(() => {
     fetchOrders()
-    const interval = setInterval(fetchOrders, 15000)
+    const interval = setInterval(() => fetchOrders(), 15000)
     const onVisible = () => { if (!document.hidden) fetchOrders() }
     document.addEventListener('visibilitychange', onVisible)
     return () => {
@@ -385,7 +405,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
         <div className="flex flex-wrap items-center justify-between gap-3 max-w-3xl mx-auto">
           <div>
             <p className={`text-sm font-semibold tracking-wide ${light ? 'text-[#1C1A18]' : 'text-white'}`}>Staff Dashboard</p>
-            <p className={`text-[11px] mt-0.5 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>Straus Tailor Shop</p>
+            <p className={`text-[11px] mt-0.5 ${light ? 'text-[#8A847C]' : 'text-[#8A8A8A]'}`}>Straus Tailor Shop</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {/* Theme toggle */}
@@ -490,7 +510,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                 className={`flex-1 h-11 rounded-lg text-xs font-semibold transition-all ${
                   tab === key
                     ? (light ? 'bg-[#1C1A18] text-[#F6F1E9]' : 'bg-white text-black')
-                    : (light ? 'text-[#8A847C] hover:text-[#4A443C]' : 'text-[#666] hover:text-[#aaa]')
+                    : (light ? 'text-[#8A847C] hover:text-[#4A443C]' : 'text-[#999] hover:text-white')
                 }`}>
                 {label}
               </button>
@@ -514,16 +534,16 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
             {/* Search + pick a day */}
             <div className="flex gap-2 mb-3">
               <div className={`flex-1 min-w-0 flex items-center gap-3 border rounded-xl px-4 h-11 ${light ? 'bg-[#FDFAF5] border-black/[0.10]' : 'bg-[#111] border-white/[0.06]'}`}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={light ? '#8A847C' : '#555'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={light ? '#8A847C' : '#8A8A8A'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
                 <input value={search} onChange={e => setSearch(e.target.value)}
                   placeholder="Search by name, phone, or order ID…"
-                  className={`flex-1 min-w-0 bg-transparent text-sm outline-none ${light ? 'text-[#1C1A18] placeholder-[#A89F94]' : 'text-white placeholder-[#444]'}`}/>
+                  className={`flex-1 min-w-0 bg-transparent text-sm outline-none ${light ? 'text-[#1C1A18] placeholder-[#A89F94]' : 'text-white placeholder-[#8A8A8A]'}`}/>
                 {search && (
                   <button onClick={() => setSearch('')}
                     aria-label="Clear search"
-                    className={`w-11 h-11 -mr-4 shrink-0 flex items-center justify-center transition-colors ${light ? 'text-[#A89F94] hover:text-[#6B6358]' : 'text-[#444] hover:text-[#888]'}`}>
+                    className={`w-11 h-11 -mr-4 shrink-0 flex items-center justify-center transition-colors ${light ? 'text-[#A89F94] hover:text-[#6B6358]' : 'text-[#8A8A8A] hover:text-white'}`}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
@@ -548,7 +568,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                 className={`shrink-0 w-11 h-11 rounded-xl border flex items-center justify-center transition-colors ${
                   dateFilter
                     ? (light ? 'bg-[#8B7355]/[0.12] border-[#8B7355]/45 text-[#6B5A43]' : 'bg-[#C4A882]/[0.12] border-[#C4A882]/40 text-[#C4A882]')
-                    : (light ? 'bg-[#FDFAF5] border-black/[0.10] text-[#8A847C] hover:text-[#4A443C]' : 'bg-[#111] border-white/[0.06] text-[#666] hover:text-[#aaa]')
+                    : (light ? 'bg-[#FDFAF5] border-black/[0.10] text-[#8A847C] hover:text-[#4A443C]' : 'bg-[#111] border-white/[0.06] text-[#999] hover:text-white')
                 }`}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -595,7 +615,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                     onClick={() => setDateFilter(null)}
                     aria-label="Show all dates"
                     title="Show all dates"
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${light ? 'text-[#8A847C] hover:bg-black/[0.05] hover:text-[#1C1A18]' : 'text-[#777] hover:bg-white/[0.05] hover:text-white'}`}
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${light ? 'text-[#8A847C] hover:bg-black/[0.05] hover:text-[#1C1A18]' : 'text-[#A3A3A3] hover:bg-white/[0.05] hover:text-white'}`}
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -607,11 +627,11 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
 
             {/* Meta row */}
             <div className="flex items-center justify-between mb-2.5">
-              <p className={`text-[11px] ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>
+              <p className={`text-[11px] ${light ? 'text-[#8A847C]' : 'text-[#8A8A8A]'}`}>
                 {orders.length} {orders.length === 1 ? 'order' : 'orders'}
               </p>
-              <button onClick={fetchOrders}
-                className={`text-[11px] py-2.5 px-2.5 -my-2.5 -mx-2.5 transition-colors flex items-center gap-1.5 ${light ? 'text-[#A89F94] hover:text-[#4A443C]' : 'text-[#444] hover:text-[#888]'}`}>
+              <button onClick={() => fetchOrders(true)}
+                className={`text-[11px] py-2.5 px-2.5 -my-2.5 -mx-2.5 transition-colors flex items-center gap-1.5 ${light ? 'text-[#A89F94] hover:text-[#4A443C]' : 'text-[#8A8A8A] hover:text-white'}`}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="23 4 23 10 17 10"/>
                   <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -624,14 +644,14 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
             <div ref={listRef} className="flex-1 space-y-2">
               {loading ? (
                 <div className="flex items-center justify-center py-16">
-                  <svg className={`animate-spin ${light ? 'text-[#C9C2B6]' : 'text-[#333]'}`} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg className={`animate-spin ${light ? 'text-[#C9C2B6]' : 'text-[#999]'}`} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                   </svg>
                 </div>
               ) : orders.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <p className={`text-sm ${light ? 'text-[#8A847C]' : 'text-[#444]'}`}>No orders found</p>
-                  <p className={`text-xs mt-1 ${light ? 'text-[#A89F94]' : 'text-[#555]'}`}>
+                  <p className={`text-sm ${light ? 'text-[#8A847C]' : 'text-[#A3A3A3]'}`}>No orders found</p>
+                  <p className={`text-xs mt-1 ${light ? 'text-[#A89F94]' : 'text-[#8A8A8A]'}`}>
                     {shownDay
                       ? `No ${activityShow === 'dropoffs' ? 'drop-offs' : activityShow === 'pickups' ? 'pickups' : 'drop-offs or pickups'} on ${new Date(shownDay + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}${search || tab !== 'all' ? ' here' : ''}`
                       : dateFilter
@@ -640,11 +660,10 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                   </p>
                 </div>
               ) : orders.slice(0, visibleCount).map((order) => {
-                const dueRaw = getDueInfo(order.dueDate, theme)
-                // Completed orders are done — never show overdue styling
+                // Completed orders are done: the box shows when they were picked up, never "late"
                 const due = order.status === 'completed'
-                  ? { ...dueRaw, overdue: false, color: light ? 'text-[#8A847C]' : 'text-[#555]', bg: light ? 'bg-black/[0.04]' : 'bg-[#181818]', ring: '' }
-                  : dueRaw
+                  ? { ...getPickupInfo(order.pickedUpAt, today), overdue: false, color: light ? 'text-[#8A847C]' : 'text-[#8A8A8A]', bg: light ? 'bg-black/[0.04]' : 'bg-[#181818]', ring: '' }
+                  : getDueInfo(order.dueDate, theme)
                 const unreadTexts = unreadByOrder.get(order.id) ?? 0
                 const activity = dayActivities?.get(order.id) // Today view only
                 return (
@@ -685,7 +704,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                             </span>
                           )}
                         </div>
-                        <p className={`text-[12px] mt-0.5 leading-tight ${light ? 'text-[#6B6358]' : 'text-[#777]'}`}>{formatPhone(order.phone)}</p>
+                        <p className={`text-[12px] mt-0.5 leading-tight ${light ? 'text-[#6B6358]' : 'text-[#A3A3A3]'}`}>{formatPhone(order.phone)}</p>
                         {activity && (
                           <p className="text-[11px] mt-1 leading-tight font-semibold">
                             {activity.dropoff && (
@@ -693,7 +712,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                                 Dropped off{activity.dropoffAt && ` ${timeOfDay(activity.dropoffAt)}`}
                               </span>
                             )}
-                            {activity.dropoff && activity.pickup && <span className={light ? 'text-[#A89F94]' : 'text-[#555]'}> · </span>}
+                            {activity.dropoff && activity.pickup && <span className={light ? 'text-[#A89F94]' : 'text-[#8A8A8A]'}> · </span>}
                             {activity.pickupAt && (
                               <span className={light ? 'text-emerald-700' : 'text-emerald-400'}>Picked up {timeOfDay(activity.pickupAt)}</span>
                             )}
@@ -718,7 +737,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                           <span className={`text-[9px] px-2 py-[2px] rounded-full font-medium border ${
                             light
                               ? 'bg-black/[0.04] text-[#8A847C] border-black/[0.08]'
-                              : 'bg-white/[0.04] text-[#555] border-white/[0.07]'
+                              : 'bg-white/[0.04] text-[#8A8A8A] border-white/[0.07]'
                           }`}>Unpaid</span>
                         )}
                       </div>
@@ -739,7 +758,7 @@ export default function StaffDashboard({ onCustomerForm }: Props) {
                   className={`w-full h-11 rounded-2xl text-xs font-semibold border transition-all ${
                     light
                       ? 'bg-[#FDFAF5] border-black/[0.08] text-[#6B6358] hover:border-black/[0.16] hover:text-[#4A443C]'
-                      : 'bg-[#111] border-white/[0.06] text-[#777] hover:border-white/[0.12] hover:text-[#aaa]'
+                      : 'bg-[#111] border-white/[0.06] text-[#A3A3A3] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
                   Show more — {Math.min(visibleCount, orders.length)} of {orders.length} shown

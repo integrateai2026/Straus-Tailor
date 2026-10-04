@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse, after } from 'next/server'
-import { getAllOrders, createOrder } from '@/lib/store'
+import { getAllOrders, getOrderChanges, createOrder } from '@/lib/store'
 import { CreateOrderInput } from '@/lib/types'
 import { sendSMS } from '@/lib/twilio'
 import { requireAuth } from '@/lib/session'
@@ -12,6 +12,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const { searchParams } = new URL(req.url)
+
+  // The dashboard's lighter refresh: ?since=<cursor> (empty = everything)
+  if (searchParams.has('since')) {
+    return NextResponse.json(await getOrderChanges(searchParams.get('since') || null))
+  }
+
+  // Every order as a plain list (a dashboard still running the older code)
   const status = searchParams.get('status') ?? undefined
   const query  = searchParams.get('q')      ?? undefined
 

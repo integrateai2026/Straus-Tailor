@@ -116,11 +116,11 @@ function TailorField({ value, theme, saving, onSave }: {
         <span className={`text-sm ${light ? 'text-[#6B6358]' : 'text-[#888]'}`}>Tailor</span>
         <span className="flex items-center gap-2 min-w-0">
           {saving ? (
-            <svg className={`animate-spin ${light ? 'text-[#8A847C]' : 'text-[#666]'}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+            <svg className={`animate-spin ${light ? 'text-[#8A847C]' : 'text-[#999]'}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
           ) : names.length > 0 ? (
             <span className={`text-sm font-semibold text-right ${light ? 'text-[#1C1A18]' : 'text-white'}`}>{names.join(', ')}</span>
           ) : (
-            <span className={`text-sm italic ${light ? 'text-[#A89F94]' : 'text-[#555]'}`}>Not set</span>
+            <span className={`text-sm italic ${light ? 'text-[#A89F94]' : 'text-[#8A8A8A]'}`}>Not set</span>
           )}
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={light ? '#8A847C' : '#666'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
             className="shrink-0 transition-transform" style={{ transform: open ? 'rotate(180deg)' : undefined }}>
@@ -295,7 +295,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
             ? ACTIVE_STYLES[theme][activeColor]
             : (light
                 ? 'bg-transparent border-black/[0.12] text-[#6B6358] hover:border-black/[0.25] hover:text-[#1C1A18]'
-                : 'bg-transparent border-white/[0.08] text-[#777] hover:border-white/[0.16] hover:text-white')
+                : 'bg-transparent border-white/[0.08] text-[#A3A3A3] hover:border-white/[0.16] hover:text-white')
         }`}
       >
         {isLoading ? (
@@ -367,7 +367,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
                   { label: 'Total Amount', key: 'totalAmount',  type: 'number' },
                 ].map(({ label, key, type }) => (
                   <div key={key}>
-                    <p className={`text-[10px] uppercase tracking-widest mb-1 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>{label}</p>
+                    <p className={`text-[10px] uppercase tracking-widest mb-1 ${light ? 'text-[#8A847C]' : 'text-[#8A8A8A]'}`}>{label}</p>
                     <input
                       type={type}
                       value={editForm[key as keyof typeof editForm]}
@@ -382,7 +382,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
                   </div>
                 ))}
                 <div>
-                  <p className={`text-[10px] uppercase tracking-widest mb-1 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>Notes</p>
+                  <p className={`text-[10px] uppercase tracking-widest mb-1 ${light ? 'text-[#8A847C]' : 'text-[#8A8A8A]'}`}>Notes</p>
                   <textarea
                     value={editForm.notes}
                     onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
@@ -392,10 +392,10 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
                     className={`w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition-colors resize-none leading-relaxed ${
                       light
                         ? 'bg-black/[0.04] border-black/[0.12] text-[#1C1A18] placeholder-[#A89F94] focus:border-black/[0.35]'
-                        : 'bg-white/[0.06] border-white/[0.12] text-white placeholder-[#555] focus:border-white/[0.3]'
+                        : 'bg-white/[0.06] border-white/[0.12] text-white placeholder-[#8A8A8A] focus:border-white/[0.3]'
                     }`}
                   />
-                  <p className={`text-[10px] text-right mt-0.5 ${light ? 'text-[#A89F94]' : 'text-[#555]'}`}>{editForm.notes.length}/1000</p>
+                  <p className={`text-[10px] text-right mt-0.5 ${light ? 'text-[#A89F94]' : 'text-[#8A8A8A]'}`}>{editForm.notes.length}/1000</p>
                 </div>
                 <button
                   onClick={saveEdits}
@@ -431,11 +431,11 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
                   onSave={names => patchOrder({ tailors: names }, 'tailors')}
                 />
                 <div className={`mt-3 rounded-xl border px-4 py-3 ${light ? 'bg-black/[0.03] border-black/[0.08]' : 'bg-white/[0.03] border-white/[0.06]'}`}>
-                  <p className={`text-[10px] uppercase tracking-widest font-medium mb-1 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>Notes</p>
+                  <p className={`text-[10px] uppercase tracking-widest font-medium mb-1 ${light ? 'text-[#8A847C]' : 'text-[#8A8A8A]'}`}>Notes</p>
                   {order.notes?.trim() ? (
                     <p className={`text-sm whitespace-pre-wrap break-words leading-relaxed ${light ? 'text-[#1C1A18]' : 'text-white'}`}>{order.notes}</p>
                   ) : (
-                    <p className={`text-sm italic ${light ? 'text-[#A89F94]' : 'text-[#555]'}`}>No notes — tap Edit to add</p>
+                    <p className={`text-sm italic ${light ? 'text-[#A89F94]' : 'text-[#8A8A8A]'}`}>No notes — tap Edit to add</p>
                   )}
                 </div>
               </>
@@ -456,7 +456,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
               <span className={`text-xs px-3 py-1 rounded-full border font-medium ${
                 light
                   ? 'bg-black/[0.04] text-[#8A847C] border-black/[0.09]'
-                  : 'bg-white/[0.05] text-[#777] border-white/[0.09]'
+                  : 'bg-white/[0.05] text-[#A3A3A3] border-white/[0.09]'
               }`}>
                 Unpaid
               </span>
@@ -482,7 +482,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
               <span className={`text-xs px-3 py-1 rounded-full border font-medium ${
                 light
                   ? 'bg-black/[0.04] text-[#8A847C] border-black/[0.09]'
-                  : 'bg-white/[0.05] text-[#777] border-white/[0.09]'
+                  : 'bg-white/[0.05] text-[#A3A3A3] border-white/[0.09]'
               }`}>
                 No SMS Consent
               </span>
@@ -491,7 +491,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
 
           {/* Actions */}
           <div>
-            <p className={`text-[10px] uppercase tracking-[0.18em] font-medium mb-3 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>Actions</p>
+            <p className={`text-[10px] uppercase tracking-[0.18em] font-medium mb-3 ${light ? 'text-[#8A847C]' : 'text-[#8A8A8A]'}`}>Actions</p>
             <div className="grid grid-cols-2 gap-2">
               <ActionButton
                 label={order.paid ? 'Paid ✓' : 'Mark Paid'}
@@ -568,7 +568,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
           {/* Texts with the customer (needs a full phone number) */}
           {phoneDigits(order.phone).length >= 10 && (
             <div ref={messagesRef} className="scroll-mt-4">
-              <p className={`text-[10px] uppercase tracking-[0.18em] font-medium mb-3 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>Messages</p>
+              <p className={`text-[10px] uppercase tracking-[0.18em] font-medium mb-3 ${light ? 'text-[#8A847C]' : 'text-[#8A8A8A]'}`}>Messages</p>
               <MessageThread
                 phone={phoneDigits(order.phone)}
                 orderId={order.id}
@@ -581,7 +581,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
 
           {/* History — everything that happened to this order, oldest first */}
           <div className={`pt-4 border-t ${light ? 'border-black/[0.08]' : 'border-white/[0.06]'}`}>
-            <p className={`text-[10px] uppercase tracking-[0.18em] font-medium mb-3 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>History</p>
+            <p className={`text-[10px] uppercase tracking-[0.18em] font-medium mb-3 ${light ? 'text-[#8A847C]' : 'text-[#8A8A8A]'}`}>History</p>
             <div className="space-y-2">
               {orderTimeline(order).map((entry, i) => (
                 <div key={`${entry.at}-${i}`} className="flex items-center justify-between gap-3">

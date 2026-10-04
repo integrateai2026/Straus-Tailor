@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { Order, OrderEvent, CreateOrderInput, UpdateOrderInput } from './types'
+import { Order, OrderChanges, OrderEvent, CreateOrderInput, UpdateOrderInput } from './types'
 
 // Map Supabase snake_case row → camelCase Order
 function toOrder(row: Record<string, unknown>): Order {
@@ -58,6 +58,37 @@ export async function getAllOrders(status?: string, query?: string): Promise<Ord
     if (!data || data.length < PAGE) break
   }
   return rows.map(toOrder)
+}
+
+// Changes made up to a minute before the cursor are re-sent, so one that lands a moment
+// late is never missed. The dashboard merges by order id, so repeats are harmless.
+const CHANGES_OVERLAP_MS = 60_000
+
+/**
+ * The staff dashboard's refresh: only the orders changed since `since` (the cursor it got
+ * back last time) instead of every order. No cursor, or an unreadable one: every order.
+ */
+export async function getOrderChanges(since: string | null): Promise<OrderChanges> {
+  const cursor = new Date().toISOString() // taken before reading, so nothing slips between
+  const sinceMs = since ? Date.parse(since) : NaN
+  if (!Number.isNaN(sinceMs)) {
+    const [changed, all] = await Promise.all([
+      supabase.from('orders').select('*')
+        .gt('updated_at', new Date(sinceMs - CHANGES_OVERLAP_MS).toISOString())
+        .order('updated_at')
+        .limit(1000),
+      supabase.from('orders').select('id', { count: 'exact', head: true }),
+    ])
+    if (changed.error) throw new Error(changed.error.message)
+    if (all.error) throw new Error(all.error.message)
+    // 1000+ changes at once (a bulk import): simpler and safer to send everything
+    if ((changed.data ?? []).length < 1000) {
+      return { full: false, orders: (changed.data ?? []).map(toOrder), cursor, total: all.count ?? 0 }
+    }
+  }
+  // A row read twice while paging (an order added mid-read) counts once
+  const orders = [...new Map((await getAllOrders()).map(o => [o.id, o])).values()]
+  return { full: true, orders, cursor, total: orders.length }
 }
 
 export async function getOrderById(id: string): Promise<Order | undefined> {

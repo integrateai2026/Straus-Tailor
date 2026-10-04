@@ -50,14 +50,14 @@ export default function ConversationSheet({ thread, theme, onClose }: Props) {
             <p className={`text-base font-semibold truncate ${light ? 'text-[#1C1A18]' : 'text-white'}`}>
               {thread.customerName || formatPhone(thread.phone)}
             </p>
-            <p className={`text-[11px] mt-0.5 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>
+            <p className={`text-[11px] mt-0.5 ${light ? 'text-[#8A847C]' : 'text-[#8A8A8A]'}`}>
               {thread.customerName ? formatPhone(thread.phone) : 'No orders with this number'}
             </p>
           </div>
           <button
             onClick={close}
             aria-label="Close"
-            className={`w-10 h-10 -mt-1 -mr-1 shrink-0 rounded-full flex items-center justify-center transition-colors ${light ? 'text-[#A89F94] hover:text-[#1C1A18]' : 'text-[#666] hover:text-white'}`}
+            className={`w-10 h-10 -mt-1 -mr-1 shrink-0 rounded-full flex items-center justify-center transition-colors ${light ? 'text-[#A89F94] hover:text-[#1C1A18]' : 'text-[#999] hover:text-white'}`}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />

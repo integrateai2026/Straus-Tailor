@@ -38,7 +38,7 @@ export function DateModeSwitch({ mode, onChange, theme }: {
           className={`h-10 px-4 rounded-lg text-xs font-semibold transition-all ${
             mode === m
               ? (light ? 'bg-[#1C1A18] text-[#F6F1E9]' : 'bg-white text-black')
-              : (light ? 'text-[#8A847C] hover:text-[#4A443C]' : 'text-[#777] hover:text-[#bbb]')
+              : (light ? 'text-[#8A847C] hover:text-[#4A443C]' : 'text-[#A3A3A3] hover:text-white')
           }`}
         >
           {DATE_MODES[m].label}

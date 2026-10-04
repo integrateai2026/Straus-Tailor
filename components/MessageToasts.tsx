@@ -55,7 +55,7 @@ function Toast({ thread, theme, onView, onDismiss }: {
         <button
           onClick={onDismiss}
           aria-label="Dismiss"
-          className={`w-8 h-8 -mt-1 -mr-1 rounded-full flex items-center justify-center ${light ? 'text-[#A89F94] hover:text-[#1C1A18]' : 'text-[#555] hover:text-white'}`}
+          className={`w-8 h-8 -mt-1 -mr-1 rounded-full flex items-center justify-center ${light ? 'text-[#A89F94] hover:text-[#1C1A18]' : 'text-[#8A8A8A] hover:text-white'}`}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />

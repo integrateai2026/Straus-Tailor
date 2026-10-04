@@ -99,12 +99,12 @@ export default function MessagesPanel({ theme, onOpen, onClose }: Props) {
         <div className={`flex items-center justify-between px-5 py-4 border-b ${light ? 'border-black/[0.08]' : 'border-white/[0.06]'}`}>
           <div>
             <p className={`text-base font-semibold ${light ? 'text-[#1C1A18]' : 'text-white'}`}>Messages</p>
-            <p className={`text-[11px] mt-0.5 ${light ? 'text-[#8A847C]' : 'text-[#555]'}`}>Texts customers send to the shop number</p>
+            <p className={`text-[11px] mt-0.5 ${light ? 'text-[#8A847C]' : 'text-[#8A8A8A]'}`}>Texts customers send to the shop number</p>
           </div>
           <button
             onClick={() => close()}
             aria-label="Close"
-            className={`w-10 h-10 -mr-2 rounded-full flex items-center justify-center transition-colors ${light ? 'text-[#A89F94] hover:text-[#1C1A18]' : 'text-[#666] hover:text-white'}`}
+            className={`w-10 h-10 -mr-2 rounded-full flex items-center justify-center transition-colors ${light ? 'text-[#A89F94] hover:text-[#1C1A18]' : 'text-[#999] hover:text-white'}`}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -117,7 +117,7 @@ export default function MessagesPanel({ theme, onOpen, onClose }: Props) {
           {threads.length === 0 ? (
             <div className="px-6 py-12 text-center">
               <p className={`text-sm ${light ? 'text-[#6B6358]' : 'text-[#888]'}`}>No texts yet</p>
-              <p className={`text-xs mt-1 ${light ? 'text-[#A89F94]' : 'text-[#555]'}`}>
+              <p className={`text-xs mt-1 ${light ? 'text-[#A89F94]' : 'text-[#8A8A8A]'}`}>
                 When a customer texts the shop, it shows up here and on their order.
               </p>
             </div>
@@ -151,12 +151,12 @@ export default function MessagesPanel({ theme, onOpen, onClose }: Props) {
                     {t.orderId && (
                       <span className={`text-[11px] font-mono font-semibold shrink-0 ${light ? 'text-[#8B7355]' : 'text-[#C4A882]'}`}>{t.orderId}</span>
                     )}
-                    <span className={`ml-auto text-[11px] shrink-0 ${isUnread ? (light ? 'text-sky-700 font-semibold' : 'text-sky-300 font-semibold') : (light ? 'text-[#A89F94]' : 'text-[#555]')}`}>
+                    <span className={`ml-auto text-[11px] shrink-0 ${isUnread ? (light ? 'text-sky-700 font-semibold' : 'text-sky-300 font-semibold') : (light ? 'text-[#A89F94]' : 'text-[#8A8A8A]')}`}>
                       {shortWhen(t.lastAt)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <p className={`text-[13px] truncate flex-1 ${isUnread ? (light ? 'text-[#1C1A18]' : 'text-[#ddd]') : (light ? 'text-[#6B6358]' : 'text-[#777]')}`}>
+                    <p className={`text-[13px] truncate flex-1 ${isUnread ? (light ? 'text-[#1C1A18]' : 'text-[#ddd]') : (light ? 'text-[#6B6358]' : 'text-[#A3A3A3]')}`}>
                       {threadPreview(t)}
                     </p>
                     {isUnread && (
@@ -174,7 +174,7 @@ export default function MessagesPanel({ theme, onOpen, onClose }: Props) {
         {/* Older texts from Twilio */}
         <div className={`flex items-center justify-between gap-3 px-5 py-3 border-t ${light ? 'border-black/[0.08]' : 'border-white/[0.06]'}`}>
           <p className={`text-[11px] leading-snug ${
-            importError ? (light ? 'text-red-700' : 'text-red-400') : (light ? 'text-[#8A847C]' : 'text-[#666]')
+            importError ? (light ? 'text-red-700' : 'text-red-400') : (light ? 'text-[#8A847C]' : 'text-[#999]')
           }`}>
             {importNote || 'Texts from before the app saved them are still in Twilio.'}
           </p>
