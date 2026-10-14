@@ -86,6 +86,8 @@ export interface SmsMessage {
   media: { contentType: string }[]   // photos etc., served by /api/messages/[id]/media/[index]
   createdAt: string
   readAt?: string
+  status?: string                    // texts we sent: Twilio's delivery status ('delivered', 'undelivered', …)
+  errorCode?: string                 // why Twilio couldn't deliver it, e.g. '30006' = landline
 }
 
 // A customer's conversation, as listed in the Messages panel

@@ -23,6 +23,7 @@ export interface HistoryRow {
   body: string
   created_at: string
   read_at: string | null
+  status: string | null // texts we sent: their delivery status in Twilio's log
   mediaCount: number // photos to look up separately; not a table column
 }
 
@@ -65,6 +66,7 @@ export function historyRows(
       body,
       created_at: createdAt,
       read_at:    inbound && importTime - time > STILL_NEW_MS ? opts.importedAt : null,
+      status:     inbound ? null : m.status,
       mediaCount: inbound ? parseInt(m.num_media ?? '0', 10) || 0 : 0,
     })
   }

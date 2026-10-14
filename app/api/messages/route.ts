@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     }
 
     const orderId = await orderIdForPhone(typeof raw.orderId === 'string' ? raw.orderId : null, phone)
-    const message = await logOutbound({ phone, body, orderId, sid: result.sid })
+    const message = await logOutbound({ phone, body, orderId, sid: result.sid, status: result.status })
     return NextResponse.json({ message })
   } catch (err) {
     console.error('[SMS] Reply failed:', err)

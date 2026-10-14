@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
           const result = await sendSMS(input.phone, msg)
           if (result.ok) {
             console.log(`[SMS] Confirmation sent successfully to ${input.phone}`)
-            await logOutbound({ phone: input.phone, body: msg, orderId: order.id, sid: result.sid })
+            await logOutbound({ phone: input.phone, body: msg, orderId: order.id, sid: result.sid, status: result.status })
           } else {
             console.error(`[SMS] Failed to send to ${input.phone}:`, result.error)
           }

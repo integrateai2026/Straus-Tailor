@@ -9,7 +9,7 @@ export interface StoredMedia {
   contentType: string
 }
 
-const COLUMNS = 'id, phone, order_id, direction, body, media, created_at, read_at'
+const COLUMNS = 'id, phone, order_id, direction, body, media, created_at, read_at, status, error_code'
 
 // Map Supabase snake_case row → camelCase SmsMessage
 function toMessage(row: Record<string, unknown>): SmsMessage {
@@ -21,8 +21,10 @@ function toMessage(row: Record<string, unknown>): SmsMessage {
     body:      row.body       as string,
     media:     media.map(m => ({ contentType: m.contentType })),
     createdAt: row.created_at as string,
-    ...(row.order_id ? { orderId: row.order_id as string } : {}),
-    ...(row.read_at  ? { readAt:  row.read_at  as string } : {}),
+    ...(row.order_id   ? { orderId:   row.order_id   as string } : {}),
+    ...(row.read_at    ? { readAt:    row.read_at    as string } : {}),
+    ...(row.status     ? { status:    row.status     as string } : {}),
+    ...(row.error_code ? { errorCode: row.error_code as string } : {}),
   }
 }
 
@@ -35,6 +37,7 @@ export async function logOutbound(input: {
   body: string
   orderId?: string | null
   sid?: string
+  status?: string  // Twilio's first status; its delivery updates follow (recordDeliveryStatus)
 }): Promise<SmsMessage | null> {
   try {
     const { data, error } = await supabase
@@ -45,6 +48,7 @@ export async function logOutbound(input: {
         direction:  'outbound',
         body:       input.body,
         twilio_sid: input.sid ?? null,
+        status:     input.status ?? null,
       })
       .select(COLUMNS)
       .single()
@@ -106,6 +110,22 @@ export async function recordInbound(input: {
       twilio_sid: input.sid || null,
     }, { onConflict: 'twilio_sid', ignoreDuplicates: true })
   if (error) throw new Error(error.message)
+}
+
+/**
+ * Save one of Twilio's delivery updates for a text we sent. The database never moves a
+ * status backwards (updates can arrive out of order). A quick update can beat the text's
+ * own row being saved, so a missing text is retried briefly before giving up.
+ */
+export async function recordDeliveryStatus(sid: string, status: string, errorCode: string | null): Promise<void> {
+  for (let attempt = 1; ; attempt++) {
+    const { data, error } = await supabase.rpc('sms_record_status', {
+      p_sid: sid, p_status: status, p_error_code: errorCode || null,
+    })
+    if (error) throw new Error(error.message)
+    if (data !== 'missing' || attempt === 3) return
+    await new Promise(resolve => setTimeout(resolve, 1500))
+  }
 }
 
 /** Whether any order for this number has SMS consent */

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isValidTwilioSignature } from '@/lib/twilio'
+import { isValidTwilioSignature, signedUrlCandidates } from '@/lib/twilio'
 import { recordInbound, StoredMedia } from '@/lib/messages'
 
 export const runtime = 'nodejs'
@@ -9,22 +9,6 @@ export const runtime = 'nodejs'
 
 // Empty TwiML: take the text without sending the customer an automatic reply
 const EMPTY_TWIML = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>'
-
-// The URLs Twilio may have signed. Behind Vercel the public host and protocol arrive
-// in forwarded headers, and Twilio has signed both with and without the default port.
-function signedUrlCandidates(req: NextRequest): string[] {
-  const first = (h: string | null) => h?.split(',')[0].trim() ?? ''
-  const proto = first(req.headers.get('x-forwarded-proto')) || req.nextUrl.protocol.replace(/:$/, '')
-  const host  = first(req.headers.get('x-forwarded-host')) || first(req.headers.get('host')) || req.nextUrl.host
-  const path  = req.nextUrl.pathname + req.nextUrl.search
-  const defaultPort = proto === 'https' ? '443' : '80'
-  const bareHost = host.endsWith(`:${defaultPort}`) ? host.slice(0, -defaultPort.length - 1) : host
-  return [...new Set([
-    `${proto}://${bareHost}${path}`,
-    `${proto}://${bareHost}${bareHost.includes(':') ? '' : `:${defaultPort}`}${path}`,
-    req.url,
-  ])]
-}
 
 export async function POST(req: NextRequest) {
   const params = new URLSearchParams(await req.text())

@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Show it in the order's conversation, so replies have context
-    await logOutbound({ phone, body: message, orderId, sid: result.sid })
+    await logOutbound({ phone, body: message, orderId, sid: result.sid, status: result.status })
 
     // Append this send time to the notifiedAt history
     const current = await getOrderById(orderId)

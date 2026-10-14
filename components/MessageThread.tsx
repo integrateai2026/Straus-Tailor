@@ -2,7 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { SmsMessage } from '@/lib/types'
-import { optKeyword } from '@/lib/smsRules'
+import { deliveryLabel, optKeyword } from '@/lib/smsRules'
 import { useMessages } from './MessagesProvider'
 
 type Theme = 'dark' | 'light'
@@ -27,16 +27,17 @@ const MAX_LENGTH = 1600  // Twilio's limit for a single text
 const STYLES = {
   dark: {
     card:     'bg-white/[0.03] border-white/[0.06]',
-    muted:    'text-[#666]',
-    faint:    'text-[#555]',
+    muted:    'text-[#999]',
+    faint:    'text-[#8A8A8A]',
     inbound:  'bg-white/[0.07] text-white border border-white/[0.06]',
     outbound: 'bg-sky-500/15 text-sky-50 border border-sky-500/25',
     tag:      'text-sky-300/70',
-    input:    'bg-white/[0.06] border-white/[0.12] text-white placeholder-[#555] focus:border-white/[0.3]',
+    input:    'bg-white/[0.06] border-white/[0.12] text-white placeholder-[#8A8A8A] focus:border-white/[0.3]',
     send:     'bg-white text-black',
     note:     'bg-white/[0.04] border-white/[0.08] text-[#888]',
     warn:     'bg-amber-500/10 border-amber-500/25 text-amber-300',
     error:    'text-red-400',
+    ok:       'text-emerald-400',
     link:     'text-[#aaa] hover:text-white',
   },
   light: {
@@ -51,6 +52,7 @@ const STYLES = {
     note:     'bg-black/[0.03] border-black/[0.08] text-[#6B6358]',
     warn:     'bg-amber-500/15 border-amber-600/30 text-amber-800',
     error:    'text-red-700',
+    ok:       'text-emerald-700',
     link:     'text-[#6B6358] hover:text-[#1C1A18]',
   },
 }
@@ -125,6 +127,7 @@ function Bubble({ message, currentOrderId, theme }: { message: SmsMessage; curre
   const s = STYLES[theme]
   const outbound = message.direction === 'outbound'
   const keyword = outbound ? null : optKeyword(message.body)
+  const delivery = outbound ? deliveryLabel(message.status, message.errorCode) : null
   const otherOrder = message.orderId && currentOrderId && message.orderId !== currentOrderId
 
   return (
@@ -150,6 +153,11 @@ function Bubble({ message, currentOrderId, theme }: { message: SmsMessage; curre
       </div>
       <p className={`text-[10px] mt-1 px-1 ${s.faint}`}>
         {formatTime(message.createdAt)}
+        {delivery && (
+          <span className={delivery.tone === 'ok' ? s.ok : delivery.tone === 'bad' ? `${s.error} font-semibold` : undefined}>
+            {' · '}{delivery.text}
+          </span>
+        )}
         {keyword === 'out' && ' · Opted out of texts'}
         {keyword === 'in' && ' · Opted back in'}
         {otherOrder && <span className={s.tag}> · about {message.orderId}</span>}
@@ -216,6 +224,18 @@ export default function MessageThread({ phone, orderId, customerName, theme = 'd
     load()
     return () => { cancelled = true }
   }, [phone, activity, reloadKey, retryKey, markRead])
+
+  // A text sent in the last 10 minutes still on its way: look again every few seconds so
+  // "Sending…" turns into Delivered / Not delivered without reopening the order
+  useEffect(() => {
+    const onItsWay = data?.messages.some(m =>
+      m.direction === 'outbound' &&
+      deliveryLabel(m.status, m.errorCode)?.tone === 'waiting' &&
+      Date.now() - Date.parse(m.createdAt) < 10 * 60_000)
+    if (!onItsWay) return
+    const timer = setTimeout(() => setRetryKey(k => k + 1), 5000)
+    return () => clearTimeout(timer)
+  }, [data])
 
   // Texts that arrived while the tab was in the background count as read once staff come back
   useEffect(() => {
@@ -361,7 +381,7 @@ export default function MessageThread({ phone, orderId, customerName, theme = 'd
               <div className="flex justify-between gap-3 mt-1 min-h-[16px]">
                 <p className={`text-xs ${s.error}`}>{sendError}</p>
                 {segments > 1 && (
-                  <p className={`text-[10px] shrink-0 ${light ? 'text-[#A89F94]' : 'text-[#555]'}`}>
+                  <p className={`text-[10px] shrink-0 ${light ? 'text-[#A89F94]' : 'text-[#8A8A8A]'}`}>
                     Sends as {segments} texts
                   </p>
                 )}

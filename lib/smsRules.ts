@@ -5,6 +5,42 @@
 const OPT_OUT = new Set(['STOP', 'STOPALL', 'UNSUBSCRIBE', 'CANCEL', 'END', 'QUIT', 'REVOKE', 'OPTOUT'])
 const OPT_IN  = new Set(['START', 'UNSTOP'])
 
+// Why a text wasn't delivered, in a few words, for Twilio's most common error codes
+const NOT_DELIVERED_REASON: Record<string, string> = {
+  '21610': 'they replied STOP',
+  '30003': 'phone off or out of service',
+  '30004': 'blocked',
+  '30005': 'number doesn’t exist',
+  '30006': 'landline',
+  '30007': 'blocked by their carrier',
+}
+
+/**
+ * The label next to the time on a text we sent: whether it reached the customer.
+ * Null when there's nothing to say (texts from before delivery was tracked).
+ */
+export function deliveryLabel(status: string | undefined, errorCode?: string): { text: string; tone: 'ok' | 'bad' | 'waiting' } | null {
+  switch (status) {
+    case 'delivered':
+    case 'read':
+      return { text: 'Delivered', tone: 'ok' }
+    case 'undelivered':
+    case 'failed': {
+      const reason = errorCode ? NOT_DELIVERED_REASON[errorCode] : undefined
+      return { text: reason ? `Not delivered (${reason})` : 'Not delivered', tone: 'bad' }
+    }
+    case 'sent':
+      return { text: 'Sent', tone: 'waiting' }  // the carrier has it; no delivery receipt yet
+    case 'accepted':
+    case 'scheduled':
+    case 'queued':
+    case 'sending':
+      return { text: 'Sending…', tone: 'waiting' }
+    default:
+      return null
+  }
+}
+
 /** 'out' for STOP-style texts, 'in' for START-style texts — the whole text must be the keyword */
 export function optKeyword(body: string): 'out' | 'in' | null {
   const k = body.trim().toUpperCase()

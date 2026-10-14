@@ -44,7 +44,7 @@ export async function sendDueReminders(): Promise<{ sent: number; message?: stri
 
   // Send in order; stop and report if any part fails so a failure is never mistaken for "no orders"
   for (let i = 0; i < texts.length; i++) {
-    const result = await sendSMS(staffNumber, texts[i])
+    const result = await sendSMS(staffNumber, texts[i], { trackDelivery: false }) // staff texts aren't shown in the app
     if (!result.ok) {
       const which = texts.length > 1 ? ` (text ${i + 1} of ${texts.length})` : ''
       return { sent: 0, error: `Reminder failed to send${which}: ${result.error ?? 'unknown error'}` }

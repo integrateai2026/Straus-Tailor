@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from 'crypto'
+import type { NextRequest } from 'next/server'
 
 /**
  * Normalize any US phone number to E.164 format (+1XXXXXXXXXX) for Twilio.
@@ -13,14 +14,19 @@ export function normalizePhone(raw: string): string {
 export interface SendResult {
   ok: boolean
   sid?: string    // Twilio message SID, when sent
+  status?: string // Twilio's first status for it, e.g. 'queued'
   error?: string
   code?: number   // Twilio error code, e.g. 21610 = recipient replied STOP
 }
 
+// Where Twilio reports what happened to each text we send (app/api/sms/status)
+const STATUS_CALLBACK_URL = process.env.TWILIO_STATUS_CALLBACK_URL ?? 'https://www.straustailor.com/api/sms/status'
+
 /**
- * Shared Twilio SMS helper — used by all SMS-sending routes.
+ * Shared Twilio SMS helper — used by all SMS-sending routes. Customer texts ask Twilio
+ * to report delivered / not delivered, which shows next to the text in the app.
  */
-export async function sendSMS(to: string, body: string): Promise<SendResult> {
+export async function sendSMS(to: string, body: string, { trackDelivery = true } = {}): Promise<SendResult> {
   const accountSid = process.env.TWILIO_ACCOUNT_SID
   const authToken  = process.env.TWILIO_AUTH_TOKEN
   const from       = process.env.TWILIO_FROM_NUMBER
@@ -30,6 +36,9 @@ export async function sendSMS(to: string, body: string): Promise<SendResult> {
     return { ok: false, error: 'Twilio not configured' }
   }
 
+  const params = new URLSearchParams({ To: normalizePhone(to), From: from, Body: body })
+  if (trackDelivery) params.set('StatusCallback', STATUS_CALLBACK_URL)
+
   const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`
   const res = await fetch(url, {
     method:  'POST',
@@ -37,7 +46,7 @@ export async function sendSMS(to: string, body: string): Promise<SendResult> {
       Authorization:  twilioAuthHeader(accountSid, authToken),
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: new URLSearchParams({ To: normalizePhone(to), From: from, Body: body }),
+    body: params,
   })
 
   if (!res.ok) {
@@ -46,7 +55,7 @@ export async function sendSMS(to: string, body: string): Promise<SendResult> {
   }
 
   const data = await res.json().catch(() => ({}))
-  return { ok: true, sid: data.sid }
+  return { ok: true, sid: data.sid, status: data.status }
 }
 
 export function twilioAuthHeader(accountSid: string, authToken: string): string {
@@ -64,6 +73,22 @@ export function twilioSignature(authToken: string, url: string, params: URLSearc
   )
   const data = url + sorted.map(([k, v]) => k + v).join('')
   return createHmac('sha1', authToken).update(Buffer.from(data, 'utf-8')).digest('base64')
+}
+
+// The URLs Twilio may have signed for a webhook request. Behind Vercel the public host and
+// protocol arrive in forwarded headers, and Twilio has signed both with and without the default port.
+export function signedUrlCandidates(req: NextRequest): string[] {
+  const first = (h: string | null) => h?.split(',')[0].trim() ?? ''
+  const proto = first(req.headers.get('x-forwarded-proto')) || req.nextUrl.protocol.replace(/:$/, '')
+  const host  = first(req.headers.get('x-forwarded-host')) || first(req.headers.get('host')) || req.nextUrl.host
+  const path  = req.nextUrl.pathname + req.nextUrl.search
+  const defaultPort = proto === 'https' ? '443' : '80'
+  const bareHost = host.endsWith(`:${defaultPort}`) ? host.slice(0, -defaultPort.length - 1) : host
+  return [...new Set([
+    `${proto}://${bareHost}${path}`,
+    `${proto}://${bareHost}${bareHost.includes(':') ? '' : `:${defaultPort}`}${path}`,
+    req.url,
+  ])]
 }
 
 /**

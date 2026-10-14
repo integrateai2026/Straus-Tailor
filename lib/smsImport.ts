@@ -122,6 +122,7 @@ export async function importTwilioHistory(): Promise<{ found: number; added: num
         body:       r.body,
         created_at: r.created_at,
         read_at:    r.read_at,
+        status:     r.status,
         media:      photos?.length ? photos : null,
       }
     })

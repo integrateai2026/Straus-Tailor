@@ -10,6 +10,7 @@ const PUBLIC_ROUTES = [
   '/api/printer/queue',  // Print Ticket button posts here from client
   '/api/contact',        // Public contact form
   '/api/sms/incoming',   // Twilio posts customer texts here — checks the Twilio signature itself
+  '/api/sms/status',     // Twilio posts delivery updates for our texts here — same signature check
 ]
 
 export async function proxy(req: NextRequest) {
