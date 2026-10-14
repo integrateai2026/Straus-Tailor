@@ -152,10 +152,10 @@ const ALTERATIONS = [
 
 /* ── Main Component ───────────────────────────────────────── */
 export default function CustomerForm() {
+  // No drop-off date here: it's worked out when the order is saved (see handleSubmit)
   const [form, setForm] = useState({
     customerName: '',
     phone: '',
-    dropoffDate: localDate(),
     dueDate: twoWeeksOut(),
     notes: '',
     totalAmount: '',
@@ -171,6 +171,7 @@ export default function CustomerForm() {
   const [focused, setFocused] = useState('phone')
   const lastLookupRef = useRef('')   // last 10-digit number looked up — avoid duplicate requests
   const nameTouchedRef = useRef(false) // true once the user focuses/types in the name field
+  const dueTouchedRef = useRef(false)  // true once staff pick a Need By date themselves
   const [suggestedName, setSuggestedName] = useState('') // offered instead of auto-filling once touched
   const [staffOpen, setStaffOpen] = useState(false)
   const [garments, setGarments] = useState<Record<string, number>>({})
@@ -260,11 +261,30 @@ export default function CustomerForm() {
     tl.fromTo(btnRef.current, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 }, '-=0.15')
   }, [])
 
+  // The iPad keeps this page open for days: when the date changes, move the suggested
+  // Need By date along with it (a date staff picked themselves is left alone)
+  useEffect(() => {
+    let day = localDate()
+    const tick = () => {
+      const now = localDate()
+      if (now === day) return
+      day = now
+      if (!dueTouchedRef.current) setForm(f => ({ ...f, dueDate: twoWeeksOut() }))
+    }
+    const timer = setInterval(tick, 60_000)
+    document.addEventListener('visibilitychange', tick)
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', tick)
+    }
+  }, [])
+
   function resetForm() {
     gsap.to(fieldsRef.current!.children, {
       y: -8, opacity: 0, duration: 0.25, stagger: 0.04, ease: 'power2.in',
       onComplete: () => {
-        setForm({ customerName: '', phone: '', dropoffDate: localDate(), dueDate: twoWeeksOut(), notes: '', totalAmount: '', paid: false, smsTransactional: false, smsMarketing: false, termsAccepted: false, autoFilledName: '' })
+        setForm({ customerName: '', phone: '', dueDate: twoWeeksOut(), notes: '', totalAmount: '', paid: false, smsTransactional: false, smsMarketing: false, termsAccepted: false, autoFilledName: '' })
+        dueTouchedRef.current = false
         setError('')
         setStaffOpen(false)
         setGarments({})
@@ -302,6 +322,10 @@ export default function CustomerForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          // The day it's handed in. Worked out now, not when the form was last cleared:
+          // the iPad keeps this page open overnight, and the morning's first order
+          // used to get the day before.
+          dropoffDate:    localDate(),
           autoFilledName: undefined, // UI-only field — not part of the order
           totalAmount:  form.totalAmount !== '' ? parseFloat(form.totalAmount) : undefined,
           itemCount:    Object.values(garments).reduce((a, b) => a + b, 0) || undefined,
@@ -506,7 +530,7 @@ export default function CustomerForm() {
                 }}>
                   <div className="space-y-3 pt-1 pb-1">
 
-                    <DateField label="Need By *" value={form.dueDate} onChange={v => setForm(f => ({ ...f, dueDate: v }))} />
+                    <DateField label="Need By *" value={form.dueDate} onChange={v => { dueTouchedRef.current = true; setForm(f => ({ ...f, dueDate: v })) }} />
 
                     <div>
                       <span className={FL_CLASS} style={FL_STYLE}>Total Amount</span>
