@@ -4,6 +4,7 @@ import { CreateOrderInput } from '@/lib/types'
 import { sendSMS } from '@/lib/twilio'
 import { requireAuth } from '@/lib/session'
 import { logOutbound } from '@/lib/messages'
+import { confirmationText } from '@/lib/smsTemplates'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -58,33 +59,7 @@ export async function POST(req: NextRequest) {
 
     // Send customer confirmation SMS if they opted in
     if (raw.smsTransactional === true && input.phone) {
-      const due = new Date(input.dueDate + 'T00:00:00').toLocaleDateString('en-US', {
-        weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
-      })
-      const firstName = input.customerName.split(' ')[0]
-      const dueShort = new Date(input.dueDate + 'T00:00:00').toLocaleDateString('en-US', {
-        weekday: 'long', month: 'long', day: 'numeric',
-      })
-      const paymentLine = input.paid
-        ? input.totalAmount != null
-          ? `Amount paid: $${input.totalAmount.toFixed(2)}`
-          : `Payment received — thank you.`
-        : input.totalAmount != null
-          ? `Balance due: $${input.totalAmount.toFixed(2)}`
-          : null
-      const msg = [
-        `Straus Tailor Shop`,
-        ``,
-        `Hi ${firstName} — thank you for visiting us today.`,
-        ``,
-        `Your order will be ready for pickup by ${dueShort}.`,
-        ``,
-        ...(paymentLine ? [paymentLine, ``] : []),
-        `We'll send you a text as soon as it's ready.`,
-        ``,
-        `Questions? 701-715-5944`,
-        `Reply STOP to opt out.`,
-      ].join('\n')
+      const msg = confirmationText(input)
       console.log(`[SMS] Sending confirmation to ${input.phone} for order ${order.id}`)
       // Runs once the response is sent; after() keeps the serverless function alive until it's done
       after(async () => {

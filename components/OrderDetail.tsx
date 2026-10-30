@@ -7,6 +7,7 @@ import { phoneDigits } from '@/lib/phone'
 import { orderTimeline, TimelineTone } from '@/lib/orderHistory'
 import { TAILORS, sortTailors } from '@/lib/tailors'
 import SMSModal from './SMSModal'
+import TestSmsDialog from './TestSmsDialog'
 import PrintTicket from './PrintTicket'
 import MessageThread from './MessageThread'
 
@@ -187,7 +188,8 @@ function TailorField({ value, theme, saving, onSave }: {
 export default function OrderDetail({ order: initialOrder, onBack, onUpdate, theme = 'dark', focusMessages = false }: Props) {
   const [order, setOrder] = useState(initialOrder)
   const [showSMS, setShowSMS] = useState(false)
-  const [smsSentCount, setSmsSentCount] = useState(0) // reloads the conversation after a Ready text goes out
+  const [smsSentCount, setSmsSentCount] = useState(0) // reloads the conversation after a text goes out from here
+  const [testSms, setTestSms] = useState(false)       // Test SMS: send the first text again
   const [showPrint, setShowPrint] = useState(false)
   const [confirmPickup, setConfirmPickup] = useState(false)
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
@@ -333,6 +335,19 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
             <span className={`text-[11px] px-2.5 py-[3px] rounded-full border font-semibold ${STATUS_CONFIG[theme][order.status]?.badge}`}>
               {STATUS_CONFIG[theme][order.status]?.label}
             </span>
+            {/* Send the first text again, e.g. after fixing a mistyped number (hidden while editing: it uses the saved number) */}
+            {order.smsConsent && !editing && phoneDigits(order.phone).length === 10 && (
+              <button
+                onClick={() => setTestSms(true)}
+                title="Send the order’s first text again"
+                className="text-xs px-3.5 py-1.5 rounded-full border font-semibold transition-all"
+                style={light
+                  ? { background: 'transparent', borderColor: 'rgba(0,0,0,0.15)', color: '#6B6358' }
+                  : { background: 'transparent', borderColor: 'rgba(255,255,255,0.12)', color: '#888' }}
+              >
+                Test SMS
+              </button>
+            )}
             <button
               onClick={() => {
                 if (editing) { setEditing(false) }
@@ -608,6 +623,19 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
             onUpdate(updated)
             setShowSMS(false)
             setSmsSentCount(n => n + 1)
+          }}
+        />
+      )}
+
+      {testSms && (
+        <TestSmsDialog
+          order={order}
+          theme={theme}
+          onClose={() => setTestSms(false)}
+          onSent={() => {
+            setTestSms(false)
+            setSmsSentCount(n => n + 1) // the text shows in Messages with its Delivered / Not delivered label
+            messagesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
           }}
         />
       )}
