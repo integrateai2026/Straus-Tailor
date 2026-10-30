@@ -560,7 +560,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
                 }
                 onClick={() => {
                   // Confirm before marking picked up; un-marking needs no prompt
-                  // (the server moves it back to Active and notes it in History)
+                  // (the server puts back the status it had before and notes it in History)
                   if (!order.pickedUp) { setConfirmPickup(true); return }
                   patchOrder({ pickedUp: false }, 'pickedUp')
                 }}

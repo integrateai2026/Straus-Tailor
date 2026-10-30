@@ -8,19 +8,34 @@ export function historyOf(order: Pick<Order, 'history' | 'pickedUpAt'>): OrderEv
 }
 
 /**
- * What to save when an order is marked picked up or un-marked. Un-marking sends the
- * order back to Active. Either way the change is added to its history with the time.
+ * What to save when an order is marked picked up or un-marked. Un-marking (usually an
+ * accidental tap undone) puts the order back to the status it had just before — Ready stays
+ * Ready, Active stays Active. Either way the change is added to its history with the time.
  */
 export function pickupChange(
-  order: Pick<Order, 'history' | 'pickedUpAt'>,
+  order: Pick<Order, 'status' | 'history' | 'pickedUpAt' | 'notifiedAt'>,
   pickedUp: boolean,
   now: string,
 ): { status: OrderStatus; pickedUpAt?: string; history: OrderEvent[] } {
-  const history: OrderEvent[] = [...historyOf(order), { event: pickedUp ? 'picked_up' : 'pickup_undone', at: now }]
-  return pickedUp
-    ? { status: 'completed', pickedUpAt: now, history }
-    : { status: 'active', history }
+  const past = historyOf(order)
+  if (pickedUp) {
+    return { status: 'completed', pickedUpAt: now, history: [...past, { event: 'picked_up', at: now, from: order.status }] }
+  }
+  const back = statusBeforePickup(order, past)
+  return { status: back, history: [...past, { event: 'pickup_undone', at: now, to: back }] }
 }
+
+// The status an order had just before its last pickup. Pickups saved before that was
+// recorded: Ready if the customer had been told it was ready, otherwise Active.
+function statusBeforePickup(order: Pick<Order, 'notifiedAt'>, past: OrderEvent[]): OrderStatus {
+  const lastPickup = [...past].reverse().find(e => e.event === 'picked_up')
+  if (lastPickup?.from) return lastPickup.from
+  const notified = order.notifiedAt as unknown
+  const timesNotified = Array.isArray(notified) ? notified.length : notified ? 1 : 0
+  return timesNotified > 0 ? 'notified' : 'active'
+}
+
+const STATUS_NAME: Record<OrderStatus, string> = { active: 'Active', notified: 'Ready', completed: 'Completed' }
 
 /**
  * When an order last had activity at the counter, in ms: dropped off (created) or a
@@ -61,7 +76,8 @@ export function orderTimeline(
     })),
     ...historyOf(order).map((e): TimelineEntry => e.event === 'picked_up'
       ? { label: 'Picked up', at: e.at, tone: 'pickup' }
-      : { label: 'Pickup undone — back to Active', at: e.at, tone: 'undo' }),
+      // Undos saved before the status was recorded always went back to Active
+      : { label: `Pickup undone — back to ${STATUS_NAME[e.to ?? 'active']}`, at: e.at, tone: 'undo' }),
   ]
 
   return entries

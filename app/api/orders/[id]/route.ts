@@ -36,7 +36,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   // Marking picked up (or undoing it) sets the status and adds a dated entry to the
-  // order's history; undoing sends the order back to Active
+  // order's history; undoing puts the order back to the status it had before (lib/orderHistory)
   if (typeof body.pickedUp === 'boolean') {
     const current = await getOrderById(decodedId)
     if (current && body.pickedUp !== current.pickedUp) {

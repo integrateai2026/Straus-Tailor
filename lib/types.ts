@@ -3,7 +3,9 @@ export type OrderStatus = 'active' | 'notified' | 'completed'
 // A dated pickup change, kept so the order's History shows what happened and when
 export interface OrderEvent {
   event: 'picked_up' | 'pickup_undone'
-  at: string // ISO time
+  at: string           // ISO time
+  from?: OrderStatus   // picked_up: the status just before, so an undo can put it back
+  to?: OrderStatus     // pickup_undone: the status it went back to
 }
 
 export interface Order {
