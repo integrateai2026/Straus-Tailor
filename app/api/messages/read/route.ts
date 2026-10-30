@@ -5,18 +5,19 @@ import { markThreadRead } from '@/lib/messages'
 
 export const runtime = 'nodejs'
 
-// Staff opened a conversation — clear its unread texts
+// Staff opened a conversation — clear its unread texts (from an order: its earlier numbers' too)
 export async function POST(req: NextRequest) {
   if (!(await requireAuth(req))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
-    const { phone: raw } = await req.json()
+    const { phone: raw, orderId: rawOrderId } = await req.json()
     const phone = phoneDigits(String(raw ?? ''))
     if (phone.length < 10) {
       return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 })
     }
-    await markThreadRead(phone)
+    const orderId = typeof rawOrderId === 'string' && rawOrderId ? rawOrderId.slice(0, 40) : null
+    await markThreadRead(phone, orderId)
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('[SMS] Failed to mark conversation read:', err)

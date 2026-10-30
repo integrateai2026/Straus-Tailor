@@ -166,17 +166,36 @@ export async function orderIdForPhone(orderId: string | null | undefined, phone:
   return (data?.id as string | undefined) ?? null
 }
 
-/** The conversation with one number, oldest first (latest 200 texts) */
-export async function getThread(phone: string): Promise<{
+/**
+ * Other numbers this order's texts went to — e.g. a mistyped number fixed later. Whoever
+ * has that number may reply, and the Messages list links those replies to this order.
+ */
+async function earlierNumbers(orderId: string, phone: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('sms_messages')
+    .select('phone')
+    .eq('order_id', orderId)
+    .neq('phone', phone)
+  if (error) throw new Error(error.message)
+  return [...new Set((data ?? []).map(r => r.phone as string))]
+}
+
+/**
+ * The conversation with one number, oldest first (latest 200 texts). Opened from an order,
+ * it also has the texts with the order's earlier numbers (see earlierNumbers), so replies
+ * from a wrong number show — and get marked read — where their alert points.
+ */
+export async function getThread(phone: string, orderId?: string | null): Promise<{
   messages: SmsMessage[]
   optedOut: boolean
   canText: boolean
 }> {
+  const phones = [phone, ...(orderId ? await earlierNumbers(orderId, phone) : [])]
   const [res, consent] = await Promise.all([
     supabase
       .from('sms_messages')
       .select(COLUMNS)
-      .eq('phone', phone)
+      .in('phone', phones)
       .order('created_at', { ascending: false })
       .limit(200),
     hasSmsConsent(phone),
@@ -184,7 +203,8 @@ export async function getThread(phone: string): Promise<{
   if (res.error) throw new Error(res.error.message)
 
   const messages = (res.data ?? []).reverse().map(toMessage)
-  const inbound = messages.filter(m => m.direction === 'inbound')
+  // Opt-out and permission go by the current number only (a stranger's STOP doesn't count)
+  const inbound = messages.filter(m => m.direction === 'inbound' && m.phone === phone)
   return {
     messages,
     optedOut: isOptedOut(inbound.map(m => m.body)),
@@ -192,11 +212,13 @@ export async function getThread(phone: string): Promise<{
   }
 }
 
-export async function markThreadRead(phone: string): Promise<void> {
+/** Staff opened the conversation: its texts are read — from an order, its earlier numbers' too */
+export async function markThreadRead(phone: string, orderId?: string | null): Promise<void> {
+  const phones = [phone, ...(orderId ? await earlierNumbers(orderId, phone) : [])]
   const { error } = await supabase
     .from('sms_messages')
     .update({ read_at: new Date().toISOString() })
-    .eq('phone', phone)
+    .in('phone', phones)
     .eq('direction', 'inbound')
     .is('read_at', null)
   if (error) throw new Error(error.message)

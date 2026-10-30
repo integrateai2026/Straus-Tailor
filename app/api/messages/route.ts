@@ -15,7 +15,8 @@ const TWILIO_ERRORS: Record<number, string> = {
   21614: "This number can't receive texts — it may be a landline.",
 }
 
-// Conversation with one customer number: ?phone=7015550142
+// Conversation with one customer number: ?phone=7015550142 — from an order add &orderId=#10271
+// to include texts with the order's earlier (e.g. mistyped) numbers
 export async function GET(req: NextRequest) {
   if (!(await requireAuth(req))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -24,8 +25,9 @@ export async function GET(req: NextRequest) {
   if (phone.length < 10) {
     return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 })
   }
+  const orderId = req.nextUrl.searchParams.get('orderId')?.slice(0, 40) || null
   try {
-    return NextResponse.json(await getThread(phone))
+    return NextResponse.json(await getThread(phone, orderId))
   } catch (err) {
     console.error('[SMS] Failed to load conversation:', err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

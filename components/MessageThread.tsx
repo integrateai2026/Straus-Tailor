@@ -71,6 +71,11 @@ function segmentCount(text: string): number {
   return units <= single ? 1 : Math.ceil(units / multi)
 }
 
+// 7019360979 → (701) 936-0979
+function prettyPhone(digits: string): string {
+  return digits.length === 10 ? `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}` : digits
+}
+
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 }
@@ -123,9 +128,10 @@ function MediaImage({ src }: { src: string }) {
   )
 }
 
-function Bubble({ message, currentOrderId, theme }: { message: SmsMessage; currentOrderId?: string; theme: Theme }) {
+function Bubble({ message, mainPhone, currentOrderId, theme }: { message: SmsMessage; mainPhone: string; currentOrderId?: string; theme: Theme }) {
   const s = STYLES[theme]
   const outbound = message.direction === 'outbound'
+  const oldNumber = message.phone !== mainPhone // a number the order had before it was corrected
   const keyword = outbound ? null : optKeyword(message.body)
   const delivery = outbound ? deliveryLabel(message.status, message.errorCode) : null
   const otherOrder = message.orderId && currentOrderId && message.orderId !== currentOrderId
@@ -160,6 +166,7 @@ function Bubble({ message, currentOrderId, theme }: { message: SmsMessage; curre
         )}
         {keyword === 'out' && ' · Opted out of texts'}
         {keyword === 'in' && ' · Opted back in'}
+        {oldNumber && <span className="font-semibold"> · {outbound ? 'to' : 'from'} old number {prettyPhone(message.phone)}</span>}
         {otherOrder && <span className={s.tag}> · about {message.orderId}</span>}
       </p>
     </div>
@@ -172,8 +179,11 @@ export default function MessageThread({ phone, orderId, customerName, theme = 'd
   const name = customerName?.trim().split(/\s+/)[0] || 'this customer'
 
   const { threads, refresh } = useMessages()
-  // Changes whenever the background check sees a new text in this conversation
-  const activity = threads.find(t => t.phone === phone)?.lastAt
+  // Changes whenever the background check sees a new text in this conversation — on an order,
+  // including replies from its earlier numbers (the Messages list links those to the order)
+  const activity = threads
+    .filter(t => t.phone === phone || (orderId && t.orderId === orderId))
+    .reduce((latest, t) => (t.lastAt > latest ? t.lastAt : latest), '')
 
   const [data, setData]       = useState<ThreadData | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -195,21 +205,21 @@ export default function MessageThread({ phone, orderId, customerName, theme = 'd
       const res = await fetch('/api/messages/read', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ phone }),
+        body:    JSON.stringify({ phone, orderId }),
       })
       if (!res.ok) throw new Error()
       refresh()
     } catch {
       hasUnreadRef.current = true // try again next time
     }
-  }, [phone, refresh])
+  }, [phone, orderId, refresh])
 
   // Load the conversation — again whenever the background check sees new activity in it
   useEffect(() => {
     let cancelled = false
     async function load() {
       try {
-        const res = await fetch(`/api/messages?phone=${encodeURIComponent(phone)}`)
+        const res = await fetch(`/api/messages?phone=${encodeURIComponent(phone)}${orderId ? `&orderId=${encodeURIComponent(orderId)}` : ''}`)
         if (!res.ok) throw new Error()
         const next: ThreadData = await res.json()
         if (cancelled) return
@@ -223,7 +233,7 @@ export default function MessageThread({ phone, orderId, customerName, theme = 'd
     }
     load()
     return () => { cancelled = true }
-  }, [phone, activity, reloadKey, retryKey, markRead])
+  }, [phone, orderId, activity, reloadKey, retryKey, markRead])
 
   // A text sent in the last 10 minutes still on its way: look again every few seconds so
   // "Sending…" turns into Delivered / Not delivered without reopening the order
@@ -331,7 +341,7 @@ export default function MessageThread({ phone, orderId, customerName, theme = 'd
                   {(i === 0 || dayKey(messages[i - 1].createdAt) !== dayKey(m.createdAt)) && (
                     <p className={`text-[10px] uppercase tracking-widest text-center pt-1 ${s.faint}`}>{dayLabel(m.createdAt)}</p>
                   )}
-                  <Bubble message={m} currentOrderId={orderId} theme={theme} />
+                  <Bubble message={m} mainPhone={phone} currentOrderId={orderId} theme={theme} />
                 </Fragment>
               ))}
             </div>
