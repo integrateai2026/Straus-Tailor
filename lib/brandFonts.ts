@@ -1,9 +1,9 @@
 // Brand wordmark fonts, shared by every place "Straus Tailor Shop" is styled.
 //
-// Brush Script MT and Bell MT are Microsoft/Monotype fonts, not web fonts:
-// they only render on devices that already have them installed. Each stack
-// falls back to a font every device can show.
-export const STRAUS_FONT = '"Brush Script MT", "Brush Script Std", "Dancing Script", var(--font-dancing), cursive'
+// "Straus" is Brush Script MT drawn as a picture (components/StrausWordmark), so it looks
+// the same on the iPad and phones, which don't have that font.
+// Bell MT is a Microsoft/Monotype font, not a web font: it only renders on devices that
+// already have it installed, so the stack falls back to a font every device can show.
 export const TAILOR_FONT = '"Bell MT", Georgia, "Times New Roman", serif'
 
 // Burgundy used on the site's action buttons

@@ -4,7 +4,8 @@ import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { Order } from '@/lib/types'
-import { STRAUS_FONT, TAILOR_FONT } from '@/lib/brandFonts'
+import { TAILOR_FONT } from '@/lib/brandFonts'
+import StrausWordmark from './StrausWordmark'
 import { printDirect } from '@/lib/epos-direct'
 
 interface Props {
@@ -56,7 +57,7 @@ function ThermalBody({ order }: { order: Order }) {
     <div style={s.wrap}>
       {/* Header */}
       <div style={{ ...s.center, paddingBottom: '4px' }}>
-        <p style={{ fontSize: '20px', lineHeight: 1.1, marginBottom: '2px' }}><span style={{ fontFamily: STRAUS_FONT, fontSynthesis: 'none' }}>Straus</span>{' '}<span style={{ fontFamily: TAILOR_FONT, fontSize: '0.8em' }}>Tailor Shop</span></p>
+        <p style={{ fontSize: '20px', lineHeight: 1.1, marginBottom: '2px' }}><StrausWordmark />{' '}<span style={{ fontFamily: TAILOR_FONT, fontSize: '0.8em' }}>Tailor Shop</span></p>
         <p style={{ fontSize: '10px', lineHeight: 1.4 }}>1326 25th St S Suite B, Fargo, ND 58103</p>
         <p style={{ fontSize: '10px', lineHeight: 1.4 }}>(701) 929-8262</p>
       </div>
@@ -121,7 +122,7 @@ function TicketBody({ order }: { order: Order }) {
       {/* Header */}
       <div className="pt-7 pb-4 px-8 flex flex-col items-center border-b border-gray-200">
         <p className="text-[28px] text-gray-800 leading-none">
-          <span style={{ fontFamily: STRAUS_FONT, fontSynthesis: 'none' }}>Straus</span>{' '}
+          <StrausWordmark />{' '}
           <span style={{ fontFamily: TAILOR_FONT, fontSize: '0.8em' }}>Tailor Shop</span>
         </p>
         <p className="text-[11px] text-gray-500 mt-1">1326 25th St S Suite B, Fargo, ND 58103</p>

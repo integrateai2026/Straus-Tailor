@@ -6,7 +6,8 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Icon } from './icons'
 import { garmentCategories, alterationCategories } from './data'
-import { STRAUS_FONT, TAILOR_FONT } from '@/lib/brandFonts'
+import { TAILOR_FONT } from '@/lib/brandFonts'
+import StrausWordmark from '../StrausWordmark'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -57,7 +58,7 @@ function Nav() {
       fontFamily: BODY,
     }}>
       <a href="#home" style={{ display: 'flex', alignItems: 'baseline', gap: 8, textDecoration: 'none', color: scrolled ? NK : '#fff' }}>
-        <span style={{ fontFamily: STRAUS_FONT, fontSynthesis: 'none', fontSize: 28, color: B, fontWeight: 600, lineHeight: 1 }}>Straus</span>
+        <span style={{ fontSize: 28, color: B, lineHeight: 1 }}><StrausWordmark /></span>
         <span style={{ fontFamily: TAILOR_FONT, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase' }}>Tailor Shop</span>
       </a>
 
@@ -231,7 +232,9 @@ function Hero() {
         </div>
 
         <h1 style={{ margin: '0 auto 24px', lineHeight: 0.93 }}>
-          <span ref={title1Ref} style={{ display: 'block', fontFamily: STRAUS_FONT, fontSynthesis: 'none', fontWeight: 600, fontSize: 'clamp(96px, 15vw, 210px)', color: B, textShadow: '0 4px 40px rgba(0,0,0,0.4)' }}>Straus</span>
+          <span ref={title1Ref} style={{ display: 'block', fontSize: 'clamp(96px, 15vw, 210px)', color: B }}>
+            <StrausWordmark style={{ filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.4))' }} />
+          </span>
           <span ref={title2Ref} style={{ display: 'block', fontFamily: TAILOR_FONT, fontWeight: 400, fontSize: 'clamp(46px, 8vw, 120px)', color: '#fff', textShadow: '0 4px 40px rgba(0,0,0,0.4)' }}>Tailor Shop</span>
         </h1>
 
@@ -954,7 +957,7 @@ function Footer() {
       <div style={{ maxWidth: 1180, margin: '0 auto' }}>
         <div className="landing-footer" style={{ display: 'grid', paddingBottom: 48, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="footer-col">
-            <div style={{ fontFamily: STRAUS_FONT, fontSynthesis: 'none', fontSize: 38, fontWeight: 600, color: BS, lineHeight: 1, marginBottom: 4 }}>Straus</div>
+            <div style={{ fontSize: 38, color: BS, lineHeight: 1, marginBottom: 4 }}><StrausWordmark /></div>
             <div style={{ fontFamily: TAILOR_FONT, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase', marginBottom: 22 }}>Tailor Shop</div>
             <p style={{ fontSize: 13, color: '#93939f', margin: 0, maxWidth: 300, lineHeight: 1.6 }}>
               Expert tailoring and alterations in Fargo with over 20 years of sewing experience. Walk-ins welcome, no appointment needed.

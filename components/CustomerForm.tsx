@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react' // useRef still used by containerRef, headerRef, etc.
 import gsap from 'gsap'
 import { Order } from '@/lib/types'
-import { STRAUS_FONT, TAILOR_FONT } from '@/lib/brandFonts'
+import { TAILOR_FONT } from '@/lib/brandFonts'
+import StrausWordmark from './StrausWordmark'
 import PrintTicket from './PrintTicket'
 import DueDateCalendar from './DueDateCalendar'
 import './StarBorder.css'
@@ -382,7 +383,7 @@ export default function CustomerForm() {
               color: '#E8E0D0',
               letterSpacing: '0.5px',
             }}>
-              <span style={{ fontFamily: STRAUS_FONT, fontSynthesis: 'none' }}>Straus</span>{' '}
+              <StrausWordmark />{' '}
               <span style={{ fontFamily: TAILOR_FONT, fontSize: '0.8em' }}>Tailor Shop</span>
             </h1>
           </div>

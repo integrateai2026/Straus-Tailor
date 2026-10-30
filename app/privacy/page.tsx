@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { STRAUS_FONT, TAILOR_FONT } from '@/lib/brandFonts'
+import { TAILOR_FONT } from '@/lib/brandFonts'
+import StrausWordmark from '@/components/StrausWordmark'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy — Straus Tailor Shop',
@@ -26,7 +27,7 @@ export default function PrivacyPage() {
         boxShadow: '0 1px 20px rgba(0,0,0,0.06)',
       }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'baseline', gap: 8, textDecoration: 'none', color: NK }}>
-          <span style={{ fontFamily: STRAUS_FONT, fontSynthesis: 'none', fontSize: 26, color: B, fontWeight: 600, lineHeight: 1 }}>Straus</span>
+          <span style={{ fontSize: 26, color: B, lineHeight: 1 }}><StrausWordmark /></span>
           <span style={{ fontFamily: TAILOR_FONT, fontSize: 11, letterSpacing: '0.28px', textTransform: 'uppercase' as const }}>Tailor Shop</span>
         </Link>
         <Link href="/" style={{
