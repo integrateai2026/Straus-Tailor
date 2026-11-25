@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getOrderById, updateOrder } from '@/lib/store'
 import { requireAuth } from '@/lib/session'
 import { pickupChange } from '@/lib/orderHistory'
-import { normalizeTailors } from '@/lib/tailors'
+import { normalizeReceiver, normalizeTailors } from '@/lib/tailors'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await requireAuth(req))) {
@@ -33,6 +33,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // Tailors who worked on it: optional; trimmed, no repeats, null when none picked
   if (body.tailors !== undefined) {
     body.tailors = normalizeTailors(body.tailors)
+  }
+
+  // Who took it in: optional; null when none picked
+  if (body.receivedBy !== undefined) {
+    body.receivedBy = normalizeReceiver(body.receivedBy)
   }
 
   // Marking picked up (or undoing it) sets the status and adds a dated entry to the

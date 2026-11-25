@@ -5,6 +5,7 @@ import gsap from 'gsap'
 import { Order } from '@/lib/types'
 import { TAILOR_FONT } from '@/lib/brandFonts'
 import StrausWordmark from './StrausWordmark'
+import { RECEIVERS } from '@/lib/tailors'
 import PrintTicket from './PrintTicket'
 import DueDateCalendar from './DueDateCalendar'
 import './StarBorder.css'
@@ -161,6 +162,7 @@ export default function CustomerForm() {
     notes: '',
     totalAmount: '',
     paid: false,
+    receivedBy: '',     // staff member who took the order in ('' = not picked)
     smsTransactional: false,
     smsMarketing: false,
     termsAccepted: false,
@@ -284,7 +286,7 @@ export default function CustomerForm() {
     gsap.to(fieldsRef.current!.children, {
       y: -8, opacity: 0, duration: 0.25, stagger: 0.04, ease: 'power2.in',
       onComplete: () => {
-        setForm({ customerName: '', phone: '', dueDate: twoWeeksOut(), notes: '', totalAmount: '', paid: false, smsTransactional: false, smsMarketing: false, termsAccepted: false, autoFilledName: '' })
+        setForm({ customerName: '', phone: '', dueDate: twoWeeksOut(), notes: '', totalAmount: '', paid: false, receivedBy: '', smsTransactional: false, smsMarketing: false, termsAccepted: false, autoFilledName: '' })
         dueTouchedRef.current = false
         setError('')
         setStaffOpen(false)
@@ -566,6 +568,27 @@ export default function CustomerForm() {
                           }>
                           Paid
                         </button>
+                      </div>
+                    </div>
+
+                    {/* Who took the order in — optional; tap the selected name again to clear it */}
+                    <div>
+                      <span className={FL_CLASS} style={FL_STYLE}>Received by</span>
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2" role="group" aria-label="Received by">
+                        {RECEIVERS.map(name => {
+                          const picked = form.receivedBy === name
+                          return (
+                            <button key={name} type="button" aria-pressed={picked}
+                              onClick={() => setForm(f => ({ ...f, receivedBy: f.receivedBy === name ? '' : name }))}
+                              className={`${FIELD_H} rounded-xl text-[15px] md:text-[17px] font-semibold transition-all`}
+                              style={picked
+                                ? { background: '#1C1A18', color: '#F6F1E9', border: '1px solid #1C1A18', boxShadow: '0 3px 10px rgba(0,0,0,0.22)' }
+                                : { background: '#FDFAF5', color: '#8A847C', border: '1px solid rgba(0,0,0,0.12)' }
+                              }>
+                              {name}
+                            </button>
+                          )
+                        })}
                       </div>
                     </div>
 

@@ -10,6 +10,15 @@ export function sortTailors(names: string[]): string[] {
   return [...names].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b))
 }
 
+// Staff who can take an order in (customer form → Staff Details → Received by)
+export const RECEIVERS = ['Pabitra', 'Anna', 'Tina', 'Lok', 'Bishal']
+
+/** Clean up a Received by name from a request: trimmed; null when none picked */
+export function normalizeReceiver(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null
+  return raw.trim().slice(0, 40) || null
+}
+
 /** Clean up a tailors list from a request: trimmed, no repeats, list order; null when empty */
 export function normalizeTailors(raw: unknown): string[] | null {
   if (!Array.isArray(raw)) return null

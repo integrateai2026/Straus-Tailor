@@ -5,6 +5,7 @@ import { sendSMS } from '@/lib/twilio'
 import { requireAuth } from '@/lib/session'
 import { logOutbound } from '@/lib/messages'
 import { confirmationText } from '@/lib/smsTemplates'
+import { normalizeReceiver } from '@/lib/tailors'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
 
     const rawAmount = parseFloat(String(raw.totalAmount ?? ''))
     const rawItems  = parseInt(String(raw.itemCount ?? ''), 10)
+    const receivedBy = normalizeReceiver(raw.receivedBy)
 
     const input: CreateOrderInput = {
       customerName: String(raw.customerName ?? '').trim().slice(0, 100),
@@ -46,6 +48,7 @@ export async function POST(req: NextRequest) {
       ...(isFinite(rawItems)  && rawItems  >= 1 && { itemCount: rawItems }),
       ...(raw.garments    && typeof raw.garments === 'object'  && { garments:    raw.garments }),
       ...(Array.isArray(raw.alterations)                       && { alterations: raw.alterations }),
+      ...(receivedBy                                           && { receivedBy }),
     }
 
     if (!input.customerName || !input.phone) {

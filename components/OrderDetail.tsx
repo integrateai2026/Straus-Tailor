@@ -5,7 +5,7 @@ import gsap from 'gsap'
 import { Order } from '@/lib/types'
 import { phoneDigits } from '@/lib/phone'
 import { orderTimeline, TimelineTone } from '@/lib/orderHistory'
-import { TAILORS, sortTailors } from '@/lib/tailors'
+import { RECEIVERS, TAILORS, sortTailors } from '@/lib/tailors'
 import SMSModal from './SMSModal'
 import TestSmsDialog from './TestSmsDialog'
 import PrintTicket from './PrintTicket'
@@ -201,6 +201,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
     dueDate:      initialOrder.dueDate,
     totalAmount:  initialOrder.totalAmount != null ? String(initialOrder.totalAmount) : '',
     notes:        initialOrder.notes ?? '',
+    receivedBy:   initialOrder.receivedBy ?? '',
   })
 
   const light = theme === 'light'
@@ -241,6 +242,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
           dueDate:      editForm.dueDate,
           totalAmount:  editForm.totalAmount !== '' ? parseFloat(editForm.totalAmount) : null,
           notes:        editForm.notes,
+          receivedBy:   editForm.receivedBy || null,
         }),
       })
       if (!res.ok) return
@@ -351,7 +353,7 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
             <button
               onClick={() => {
                 if (editing) { setEditing(false) }
-                else { setEditForm({ customerName: order.customerName, phone: order.phone, dropoffDate: order.dropoffDate, dueDate: order.dueDate, totalAmount: order.totalAmount != null ? String(order.totalAmount) : '', notes: order.notes ?? '' }); setEditing(true) }
+                else { setEditForm({ customerName: order.customerName, phone: order.phone, dropoffDate: order.dropoffDate, dueDate: order.dueDate, totalAmount: order.totalAmount != null ? String(order.totalAmount) : '', notes: order.notes ?? '', receivedBy: order.receivedBy ?? '' }); setEditing(true) }
               }}
               className="text-xs px-3.5 py-1.5 rounded-full border font-semibold transition-all"
               style={editing
@@ -396,6 +398,27 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
                     />
                   </div>
                 ))}
+                {/* Who took it in — tap the selected name again to clear it */}
+                <div>
+                  <p className={`text-[10px] uppercase tracking-widest mb-1 ${light ? 'text-[#8A847C]' : 'text-[#8A8A8A]'}`}>Received by</p>
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2" role="group" aria-label="Received by">
+                    {[...RECEIVERS, ...(editForm.receivedBy && !RECEIVERS.includes(editForm.receivedBy) ? [editForm.receivedBy] : [])].map(name => {
+                      const picked = editForm.receivedBy === name
+                      return (
+                        <button key={name} type="button" aria-pressed={picked}
+                          onClick={() => setEditForm(f => ({ ...f, receivedBy: f.receivedBy === name ? '' : name }))}
+                          className={`h-11 rounded-xl border text-sm font-semibold transition-colors ${
+                            picked
+                              ? (light ? 'bg-[#1C1A18] border-[#1C1A18] text-[#F6F1E9]' : 'bg-white border-white text-black')
+                              : (light ? 'bg-black/[0.04] border-black/[0.12] text-[#6B6358]' : 'bg-white/[0.06] border-white/[0.12] text-[#A3A3A3]')
+                          }`}
+                        >
+                          {name}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
                 <div>
                   <p className={`text-[10px] uppercase tracking-widest mb-1 ${light ? 'text-[#8A847C]' : 'text-[#8A8A8A]'}`}>Notes</p>
                   <textarea
@@ -439,6 +462,12 @@ export default function OrderDetail({ order: initialOrder, onBack, onUpdate, the
                     <span className={`text-sm font-semibold ${light ? 'text-[#1C1A18]' : 'text-white'}`}>{value}</span>
                   </div>
                 ))}
+                <div className={`flex justify-between items-center py-2.5 border-b ${light ? 'border-black/[0.06]' : 'border-white/[0.05]'}`}>
+                  <span className={`text-sm ${light ? 'text-[#6B6358]' : 'text-[#888]'}`}>Received by</span>
+                  {order.receivedBy
+                    ? <span className={`text-sm font-semibold ${light ? 'text-[#1C1A18]' : 'text-white'}`}>{order.receivedBy}</span>
+                    : <span className={`text-sm italic ${light ? 'text-[#A89F94]' : 'text-[#8A8A8A]'}`}>Not set</span>}
+                </div>
                 <TailorField
                   value={order.tailors ?? []}
                   theme={theme}

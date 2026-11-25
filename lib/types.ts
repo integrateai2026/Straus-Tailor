@@ -32,6 +32,7 @@ export interface Order {
   alterations?: string[]
   history?: OrderEvent[]
   tailors?: string[]   // who worked on it (optional)
+  receivedBy?: string  // who took it in at the counter (optional)
 }
 
 // The staff dashboard's refresh: just what changed since its last one (GET /api/orders?since=)
@@ -56,6 +57,7 @@ export interface CreateOrderInput {
   smsMarketing?: boolean
   garments?: Record<string, number>
   alterations?: string[]
+  receivedBy?: string
 }
 
 export interface UpdateOrderInput {
@@ -74,6 +76,7 @@ export interface UpdateOrderInput {
   notes?: string
   history?: OrderEvent[]
   tailors?: string[] | null
+  receivedBy?: string | null
 }
 
 export type SmsDirection = 'inbound' | 'outbound'

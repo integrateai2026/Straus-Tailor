@@ -25,6 +25,7 @@ function toOrder(row: Record<string, unknown>): Order {
     ...(row.alterations  != null ? { alterations:  row.alterations   as string[] } : {}),
     ...(row.history      != null ? { history:      row.history       as OrderEvent[] } : {}),
     ...(row.tailors      != null ? { tailors:      row.tailors       as string[] } : {}),
+    ...(row.received_by  != null ? { receivedBy:   row.received_by   as string } : {}),
   }
 }
 
@@ -159,6 +160,7 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
       sms_consent:   input.smsConsent   ?? false,
       garments:      input.garments     ?? null,
       alterations:   input.alterations  ?? null,
+      received_by:   input.receivedBy   ?? null,
     })
     .select()
     .single()
@@ -186,6 +188,7 @@ export async function updateOrder(
   if (input.notes        !== undefined) patch.notes         = input.notes
   if (input.history      !== undefined) patch.history       = input.history
   if (input.tailors      !== undefined) patch.tailors       = input.tailors
+  if (input.receivedBy   !== undefined) patch.received_by   = input.receivedBy
 
   const { data, error } = await supabase
     .from('orders').update(patch).eq('id', id).select().single()
